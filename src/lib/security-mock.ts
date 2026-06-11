@@ -1,0 +1,40 @@
+import type { ThreatIoc, EvidenceItem, Honeytoken, SessionEntry } from "./types";
+
+export const mockThreats: ThreatIoc[] = [
+  { id: "TI-001", type: "ip", value: "45.33.12.88", source: "AlienVault OTX", severity: "critical", firstSeen: "2026-04-14T03:00:00Z", description: "C2 server hosting Cobalt Strike beacons", mitre: "T1071.001", matchedEntityIds: ["ENT-012"] },
+  { id: "TI-002", type: "domain", value: "trustbank-login.com", source: "PhishTank", severity: "high", firstSeen: "2026-04-13T19:00:00Z", description: "Credential phishing kit targeting EU banking customers", mitre: "T1566.002", matchedEntityIds: ["ENT-013"] },
+  { id: "TI-003", type: "hash", value: "8f14e45fceea167a5a36dedd4bea2543", source: "VirusTotal", severity: "critical", firstSeen: "2026-04-12T08:14:00Z", description: "Loader binary — drops Lumma stealer", mitre: "T1204.002", matchedEntityIds: [] },
+  { id: "TI-004", type: "cve", value: "CVE-2026-1042", source: "NVD", severity: "high", firstSeen: "2026-04-10T12:00:00Z", description: "Auth bypass in Next.js middleware (<14.2.31)", matchedEntityIds: ["ENT-033"] },
+  { id: "TI-005", type: "domain", value: "secure-transfers.cc", source: "Internal Sentinel", severity: "medium", firstSeen: "2026-04-11T22:00:00Z", description: "Newly-registered domain, low-reputation registrar", matchedEntityIds: ["ENT-004"] },
+  { id: "TI-006", type: "ip", value: "5.188.86.12", source: "AbuseIPDB", severity: "medium", firstSeen: "2026-04-09T06:00:00Z", description: "SSH brute-force source — 4,210 reports", mitre: "T1110.001", matchedEntityIds: ["ENT-029"] },
+  { id: "TI-007", type: "url", value: "https://gov-verify.org/auth", source: "URLhaus", severity: "high", firstSeen: "2026-04-08T14:00:00Z", description: "Gov impersonation landing page", mitre: "T1566.002", matchedEntityIds: ["ENT-027"] },
+  { id: "TI-008", type: "email", value: "billing@invoice-portal.biz", source: "Mandiant Advantage", severity: "medium", firstSeen: "2026-04-07T11:00:00Z", description: "BEC sender used in CFO impersonation campaign", mitre: "T1534", matchedEntityIds: ["ENT-031"] },
+  { id: "TI-009", type: "hash", value: "d41d8cd98f00b204e9800998ecf8427e", source: "MalShare", severity: "low", firstSeen: "2026-04-06T00:00:00Z", description: "Empty file marker; benign but tracked", matchedEntityIds: [] },
+  { id: "TI-010", type: "cve", value: "CVE-2026-2233", source: "GitHub Advisory", severity: "critical", firstSeen: "2026-04-04T09:30:00Z", description: "RCE in Rails ActionPack via crafted Accept header", matchedEntityIds: ["ENT-036"] },
+];
+
+export const mockEvidence: EvidenceItem[] = [
+  { id: "EVD-101", filename: "petrov-bank-records.pdf", sizeBytes: 1_240_113, sha256: "a3f1c92e8b7d04ff52a09c1e6e44ab019cd71b4f88a3e3e2e991b54d0c10f8a1", uploadedBy: "analyst.smith", uploadedAt: "2026-04-10T13:55:00Z", linkedEntityId: "ENT-001", category: "doc", sealed: true, integrity: "verified", notes: "SWIFT statements covering Q1; redact account 7 before share.", editHistory: [] },
+  { id: "EVD-200", filename: "meridian-incorp.zip", sizeBytes: 4_812_902, sha256: "117bd91c0fea11abe5cc41982310aab1cc23d54fa9aa00b9e44cd4720112e981", uploadedBy: "analyst.smith", uploadedAt: "2026-04-13T15:30:00Z", linkedEntityId: "ENT-002", category: "doc", sealed: true, integrity: "verified", editHistory: [] },
+  { id: "EVD-800", filename: "finops-c2-traffic.pcap", sizeBytes: 38_120_001, sha256: "f5a200f54cbb9ee882233ddf1199b13ee44ac02b91110aa11bb09a0e9f10ee32", uploadedBy: "analyst.jones", uploadedAt: "2026-04-14T05:50:00Z", linkedEntityId: "ENT-008", category: "pcap", sealed: true, integrity: "verified", editHistory: [] },
+  { id: "EVD-1300", filename: "trustbank-phish-screenshot.png", sizeBytes: 412_009, sha256: "20fa9a13bbb1f422dd02211aa7799b4f0e5e6e10c0c00bd1d2e3f4a55667788e", uploadedBy: "system", uploadedAt: "2026-04-13T20:00:00Z", linkedEntityId: "ENT-013", category: "screenshot", sealed: true, integrity: "verified", editHistory: [] },
+  { id: "EVD-1800", filename: "darknet-listings.json", sizeBytes: 88_201, sha256: "919e1c2a4488ee01dd33ff2200119988aa2244cc3344dd5566ee77ff8899aabb", uploadedBy: "analyst.jones", uploadedAt: "2026-04-01T00:15:00Z", linkedEntityId: "ENT-018", category: "log", sealed: true, integrity: "verified", editHistory: [] },
+  { id: "EVD-3400", filename: "banking-apk-decompiled.zip", sizeBytes: 12_810_993, sha256: "cc77aa11dd99001144ffee5599aabbccdd11ee44ff77001122334455667788aa", uploadedBy: "analyst.jones", uploadedAt: "2026-04-14T07:18:00Z", linkedEntityId: "ENT-034", category: "binary", sealed: true, integrity: "broken", notes: "Hash mismatch on re-verify — investigate before relying on this artifact.", editHistory: [] },
+  { id: "EVD-300", filename: "vpn-exit-logs.txt", sizeBytes: 220_410, sha256: "412009ab77ddee0099112233445566778899aabbccddeeff0011223344556677", uploadedBy: "system", uploadedAt: "2026-04-12T10:30:00Z", linkedEntityId: "ENT-003", category: "log", sealed: false, integrity: "verified", editHistory: [] },
+];
+
+export const mockHoneytokens: Honeytoken[] = [
+  { id: "HT-001", label: "Fake S3 admin key", kind: "api_key", bait: "AKIA-HONEY-2X9J-DEADBEEF", placedAt: "2026-03-01T00:00:00Z", triggered: true, triggers: [{ ip: "45.33.12.88", ua: "aws-cli/2.15", timestamp: "2026-04-14T04:21:00Z" }] },
+  { id: "HT-002", label: "Decoy admin login", kind: "credential", bait: "svc_root / Pa55w0rd!Sentinel", placedAt: "2026-03-10T00:00:00Z", triggered: true, triggers: [{ ip: "5.188.86.12", ua: "python-requests/2.31", timestamp: "2026-04-13T03:11:00Z" }, { ip: "5.188.86.12", ua: "Hydra/9.5", timestamp: "2026-04-13T03:11:08Z" }] },
+  { id: "HT-003", label: "Canary doc (Q3 strategy)", kind: "doc", bait: "/share/exec/Q3-roadmap-CONFIDENTIAL.docx", placedAt: "2026-02-15T00:00:00Z", triggered: false, triggers: [] },
+  { id: "HT-004", label: "Trap URL in robots.txt", kind: "url", bait: "/internal/backup.sql", placedAt: "2026-01-20T00:00:00Z", triggered: true, triggers: [{ ip: "178.62.210.5", ua: "Mozilla/5.0 (compatible; Nikto)", timestamp: "2026-04-11T22:04:00Z" }] },
+];
+
+export const mockSessions: SessionEntry[] = [
+  { id: "SES-001", user: "analyst.you", role: "analyst", ip: "10.0.1.42", country: "NL", device: "Chrome 124 / macOS 14", startedAt: "2026-04-14T07:00:00Z", lastActivity: "2026-04-14T12:01:00Z", active: true, anomalies: [], riskScore: 8 },
+  { id: "SES-002", user: "analyst.smith", role: "analyst", ip: "10.0.1.43", country: "NL", device: "Firefox 126 / Linux", startedAt: "2026-04-14T08:14:00Z", lastActivity: "2026-04-14T11:58:00Z", active: true, anomalies: [], riskScore: 11 },
+  { id: "SES-003", user: "analyst.jones", role: "analyst", ip: "188.42.11.9", country: "TH", device: "Chrome 124 / Android", startedAt: "2026-04-14T02:00:00Z", lastActivity: "2026-04-14T02:42:00Z", active: false, anomalies: ["impossible_travel", "off_hours", "new_device"], riskScore: 78 },
+  { id: "SES-004", user: "analyst.chen", role: "analyst", ip: "10.0.1.38", country: "NL", device: "Safari 17 / macOS 14", startedAt: "2026-04-14T09:00:00Z", lastActivity: "2026-04-14T11:45:00Z", active: true, anomalies: [], riskScore: 6 },
+  { id: "SES-005", user: "svc.exporter", role: "analyst", ip: "10.0.0.77", country: "NL", device: "curl/8.4", startedAt: "2026-04-14T11:30:00Z", lastActivity: "2026-04-14T11:59:00Z", active: true, anomalies: ["burst_export"], riskScore: 64 },
+  { id: "SES-006", user: "unknown", role: "analyst", ip: "185.220.101.45", country: "DE", device: "Tor Browser 13", startedAt: "2026-04-14T01:11:00Z", lastActivity: "2026-04-14T01:11:09Z", active: false, anomalies: ["tor_exit", "off_hours"], riskScore: 92 },
+];
