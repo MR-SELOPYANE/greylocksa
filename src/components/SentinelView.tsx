@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { getMockResponse } from "@/lib/sentinel-mock";
+import { useServerFn } from "@tanstack/react-start";
+import { askSentinel } from "@/lib/sentinel.functions";
 import { useAppState } from "@/lib/store";
+import { toast } from "sonner";
 import type { ChatMessage } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
