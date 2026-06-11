@@ -1,6 +1,7 @@
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { createServerFn } from "@tanstack/react-start";
 import { generateText, type ModelMessage } from "ai";
+import { z } from "zod";
 
 const SYSTEM_PROMPT = `You are SENTINEL, the AI intelligence assistant embedded in greyLock — a watchlist & threat-intelligence platform.
 
@@ -20,28 +21,20 @@ Behavior:
 - When asked about specific entity/case IDs you don't have data for, explain what the relevant dashboard tab shows rather than inventing precise records.
 - Keep answers focused and actionable. End sensitive briefings by noting interactions are logged when relevant.`;
 
-type SentinelTurn = { role: "user" | "assistant"; content: string };
+const sentinelTurnSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().trim().min(1).max(8000),
+});
 
-export type SentinelInput = {
-  messages: SentinelTurn[];
-  clearance?: string;
-};
+const sentinelInputSchema = z.object({
+  messages: z.array(sentinelTurnSchema).min(1).max(20),
+  clearance: z.enum(["UNCLASSIFIED", "CONFIDENTIAL", "SECRET"]).optional(),
+});
 
-function validate(input: unknown): SentinelInput {
-  const data = input as SentinelInput;
-  if (!data || !Array.isArray(data.messages)) {
-    throw new Error("messages array is required");
-  }
-  const messages = data.messages
-    .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
-    .map((m) => ({ role: m.role, content: m.content.slice(0, 8000) }))
-    .slice(-20);
-  if (messages.length === 0) throw new Error("at least one message is required");
-  return { messages, clearance: typeof data.clearance === "string" ? data.clearance : undefined };
-}
+export type SentinelInput = z.infer<typeof sentinelInputSchema>;
 
 export const askSentinel = createServerFn({ method: "POST" })
-  .inputValidator(validate)
+  .inputValidator((input: unknown) => sentinelInputSchema.parse(input))
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Sentinel AI is not configured (missing API key).");
