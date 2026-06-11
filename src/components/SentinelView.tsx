@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { getMockResponse } from "@/lib/sentinel-mock";
+import { useServerFn } from "@tanstack/react-start";
+import { askSentinel } from "@/lib/sentinel.functions";
 import { useAppState } from "@/lib/store";
+import { toast } from "sonner";
 import type { ChatMessage } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,11 +31,12 @@ function generateId() {
 
 export function SentinelView() {
   const { clearance } = useAppState();
+  const callSentinel = useServerFn(askSentinel);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "sys-0",
       role: "system",
-      content: "**SENTINEL AI Assistant** — Clearance: " + clearance + "\n\nLocal processing mode active. No external API calls. Type `help` for available commands.",
+      content: "**SENTINEL AI Assistant** — Clearance: " + clearance + "\n\nLive AI analysis mode active. Ask about watchlist strategy, threat assessment, scans, or custody. Type `help` for guidance.",
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -48,9 +51,9 @@ export function SentinelView() {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed || isTyping) return;
 
     if (classifiedKeywords.some((k) => trimmed.toLowerCase().includes(k))) {
       setShowDenial(true);
@@ -67,20 +70,42 @@ export function SentinelView() {
     setInput("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const response = getMockResponse(trimmed);
+    const history = [...messages, userMsg]
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+
+    try {
+      const { text } = await callSentinel({ data: { messages: history, clearance } });
       const assistantMsg: ChatMessage = {
         id: generateId(),
         role: "assistant",
-        content: response,
+        content: text,
         timestamp: new Date().toISOString(),
-        redactedTags: Math.random() > 0.5 ? ["FOUO"] : undefined,
         approvalStatus: "approved",
       };
       setMessages((prev) => [...prev, assistantMsg]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      const friendly =
+        msg === "RATE_LIMIT"
+          ? "Rate limit reached. Wait a moment and try again."
+          : msg === "CREDITS_EXHAUSTED"
+            ? "AI credits exhausted. Add credits in your workspace settings to continue."
+            : "Sentinel could not reach the AI service. Try again.";
+      toast.error(friendly);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: generateId(),
+          role: "system",
+          content: "**Connection error** — " + friendly,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 1200);
-  }, [input]);
+    }
+  }, [input, isTyping, messages, clearance, callSentinel]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {

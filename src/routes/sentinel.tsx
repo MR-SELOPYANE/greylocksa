@@ -6,7 +6,7 @@ export const Route = createFileRoute("/sentinel")({
   head: () => ({
     meta: [
       { title: "Sentinel AI — greyLock" },
-      { name: "description", content: "Secure offline AI assistant for intelligence analysis" },
+      { name: "description", content: "Live AI assistant for intelligence analysis and threat triage" },
     ],
   }),
 });
