@@ -1,6 +1,6 @@
 import { useState, useCallback, createContext, useContext } from "react";
-import type { UserRole, ClearanceLevel, Entity, EntityStatus, Scan, CustodyEntry, VulnFinding, ScanSeverity, EvidenceItem } from "./types";
-import { mockEntities, mockScans, mockCustody } from "./mock-data";
+import type { UserRole, ClearanceLevel, Entity, EntityStatus, Scan, CustodyEntry, VulnFinding, ScanSeverity, EvidenceItem, Case, CaseStatus } from "./types";
+import { mockEntities, mockScans, mockCustody, mockCases } from "./mock-data";
 import { mockEvidence } from "./security-mock";
 
 interface AppState {
@@ -21,6 +21,11 @@ interface AppState {
 
   scans: Scan[];
   startScan: (entityId: string, profile: Scan["profile"]) => Scan;
+
+  cases: Case[];
+  updateCaseStatus: (id: string, status: CaseStatus, reason?: string) => void;
+  updateCaseProgress: (id: string, progress: number) => void;
+
 
   custody: CustodyEntry[];
   logCustody: (e: Omit<CustodyEntry, "id" | "timestamp" | "ip" | "hash" | "actor" | "role">) => void;
@@ -81,6 +86,7 @@ export function useAppStateProvider(): AppState {
   const [clearance, setClearance] = useState<ClearanceLevel>("SECRET");
   const [entities, setEntities] = useState<Entity[]>(() => mockEntities);
   const [scans, setScans] = useState<Scan[]>(() => mockScans);
+  const [cases, setCases] = useState<Case[]>(() => mockCases);
   const [custody, setCustody] = useState<CustodyEntry[]>(() => mockCustody);
   const [evidence, setEvidence] = useState<EvidenceItem[]>(() => mockEvidence);
   const [lockdown, setLockdownState] = useState(false);
@@ -197,6 +203,53 @@ export function useAppStateProvider(): AppState {
     return queued;
   }, [entities]);
 
+  const updateCaseStatus: AppState["updateCaseStatus"] = useCallback((id, status, reason = "Manual status update") => {
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              status,
+              progress: status === "closed" ? 100 : c.progress,
+              updatedAt: new Date().toISOString(),
+            }
+          : c
+      )
+    );
+    setCustody((prev) => [
+      {
+        id: `CUS-${Date.now().toString(36)}`,
+        actor: operator,
+        role,
+        entityId: id,
+        action: "STATUS_CHANGE",
+        reason: `Case → ${status.replace("_", " ").toUpperCase()}: ${reason}`,
+        timestamp: new Date().toISOString(),
+        ip: "10.0.1.42",
+        hash: genHash(),
+      },
+      ...prev,
+    ]);
+  }, [operator, role]);
+
+  const updateCaseProgress: AppState["updateCaseProgress"] = useCallback((id, progress) => {
+    const clamped = Math.max(0, Math.min(100, Math.round(progress)));
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              progress: clamped,
+              status: clamped === 100 ? "closed" : c.status,
+              updatedAt: new Date().toISOString(),
+            }
+          : c
+      )
+    );
+  }, []);
+
+
+
   const setLockdown: AppState["setLockdown"] = useCallback((v, reason) => {
     setLockdownState(v);
     setCustody((prev) => [
@@ -274,6 +327,9 @@ export function useAppStateProvider(): AppState {
     deleteEntity,
     scans,
     startScan,
+    cases,
+    updateCaseStatus,
+    updateCaseProgress,
     custody,
     logCustody,
     evidence,
