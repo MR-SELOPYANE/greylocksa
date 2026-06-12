@@ -161,6 +161,8 @@ export function CasesView() {
           <p className="text-xs text-muted-foreground">Switch filters to see other cases.</p>
         </div>
       )}
+
+      <NewCaseDialog open={newOpen} onOpenChange={setNewOpen} />
     </div>
   );
 }
