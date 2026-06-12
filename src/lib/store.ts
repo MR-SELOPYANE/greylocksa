@@ -22,6 +22,11 @@ interface AppState {
   scans: Scan[];
   startScan: (entityId: string, profile: Scan["profile"]) => Scan;
 
+  cases: Case[];
+  updateCaseStatus: (id: string, status: CaseStatus, reason?: string) => void;
+  updateCaseProgress: (id: string, progress: number) => void;
+
+
   custody: CustodyEntry[];
   logCustody: (e: Omit<CustodyEntry, "id" | "timestamp" | "ip" | "hash" | "actor" | "role">) => void;
 
