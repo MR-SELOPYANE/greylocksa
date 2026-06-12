@@ -23,6 +23,7 @@ interface AppState {
   startScan: (entityId: string, profile: Scan["profile"]) => Scan;
 
   cases: Case[];
+  addCase: (input: { title: string; description: string; priority: Case["priority"]; assignedAnalyst: string; status?: CaseStatus; linkedEntityIds?: string[] }) => Case;
   updateCaseStatus: (id: string, status: CaseStatus, reason?: string) => void;
   updateCaseProgress: (id: string, progress: number) => void;
 
