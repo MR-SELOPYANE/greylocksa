@@ -404,10 +404,25 @@ export function EntitiesView() {
           {selectedEntity && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-3 font-mono">
+                <DialogTitle className="flex flex-wrap items-center gap-3 font-mono">
                   <span className="text-tactical">{selectedEntity.id}</span>
                   <StatusBadge status={selectedEntity.status} />
                   <TypeBadge type={selectedEntity.type} />
+                  {canMutate && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="ml-auto h-7 gap-1.5"
+                      onClick={() => {
+                        const target = selectedEntity;
+                        setSelectedEntity(null);
+                        setEditEntity(target);
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Edit
+                    </Button>
+                  )}
                 </DialogTitle>
                 <DialogDescription>{selectedEntity.identifier}</DialogDescription>
               </DialogHeader>
