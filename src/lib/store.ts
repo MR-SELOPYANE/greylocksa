@@ -203,6 +203,53 @@ export function useAppStateProvider(): AppState {
     return queued;
   }, [entities]);
 
+  const updateCaseStatus: AppState["updateCaseStatus"] = useCallback((id, status, reason = "Manual status update") => {
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              status,
+              progress: status === "closed" ? 100 : c.progress,
+              updatedAt: new Date().toISOString(),
+            }
+          : c
+      )
+    );
+    setCustody((prev) => [
+      {
+        id: `CUS-${Date.now().toString(36)}`,
+        actor: operator,
+        role,
+        entityId: id,
+        action: "STATUS_CHANGE",
+        reason: `Case → ${status.replace("_", " ").toUpperCase()}: ${reason}`,
+        timestamp: new Date().toISOString(),
+        ip: "10.0.1.42",
+        hash: genHash(),
+      },
+      ...prev,
+    ]);
+  }, [operator, role]);
+
+  const updateCaseProgress: AppState["updateCaseProgress"] = useCallback((id, progress) => {
+    const clamped = Math.max(0, Math.min(100, Math.round(progress)));
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              progress: clamped,
+              status: clamped === 100 ? "closed" : c.status,
+              updatedAt: new Date().toISOString(),
+            }
+          : c
+      )
+    );
+  }, []);
+
+
+
   const setLockdown: AppState["setLockdown"] = useCallback((v, reason) => {
     setLockdownState(v);
     setCustody((prev) => [
