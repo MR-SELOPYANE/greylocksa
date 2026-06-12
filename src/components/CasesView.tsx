@@ -27,6 +27,7 @@ const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
 export function CasesView() {
   const { cases, updateCaseStatus, updateCaseProgress } = useAppState();
   const [filter, setFilter] = useState<string>("all");
+  const [newOpen, setNewOpen] = useState(false);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
