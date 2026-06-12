@@ -1,6 +1,6 @@
 import { useState, useCallback, createContext, useContext } from "react";
-import type { UserRole, ClearanceLevel, Entity, EntityStatus, Scan, CustodyEntry, VulnFinding, ScanSeverity, EvidenceItem } from "./types";
-import { mockEntities, mockScans, mockCustody } from "./mock-data";
+import type { UserRole, ClearanceLevel, Entity, EntityStatus, Scan, CustodyEntry, VulnFinding, ScanSeverity, EvidenceItem, Case, CaseStatus } from "./types";
+import { mockEntities, mockScans, mockCustody, mockCases } from "./mock-data";
 import { mockEvidence } from "./security-mock";
 
 interface AppState {
