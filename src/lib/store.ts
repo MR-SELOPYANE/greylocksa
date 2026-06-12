@@ -86,6 +86,7 @@ export function useAppStateProvider(): AppState {
   const [clearance, setClearance] = useState<ClearanceLevel>("SECRET");
   const [entities, setEntities] = useState<Entity[]>(() => mockEntities);
   const [scans, setScans] = useState<Scan[]>(() => mockScans);
+  const [cases, setCases] = useState<Case[]>(() => mockCases);
   const [custody, setCustody] = useState<CustodyEntry[]>(() => mockCustody);
   const [evidence, setEvidence] = useState<EvidenceItem[]>(() => mockEvidence);
   const [lockdown, setLockdownState] = useState(false);
