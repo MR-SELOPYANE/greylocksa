@@ -4,6 +4,7 @@ import { mockEntities } from "@/lib/mock-data";
 import { useAppState } from "@/lib/store";
 import type { CaseStatus } from "@/lib/types";
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
+import { NewCaseDialog } from "@/components/NewCaseDialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
 export function CasesView() {
   const { cases, updateCaseStatus, updateCaseProgress } = useAppState();
   const [filter, setFilter] = useState<string>("all");
+  const [newOpen, setNewOpen] = useState(false);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -54,7 +56,7 @@ export function CasesView() {
 
   return (
     <div className="space-y-4">
-      {/* Status filter chips */}
+      {/* Status filter chips + new case */}
       <div className="flex flex-wrap items-center gap-2">
         {[{ value: "all", label: "All" }, ...STATUS_OPTIONS].map((opt) => (
           <button
@@ -70,7 +72,13 @@ export function CasesView() {
             <span className="ml-1.5 opacity-60">{counts[opt.value] ?? 0}</span>
           </button>
         ))}
+        <Button size="sm" onClick={() => setNewOpen(true)} className="ml-auto gap-1.5">
+          <Plus className="h-3.5 w-3.5" />
+          Open Case
+        </Button>
       </div>
+
+
 
       {filtered.map((c) => (
         <div key={c.id} className="rounded-lg border border-border bg-card p-5">
@@ -153,6 +161,8 @@ export function CasesView() {
           <p className="text-xs text-muted-foreground">Switch filters to see other cases.</p>
         </div>
       )}
+
+      <NewCaseDialog open={newOpen} onOpenChange={setNewOpen} />
     </div>
   );
 }

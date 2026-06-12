@@ -23,6 +23,7 @@ interface AppState {
   startScan: (entityId: string, profile: Scan["profile"]) => Scan;
 
   cases: Case[];
+  addCase: (input: { title: string; description: string; priority: Case["priority"]; assignedAnalyst: string; status?: CaseStatus; linkedEntityIds?: string[] }) => Case;
   updateCaseStatus: (id: string, status: CaseStatus, reason?: string) => void;
   updateCaseProgress: (id: string, progress: number) => void;
 
@@ -203,6 +204,38 @@ export function useAppStateProvider(): AppState {
     return queued;
   }, [entities]);
 
+  const addCase: AppState["addCase"] = useCallback((input) => {
+    const now = new Date().toISOString();
+    const newCase: Case = {
+      id: `CASE-${String(Date.now()).slice(-3)}`,
+      title: input.title,
+      description: input.description,
+      status: input.status ?? "open",
+      assignedAnalyst: input.assignedAnalyst,
+      linkedEntityIds: input.linkedEntityIds ?? [],
+      progress: input.status === "closed" ? 100 : 0,
+      createdAt: now,
+      updatedAt: now,
+      priority: input.priority,
+    };
+    setCases((prev) => [newCase, ...prev]);
+    setCustody((prev) => [
+      {
+        id: `CUS-${Date.now().toString(36)}`,
+        actor: operator,
+        role,
+        entityId: newCase.id,
+        action: "EDIT",
+        reason: `Case opened: ${newCase.title}`,
+        timestamp: now,
+        ip: "10.0.1.42",
+        hash: genHash(),
+      },
+      ...prev,
+    ]);
+    return newCase;
+  }, [operator, role]);
+
   const updateCaseStatus: AppState["updateCaseStatus"] = useCallback((id, status, reason = "Manual status update") => {
     setCases((prev) =>
       prev.map((c) =>
@@ -328,6 +361,7 @@ export function useAppStateProvider(): AppState {
     scans,
     startScan,
     cases,
+    addCase,
     updateCaseStatus,
     updateCaseProgress,
     custody,
