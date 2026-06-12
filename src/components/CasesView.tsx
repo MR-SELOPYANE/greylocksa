@@ -4,6 +4,7 @@ import { mockEntities } from "@/lib/mock-data";
 import { useAppState } from "@/lib/store";
 import type { CaseStatus } from "@/lib/types";
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
+import { NewCaseDialog } from "@/components/NewCaseDialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
