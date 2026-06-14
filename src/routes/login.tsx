@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Shield, ArrowRight, Lock } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
+import { useAppState } from "@/lib/store";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -15,13 +16,19 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { provisionRole, setClearance } = useAppState();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => navigate({ to: "/entities" }), 600);
+    // Every fresh sign-in starts least-privileged: drop any prior admin role
+    // back down to analyst. Elevation must be re-granted by an existing admin.
+    provisionRole("analyst");
+    setClearance("CONFIDENTIAL");
+    setTimeout(() => navigate({ to: "/system" }), 600);
   };
+
 
   return (
     <AuthShell
