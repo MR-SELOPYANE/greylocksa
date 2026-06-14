@@ -20,6 +20,7 @@ import {
   Zap,
   ShieldAlert,
   Loader2,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppState } from "@/lib/store";
@@ -51,7 +52,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { role, setRole, operator, clearance, lockdown, setLockdown, scans } = useAppState();
+  const { role, setRole, operator, clearance, lockdown, setLockdown, scans, logout } = useAppState();
 
   const navItems = baseNav.filter((n) => n.roles.includes(role));
 
@@ -98,6 +99,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     if (role === "admin" && v === "analyst") {
       toast.success("Demoted to analyst", { description: "Admin tools hidden until promoted again." });
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Signed out", { description: "Session cleared and role reset." });
+    navigate({ to: "/login" });
   };
 
   return (
@@ -204,6 +211,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </SelectContent>
               </Select>
             </div>
+
+            <Button onClick={handleLogout} variant="outline" size="sm" className="h-7 gap-1.5">
+              <LogOut className="h-3.5 w-3.5" />
+              Logout
+            </Button>
 
             <div className="flex items-center gap-1.5">
               <div className={cn("h-2 w-2 rounded-full animate-pulse-glow", lockdown ? "bg-status-black" : "bg-status-white")} />
