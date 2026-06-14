@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Shield, ArrowRight, Lock } from "lucide-react";
+import { Shield, ArrowRight, Lock, ShieldCheck, Wrench } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { useAppState } from "@/lib/store";
+import type { UserRole } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -16,19 +18,20 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { provisionRole, setClearance } = useAppState();
+  const { provisionRole, setClearance, setOperator } = useAppState();
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [role, setRoleLocal] = useState<UserRole>("analyst");
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Every fresh sign-in starts least-privileged: drop any prior admin role
-    // back down to analyst. Elevation must be re-granted by an existing admin.
-    provisionRole("analyst");
-    setClearance("CONFIDENTIAL");
+    const normalizedEmail = email.trim().toLowerCase();
+    provisionRole(role);
+    setOperator(normalizedEmail || (role === "admin" ? "admin.you" : "analyst.you"));
+    setClearance(role === "admin" ? "SECRET" : "CONFIDENTIAL");
     setTimeout(() => navigate({ to: "/system" }), 600);
   };
-
 
   return (
     <AuthShell
@@ -40,11 +43,36 @@ function LoginPage() {
           <Input
             type="email"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="analyst@agency.gov"
             autoComplete="username"
             className="bg-secondary font-mono text-sm"
           />
         </Field>
+
+        <div>
+          <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            Access tier
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <RoleCard
+              active={role === "analyst"}
+              onClick={() => setRoleLocal("analyst")}
+              icon={<Wrench className="h-4 w-4" />}
+              title="Analyst"
+              desc="Targets, scans, cases, and triage tools."
+            />
+            <RoleCard
+              active={role === "admin"}
+              onClick={() => setRoleLocal("admin")}
+              icon={<ShieldCheck className="h-4 w-4" />}
+              title="Admin"
+              desc="Audit, sessions, system controls, and lockdown."
+            />
+          </div>
+        </div>
+
         <Field label="Passphrase">
           <Input
             type="password"
@@ -93,6 +121,25 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       </span>
       {children}
     </label>
+  );
+}
+
+function RoleCard({ active, onClick, icon, title, desc }: { active: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-md border p-3 text-left transition-colors",
+        active ? "border-tactical bg-tactical/10" : "border-border bg-secondary hover:border-tactical/50"
+      )}
+    >
+      <div className="flex items-center gap-2 text-tactical">
+        {icon}
+        <span className="font-mono text-xs font-bold uppercase tracking-wider">{title}</span>
+      </div>
+      <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">{desc}</p>
+    </button>
   );
 }
 

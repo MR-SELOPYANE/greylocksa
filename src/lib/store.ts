@@ -8,6 +8,7 @@ interface AppState {
   setRole: (role: UserRole) => void;
   /** Bypasses the analyst→admin guard. Use ONLY during onboarding/signup. */
   provisionRole: (role: UserRole) => void;
+  logout: () => void;
   operator: string;
   setOperator: (name: string) => void;
   clearance: ClearanceLevel;
@@ -111,6 +112,14 @@ export function useAppStateProvider(): AppState {
   }, []);
 
   const provisionRole: AppState["provisionRole"] = useCallback((next) => setRoleState(next), []);
+
+  const logout: AppState["logout"] = useCallback(() => {
+    setRoleState("analyst");
+    setOperator("analyst.you");
+    setClearance("SECRET");
+    setLockdownState(false);
+    setCommandOpen(false);
+  }, []);
 
   const logCustody: AppState["logCustody"] = useCallback((e) => {
     setCustody((prev) => [
@@ -349,6 +358,7 @@ export function useAppStateProvider(): AppState {
     role,
     setRole,
     provisionRole,
+    logout,
     operator,
     setOperator,
     clearance,
