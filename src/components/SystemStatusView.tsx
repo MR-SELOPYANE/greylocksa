@@ -69,8 +69,32 @@ export function SystemStatusView() {
 
   const operational = mockSystemStatus.filter((s) => s.status === "operational").length;
 
+  const priorityBreakdown = useMemo(() => {
+    const acc = { critical: 0, high: 0, medium: 0, low: 0 };
+    cases.filter((c) => c.status !== "closed").forEach((c) => { acc[c.priority] += 1; });
+    return acc;
+  }, [cases]);
+
+  const recentActivity = useMemo(() => custody.slice(0, 8), [custody]);
+
+  const quickActions = [
+    { label: "Add Target", icon: Plus, onClick: () => { navigate({ to: "/entities" }); setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:open-add-entity")), 80); } },
+    { label: "Open Case", icon: FolderPlus, onClick: () => { navigate({ to: "/cases" }); setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:new-case")), 80); } },
+    { label: "Ask Sentinel", icon: MessageSquare, onClick: () => navigate({ to: "/sentinel" }) },
+    { label: "Chain of Custody", icon: Fingerprint, onClick: () => navigate({ to: "/custody" }) },
+  ];
+
   return (
     <div className="space-y-6">
+      {/* Quick actions */}
+      <div className="flex flex-wrap gap-2">
+        {quickActions.map((a) => (
+          <Button key={a.label} variant="outline" size="sm" onClick={a.onClick} className="gap-1.5">
+            <a.icon className="h-3.5 w-3.5" /> {a.label}
+          </Button>
+        ))}
+      </div>
+
       {/* Live metric cards */}
       <div>
         <div className="mb-3 flex items-center gap-2">
