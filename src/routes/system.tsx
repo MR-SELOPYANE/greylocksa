@@ -5,8 +5,8 @@ export const Route = createFileRoute("/system")({
   component: SystemPage,
   head: () => ({
     meta: [
-      { title: "System Status — greyLock" },
-      { name: "description", content: "Service health and uptime monitoring" },
+      { title: "Command Dashboard — greyLock" },
+      { name: "description", content: "Live operations dashboard: metrics, risk distribution, case priority, and recent activity." },
     ],
   }),
 });
