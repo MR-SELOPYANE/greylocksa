@@ -35,6 +35,7 @@ export function CommandPalette() {
     commandOpen,
     setCommandOpen,
     entities,
+    cases,
     role,
     setRole,
     lockdown,
