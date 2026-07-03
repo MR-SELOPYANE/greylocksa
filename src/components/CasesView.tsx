@@ -25,7 +25,7 @@ const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
 ];
 
 export function CasesView() {
-  const { cases, updateCaseStatus, updateCaseProgress } = useAppState();
+  const { cases, entities, updateCaseStatus, updateCaseProgress } = useAppState();
   const [filter, setFilter] = useState<string>("all");
   const [newOpen, setNewOpen] = useState(false);
 
