@@ -1,20 +1,28 @@
 import { useMemo } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { mockSystemStatus } from "@/lib/mock-data";
 import { mockThreats } from "@/lib/security-mock";
 import { useAppState } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Database,
   ShieldAlert,
   FolderSearch,
+  FolderPlus,
   Bug,
   Activity,
   Loader2,
   TrendingUp,
+  MessageSquare,
+  Fingerprint,
+  Plus,
+  Clock,
 } from "lucide-react";
 
 export function SystemStatusView() {
-  const { entities, cases, scans } = useAppState();
+  const { entities, cases, scans, custody } = useAppState();
+  const navigate = useNavigate();
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
