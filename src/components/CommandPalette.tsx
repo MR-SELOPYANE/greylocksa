@@ -108,6 +108,9 @@ export function CommandPalette() {
           <CommandItem onSelect={() => run(() => { window.dispatchEvent(new CustomEvent("greylock:open-add-entity")); navigate({ to: "/entities" }); })}>
             <Shield /> <span>Add new target</span>
           </CommandItem>
+          <CommandItem onSelect={() => run(() => { navigate({ to: "/cases" }); setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:new-case")), 80); })}>
+            <FolderPlus /> <span>Open new case</span>
+          </CommandItem>
           <CommandItem onSelect={() => run(() => { window.dispatchEvent(new CustomEvent("greylock:export-entities")); navigate({ to: "/entities" }); })}>
             <Download /> <span>Export targets to CSV</span>
           </CommandItem>
