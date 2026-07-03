@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Filter, Eye, Pencil, Trash2, Database, X, Plus, Download, ChevronDown, Bug } from "lucide-react";
+import { Search, Filter, Eye, Pencil, Trash2, Database, X, Plus, Download, ChevronDown, Bug, FolderSearch } from "lucide-react";
 
 export function EntitiesView() {
   const { role, entities, cases, scans, updateEntityStatus, deleteEntity, startScan, logCustody, lockdown } = useAppState();
