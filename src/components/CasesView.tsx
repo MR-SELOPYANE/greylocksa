@@ -191,6 +191,7 @@ export function CasesView() {
       )}
 
       <NewCaseDialog open={newOpen} onOpenChange={setNewOpen} />
+      <CaseDetailDialog caseId={detailId} open={!!detailId} onOpenChange={(v) => !v && setDetailId(null)} />
     </div>
   );
 }
