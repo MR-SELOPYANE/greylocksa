@@ -201,6 +201,58 @@ export function SystemStatusView() {
           ))}
         </div>
       </div>
+
+      {/* Case priority + recent activity */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-lg border border-border bg-card p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Open Case Priority</h3>
+            <Link to="/cases" className="font-mono text-[10px] text-tactical hover:underline">View all →</Link>
+          </div>
+          <div className="space-y-3">
+            {([
+              { key: "critical", label: "Critical", cls: "bg-status-black" },
+              { key: "high", label: "High", cls: "bg-status-black/70" },
+              { key: "medium", label: "Medium", cls: "bg-status-grey" },
+              { key: "low", label: "Low", cls: "bg-status-white" },
+            ] as const).map((p) => {
+              const value = priorityBreakdown[p.key];
+              const pct = stats.openCases ? Math.round((value / stats.openCases) * 100) : 0;
+              return (
+                <div key={p.key} className="space-y-1.5">
+                  <div className="flex items-center justify-between font-mono text-xs">
+                    <span className="text-foreground">{p.label}</span>
+                    <span className="text-muted-foreground">{value}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-background">
+                    <div className={cn("h-full rounded-full transition-all", p.cls)} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+            {stats.openCases === 0 && <p className="font-mono text-[11px] text-muted-foreground/60">No open cases.</p>}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-border bg-card p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              <Clock className="h-3.5 w-3.5" /> Recent Activity
+            </h3>
+            <Link to="/custody" className="font-mono text-[10px] text-tactical hover:underline">Full ledger →</Link>
+          </div>
+          <div className="space-y-2">
+            {recentActivity.length === 0 && <p className="font-mono text-[11px] text-muted-foreground/60">No activity yet.</p>}
+            {recentActivity.map((c) => (
+              <div key={c.id} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs">
+                <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[9px] uppercase text-muted-foreground">{c.action}</span>
+                <span className="font-mono text-tactical">{c.entityId}</span>
+                <span className="ml-auto truncate font-mono text-[10px] text-muted-foreground">{formatDate(c.timestamp)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
