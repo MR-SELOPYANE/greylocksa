@@ -246,6 +246,28 @@ export function useAppStateProvider(): AppState {
     return newCase;
   }, [operator, role]);
 
+  const updateCase: AppState["updateCase"] = useCallback((id, patch, reason = "Case details updated") => {
+    setCases((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...patch, updatedAt: new Date().toISOString() } : c))
+    );
+    setCustody((prev) => [
+      {
+        id: `CUS-${Date.now().toString(36)}`,
+        actor: operator,
+        role,
+        entityId: id,
+        action: "EDIT",
+        reason: `Case updated: ${reason}`,
+        timestamp: new Date().toISOString(),
+        ip: "10.0.1.42",
+        hash: genHash(),
+      },
+      ...prev,
+    ]);
+  }, [operator, role]);
+
+
+
   const updateCaseStatus: AppState["updateCaseStatus"] = useCallback((id, status, reason = "Manual status update") => {
     setCases((prev) =>
       prev.map((c) =>
