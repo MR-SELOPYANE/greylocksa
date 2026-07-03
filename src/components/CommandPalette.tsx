@@ -168,6 +168,25 @@ export function CommandPalette() {
             </CommandItem>
           ))}
         </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Jump to case">
+          {cases.slice(0, 20).map((c) => (
+            <CommandItem
+              key={c.id}
+              value={`${c.id} ${c.title} ${c.status}`}
+              onSelect={() => run(() => {
+                navigate({ to: "/cases" });
+                setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:open-case", { detail: { id: c.id } })), 80);
+              })}
+            >
+              <FolderSearch />
+              <span className="font-mono text-xs text-tactical">{c.id}</span>
+              <span className="ml-2 truncate">{c.title}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
       </CommandList>
     </CommandDialog>
   );
