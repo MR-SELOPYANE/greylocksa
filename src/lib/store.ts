@@ -25,6 +25,7 @@ interface AppState {
 
   cases: Case[];
   addCase: (input: { title: string; description: string; priority: Case["priority"]; assignedAnalyst: string; status?: CaseStatus; linkedEntityIds?: string[] }) => Case;
+  updateCase: (id: string, patch: Partial<Pick<Case, "title" | "description" | "assignedAnalyst" | "priority" | "notes" | "linkedEntityIds">>, reason?: string) => void;
   updateCaseStatus: (id: string, status: CaseStatus, reason?: string) => void;
   updateCaseProgress: (id: string, progress: number) => void;
 
