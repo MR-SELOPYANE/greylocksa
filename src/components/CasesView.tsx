@@ -29,6 +29,22 @@ export function CasesView() {
   const { cases, entities, updateCaseStatus, updateCaseProgress } = useAppState();
   const [filter, setFilter] = useState<string>("all");
   const [newOpen, setNewOpen] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
+
+  // Bridge for command palette: open new-case dialog or jump to a case
+  useEffect(() => {
+    const onNew = () => setNewOpen(true);
+    const onOpen = (ev: Event) => {
+      const id = (ev as CustomEvent<{ id: string }>).detail?.id;
+      if (id) setDetailId(id);
+    };
+    window.addEventListener("greylock:new-case", onNew);
+    window.addEventListener("greylock:open-case", onOpen as EventListener);
+    return () => {
+      window.removeEventListener("greylock:new-case", onNew);
+      window.removeEventListener("greylock:open-case", onOpen as EventListener);
+    };
+  }, []);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
