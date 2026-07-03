@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
 import type { Entity, EntityStatus } from "@/lib/types";
-import { StatusBadge, TypeBadge, RiskScore } from "@/components/StatusBadges";
+import { StatusBadge, TypeBadge, RiskScore, CaseStatusBadge } from "@/components/StatusBadges";
 import { AddEntityDialog } from "@/components/AddEntityDialog";
 import { EditEntityDialog } from "@/components/EditEntityDialog";
 import { useNavigate } from "@tanstack/react-router";
