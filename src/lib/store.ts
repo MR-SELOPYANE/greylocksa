@@ -395,6 +395,7 @@ export function useAppStateProvider(): AppState {
     startScan,
     cases,
     addCase,
+    updateCase,
     updateCaseStatus,
     updateCaseProgress,
     custody,
