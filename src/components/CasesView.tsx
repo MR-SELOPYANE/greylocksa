@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
 import type { CaseStatus } from "@/lib/types";
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
 import { NewCaseDialog } from "@/components/NewCaseDialog";
+import { CaseDetailDialog } from "@/components/CaseDetailDialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderSearch, Minus, Plus } from "lucide-react";
+import { FolderSearch, Minus, Plus, Maximize2 } from "lucide-react";
 
 const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
   { value: "open", label: "Open" },
