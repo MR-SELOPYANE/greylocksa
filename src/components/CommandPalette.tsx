@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import {
   Database,
   FolderSearch,
+  FolderPlus,
   FileText,
   Activity,
   MessageSquare,
