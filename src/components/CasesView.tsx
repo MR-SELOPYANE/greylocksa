@@ -137,12 +137,17 @@ export function CasesView() {
           </div>
 
           <div className="mt-3 flex flex-wrap gap-1.5">
+            {c.linkedEntityIds.length === 0 && (
+              <span className="font-mono text-[10px] text-muted-foreground/60">No linked entities</span>
+            )}
             {c.linkedEntityIds.map((eid) => {
-              const entity = mockEntities.find((e) => e.id === eid);
+              const entity = entities.find((e) => e.id === eid);
               return (
-                <Badge key={eid} variant="outline" className="font-mono text-[10px]">
-                  {eid}{entity ? `: ${entity.identifier.slice(0, 20)}` : ""}
-                </Badge>
+                <Link key={eid} to="/entities">
+                  <Badge variant="outline" className="cursor-pointer font-mono text-[10px] transition-colors hover:border-tactical hover:text-tactical">
+                    {eid}{entity ? `: ${entity.identifier.slice(0, 20)}` : ""}
+                  </Badge>
+                </Link>
               );
             })}
           </div>
