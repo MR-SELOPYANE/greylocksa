@@ -29,6 +29,7 @@ function SignupPage() {
     setLoading(true);
     provisionRole(role);
     setOperator(name.trim() || (role === "admin" ? "admin.you" : "analyst.you"));
+    setClearance(role === "admin" ? "SECRET" : "CONFIDENTIAL");
     setTimeout(() => navigate({ to: role === "admin" ? "/system" : "/entities" }), 600);
   };
 
