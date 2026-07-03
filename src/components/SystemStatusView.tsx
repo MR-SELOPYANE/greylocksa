@@ -1,20 +1,28 @@
 import { useMemo } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { mockSystemStatus } from "@/lib/mock-data";
 import { mockThreats } from "@/lib/security-mock";
 import { useAppState } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Database,
   ShieldAlert,
   FolderSearch,
+  FolderPlus,
   Bug,
   Activity,
   Loader2,
   TrendingUp,
+  MessageSquare,
+  Fingerprint,
+  Plus,
+  Clock,
 } from "lucide-react";
 
 export function SystemStatusView() {
-  const { entities, cases, scans } = useAppState();
+  const { entities, cases, scans, custody } = useAppState();
+  const navigate = useNavigate();
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -61,8 +69,32 @@ export function SystemStatusView() {
 
   const operational = mockSystemStatus.filter((s) => s.status === "operational").length;
 
+  const priorityBreakdown = useMemo(() => {
+    const acc = { critical: 0, high: 0, medium: 0, low: 0 };
+    cases.filter((c) => c.status !== "closed").forEach((c) => { acc[c.priority] += 1; });
+    return acc;
+  }, [cases]);
+
+  const recentActivity = useMemo(() => custody.slice(0, 8), [custody]);
+
+  const quickActions = [
+    { label: "Add Target", icon: Plus, onClick: () => { navigate({ to: "/entities" }); setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:open-add-entity")), 80); } },
+    { label: "Open Case", icon: FolderPlus, onClick: () => { navigate({ to: "/cases" }); setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:new-case")), 80); } },
+    { label: "Ask Sentinel", icon: MessageSquare, onClick: () => navigate({ to: "/sentinel" }) },
+    { label: "Chain of Custody", icon: Fingerprint, onClick: () => navigate({ to: "/custody" }) },
+  ];
+
   return (
     <div className="space-y-6">
+      {/* Quick actions */}
+      <div className="flex flex-wrap gap-2">
+        {quickActions.map((a) => (
+          <Button key={a.label} variant="outline" size="sm" onClick={a.onClick} className="gap-1.5">
+            <a.icon className="h-3.5 w-3.5" /> {a.label}
+          </Button>
+        ))}
+      </div>
+
       {/* Live metric cards */}
       <div>
         <div className="mb-3 flex items-center gap-2">
@@ -167,6 +199,58 @@ export function SystemStatusView() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Case priority + recent activity */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-lg border border-border bg-card p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Open Case Priority</h3>
+            <Link to="/cases" className="font-mono text-[10px] text-tactical hover:underline">View all →</Link>
+          </div>
+          <div className="space-y-3">
+            {([
+              { key: "critical", label: "Critical", cls: "bg-status-black" },
+              { key: "high", label: "High", cls: "bg-status-black/70" },
+              { key: "medium", label: "Medium", cls: "bg-status-grey" },
+              { key: "low", label: "Low", cls: "bg-status-white" },
+            ] as const).map((p) => {
+              const value = priorityBreakdown[p.key];
+              const pct = stats.openCases ? Math.round((value / stats.openCases) * 100) : 0;
+              return (
+                <div key={p.key} className="space-y-1.5">
+                  <div className="flex items-center justify-between font-mono text-xs">
+                    <span className="text-foreground">{p.label}</span>
+                    <span className="text-muted-foreground">{value}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-background">
+                    <div className={cn("h-full rounded-full transition-all", p.cls)} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+            {stats.openCases === 0 && <p className="font-mono text-[11px] text-muted-foreground/60">No open cases.</p>}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-border bg-card p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              <Clock className="h-3.5 w-3.5" /> Recent Activity
+            </h3>
+            <Link to="/custody" className="font-mono text-[10px] text-tactical hover:underline">Full ledger →</Link>
+          </div>
+          <div className="space-y-2">
+            {recentActivity.length === 0 && <p className="font-mono text-[11px] text-muted-foreground/60">No activity yet.</p>}
+            {recentActivity.map((c) => (
+              <div key={c.id} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs">
+                <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[9px] uppercase text-muted-foreground">{c.action}</span>
+                <span className="font-mono text-tactical">{c.entityId}</span>
+                <span className="ml-auto truncate font-mono text-[10px] text-muted-foreground">{formatDate(c.timestamp)}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

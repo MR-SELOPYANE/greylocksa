@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
 import type { CaseStatus } from "@/lib/types";
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
 import { NewCaseDialog } from "@/components/NewCaseDialog";
+import { CaseDetailDialog } from "@/components/CaseDetailDialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderSearch, Minus, Plus } from "lucide-react";
+import { FolderSearch, Minus, Plus, Maximize2 } from "lucide-react";
 
 const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
   { value: "open", label: "Open" },
@@ -28,6 +29,22 @@ export function CasesView() {
   const { cases, entities, updateCaseStatus, updateCaseProgress } = useAppState();
   const [filter, setFilter] = useState<string>("all");
   const [newOpen, setNewOpen] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
+
+  // Bridge for command palette: open new-case dialog or jump to a case
+  useEffect(() => {
+    const onNew = () => setNewOpen(true);
+    const onOpen = (ev: Event) => {
+      const id = (ev as CustomEvent<{ id: string }>).detail?.id;
+      if (id) setDetailId(id);
+    };
+    window.addEventListener("greylock:new-case", onNew);
+    window.addEventListener("greylock:open-case", onOpen as EventListener);
+    return () => {
+      window.removeEventListener("greylock:new-case", onNew);
+      window.removeEventListener("greylock:open-case", onOpen as EventListener);
+    };
+  }, []);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -89,7 +106,13 @@ export function CasesView() {
                 <PriorityBadge priority={c.priority} />
                 <CaseStatusBadge status={c.status} />
               </div>
-              <h3 className="text-sm font-semibold text-card-foreground">{c.title}</h3>
+              <button
+                onClick={() => setDetailId(c.id)}
+                className="group flex items-center gap-1.5 text-left text-sm font-semibold text-card-foreground transition-colors hover:text-tactical"
+              >
+                {c.title}
+                <Maximize2 className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+              </button>
               <p className="text-xs text-muted-foreground">{c.description}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -168,6 +191,7 @@ export function CasesView() {
       )}
 
       <NewCaseDialog open={newOpen} onOpenChange={setNewOpen} />
+      <CaseDetailDialog caseId={detailId} open={!!detailId} onOpenChange={(v) => !v && setDetailId(null)} />
     </div>
   );
 }

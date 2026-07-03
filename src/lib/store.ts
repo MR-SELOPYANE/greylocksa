@@ -25,6 +25,7 @@ interface AppState {
 
   cases: Case[];
   addCase: (input: { title: string; description: string; priority: Case["priority"]; assignedAnalyst: string; status?: CaseStatus; linkedEntityIds?: string[] }) => Case;
+  updateCase: (id: string, patch: Partial<Pick<Case, "title" | "description" | "assignedAnalyst" | "priority" | "notes" | "linkedEntityIds">>, reason?: string) => void;
   updateCaseStatus: (id: string, status: CaseStatus, reason?: string) => void;
   updateCaseProgress: (id: string, progress: number) => void;
 
@@ -245,6 +246,28 @@ export function useAppStateProvider(): AppState {
     return newCase;
   }, [operator, role]);
 
+  const updateCase: AppState["updateCase"] = useCallback((id, patch, reason = "Case details updated") => {
+    setCases((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...patch, updatedAt: new Date().toISOString() } : c))
+    );
+    setCustody((prev) => [
+      {
+        id: `CUS-${Date.now().toString(36)}`,
+        actor: operator,
+        role,
+        entityId: id,
+        action: "EDIT",
+        reason: `Case updated: ${reason}`,
+        timestamp: new Date().toISOString(),
+        ip: "10.0.1.42",
+        hash: genHash(),
+      },
+      ...prev,
+    ]);
+  }, [operator, role]);
+
+
+
   const updateCaseStatus: AppState["updateCaseStatus"] = useCallback((id, status, reason = "Manual status update") => {
     setCases((prev) =>
       prev.map((c) =>
@@ -372,6 +395,7 @@ export function useAppStateProvider(): AppState {
     startScan,
     cases,
     addCase,
+    updateCase,
     updateCaseStatus,
     updateCaseProgress,
     custody,

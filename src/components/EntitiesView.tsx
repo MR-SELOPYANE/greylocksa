@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
 import type { Entity, EntityStatus } from "@/lib/types";
-import { StatusBadge, TypeBadge, RiskScore } from "@/components/StatusBadges";
+import { StatusBadge, TypeBadge, RiskScore, CaseStatusBadge } from "@/components/StatusBadges";
 import { AddEntityDialog } from "@/components/AddEntityDialog";
 import { EditEntityDialog } from "@/components/EditEntityDialog";
 import { useNavigate } from "@tanstack/react-router";
@@ -31,10 +31,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Filter, Eye, Pencil, Trash2, Database, X, Plus, Download, ChevronDown, Bug } from "lucide-react";
+import { Search, Filter, Eye, Pencil, Trash2, Database, X, Plus, Download, ChevronDown, Bug, FolderSearch } from "lucide-react";
 
 export function EntitiesView() {
-  const { role, entities, updateEntityStatus, deleteEntity, startScan, logCustody, lockdown } = useAppState();
+  const { role, entities, cases, scans, updateEntityStatus, deleteEntity, startScan, logCustody, lockdown } = useAppState();
   const navigate = useNavigate();
   const [addOpen, setAddOpen] = useState(false);
   const [editEntity, setEditEntity] = useState<Entity | null>(null);
@@ -478,6 +478,69 @@ export function EntitiesView() {
                       </div>
                     </div>
                   )}
+
+                  {/* Linked Cases */}
+                  {(() => {
+                    const linked = cases.filter((c) => c.linkedEntityIds.includes(selectedEntity.id));
+                    return (
+                      <div>
+                        <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                          <FolderSearch className="h-3 w-3" /> Linked Cases ({linked.length})
+                        </h4>
+                        {linked.length === 0 ? (
+                          <p className="font-mono text-[11px] text-muted-foreground/60">Not linked to any case.</p>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {linked.map((c) => (
+                              <button
+                                key={c.id}
+                                onClick={() => {
+                                  setSelectedEntity(null);
+                                  navigate({ to: "/cases" });
+                                  setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:open-case", { detail: { id: c.id } })), 80);
+                                }}
+                                className="flex w-full items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-left text-xs transition-colors hover:border-tactical hover:text-tactical"
+                              >
+                                <span className="font-mono text-tactical">{c.id}</span>
+                                <span className="truncate text-foreground">{c.title}</span>
+                                <CaseStatusBadge status={c.status} />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Recent Scans */}
+                  {(() => {
+                    const own = scans.filter((s) => s.targetEntityId === selectedEntity.id).slice(0, 5);
+                    return (
+                      <div>
+                        <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                          <Bug className="h-3 w-3" /> Recent Scans ({own.length})
+                        </h4>
+                        {own.length === 0 ? (
+                          <p className="font-mono text-[11px] text-muted-foreground/60">No scans run against this target.</p>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {own.map((s) => (
+                              <div key={s.id} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs">
+                                <span className="font-mono text-tactical">{s.id}</span>
+                                <span className="font-mono uppercase text-muted-foreground">{s.profile}</span>
+                                <span className={`font-mono ${s.status === "running" ? "text-tactical" : "text-muted-foreground"}`}>{s.status}</span>
+                                {s.status === "complete" && (
+                                  <span className="ml-auto font-mono text-[10px] text-status-black">
+                                    {s.summary.critical}C · {s.summary.high}H
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </ScrollArea>
             </>
