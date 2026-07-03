@@ -36,6 +36,7 @@ export interface Case {
   createdAt: string;
   updatedAt: string;
   priority: "low" | "medium" | "high" | "critical";
+  notes?: string;
 }
 
 export interface AuditEntry {
