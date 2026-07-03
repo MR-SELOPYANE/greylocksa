@@ -106,7 +106,13 @@ export function CasesView() {
                 <PriorityBadge priority={c.priority} />
                 <CaseStatusBadge status={c.status} />
               </div>
-              <h3 className="text-sm font-semibold text-card-foreground">{c.title}</h3>
+              <button
+                onClick={() => setDetailId(c.id)}
+                className="group flex items-center gap-1.5 text-left text-sm font-semibold text-card-foreground transition-colors hover:text-tactical"
+              >
+                {c.title}
+                <Maximize2 className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+              </button>
               <p className="text-xs text-muted-foreground">{c.description}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
