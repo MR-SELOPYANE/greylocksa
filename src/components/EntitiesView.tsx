@@ -34,7 +34,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Filter, Eye, Pencil, Trash2, Database, X, Plus, Download, ChevronDown, Bug } from "lucide-react";
 
 export function EntitiesView() {
-  const { role, entities, updateEntityStatus, deleteEntity, startScan, logCustody, lockdown } = useAppState();
+  const { role, entities, cases, scans, updateEntityStatus, deleteEntity, startScan, logCustody, lockdown } = useAppState();
   const navigate = useNavigate();
   const [addOpen, setAddOpen] = useState(false);
   const [editEntity, setEditEntity] = useState<Entity | null>(null);
