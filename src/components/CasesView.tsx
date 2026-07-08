@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderSearch, Minus, Plus, Maximize2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { FolderSearch, Minus, Plus, Maximize2, Search } from "lucide-react";
 
 const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
   { value: "open", label: "Open" },
@@ -28,6 +29,7 @@ const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
 export function CasesView() {
   const { cases, entities, updateCaseStatus, updateCaseProgress } = useAppState();
   const [filter, setFilter] = useState<string>("all");
+  const [query, setQuery] = useState("");
   const [newOpen, setNewOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
 
@@ -55,10 +57,17 @@ export function CasesView() {
     return acc;
   }, [cases]);
 
-  const filtered = useMemo(
-    () => (filter === "all" ? cases : cases.filter((c) => c.status === filter)),
-    [cases, filter]
-  );
+  const filtered = useMemo(() => {
+    const byStatus = filter === "all" ? cases : cases.filter((c) => c.status === filter);
+    const q = query.trim().toLowerCase();
+    if (!q) return byStatus;
+    return byStatus.filter((c) =>
+      [c.id, c.title, c.description, c.assignedAnalyst, ...c.linkedEntityIds]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [cases, filter, query]);
 
   const handleStatus = (id: string, status: CaseStatus) => {
     updateCaseStatus(id, status);
@@ -94,6 +103,19 @@ export function CasesView() {
           Open Case
         </Button>
       </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search cases by title, ID, analyst, or entity…"
+          className="bg-surface pl-9 font-mono text-sm"
+        />
+      </div>
+
+
 
 
 
@@ -185,8 +207,8 @@ export function CasesView() {
       {filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border py-16 text-center">
           <FolderSearch className="h-8 w-8 text-muted-foreground/50" />
-          <p className="font-mono text-sm text-foreground">No cases in this status</p>
-          <p className="text-xs text-muted-foreground">Switch filters to see other cases.</p>
+          <p className="font-mono text-sm text-foreground">{query.trim() ? "No matching cases" : "No cases in this status"}</p>
+          <p className="text-xs text-muted-foreground">{query.trim() ? "Adjust your search or filters." : "Switch filters to see other cases."}</p>
         </div>
       )}
 
