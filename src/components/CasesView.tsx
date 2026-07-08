@@ -35,6 +35,30 @@ export function CasesView() {
   const [query, setQuery] = useState("");
   const [newOpen, setNewOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [views, setViews] = useState<SavedView[]>([]);
+
+  // Load saved views from localStorage (client-only to avoid SSR mismatch)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(VIEWS_KEY);
+      if (raw) setViews(JSON.parse(raw));
+    } catch { /* ignore corrupt storage */ }
+  }, []);
+
+  const persistViews = (next: SavedView[]) => {
+    setViews(next);
+    try { localStorage.setItem(VIEWS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  };
+
+  const saveCurrentView = () => {
+    const name = prompt("Name this view (e.g. My critical open cases):");
+    if (!name?.trim()) return;
+    persistViews([...views, { id: `view-${Date.now().toString(36)}`, name: name.trim(), filter, query }]);
+    toast.success(`Saved view "${name.trim()}"`);
+  };
+
+  const applyView = (v: SavedView) => { setFilter(v.filter); setQuery(v.query); };
+  const removeView = (id: string) => persistViews(views.filter((v) => v.id !== id));
 
   // Bridge for command palette: open new-case dialog or jump to a case
   useEffect(() => {
