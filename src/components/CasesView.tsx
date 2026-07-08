@@ -207,8 +207,8 @@ export function CasesView() {
       {filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border py-16 text-center">
           <FolderSearch className="h-8 w-8 text-muted-foreground/50" />
-          <p className="font-mono text-sm text-foreground">No cases in this status</p>
-          <p className="text-xs text-muted-foreground">Switch filters to see other cases.</p>
+          <p className="font-mono text-sm text-foreground">{query.trim() ? "No matching cases" : "No cases in this status"}</p>
+          <p className="text-xs text-muted-foreground">{query.trim() ? "Adjust your search or filters." : "Switch filters to see other cases."}</p>
         </div>
       )}
 
