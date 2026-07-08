@@ -57,10 +57,17 @@ export function CasesView() {
     return acc;
   }, [cases]);
 
-  const filtered = useMemo(
-    () => (filter === "all" ? cases : cases.filter((c) => c.status === filter)),
-    [cases, filter]
-  );
+  const filtered = useMemo(() => {
+    const byStatus = filter === "all" ? cases : cases.filter((c) => c.status === filter);
+    const q = query.trim().toLowerCase();
+    if (!q) return byStatus;
+    return byStatus.filter((c) =>
+      [c.id, c.title, c.description, c.assignedAnalyst, ...c.linkedEntityIds]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [cases, filter, query]);
 
   const handleStatus = (id: string, status: CaseStatus) => {
     updateCaseStatus(id, status);
