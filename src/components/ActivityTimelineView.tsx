@@ -5,7 +5,6 @@ import {
   Fingerprint,
   Bug,
   ArrowRightLeft,
-  Activity as ActivityIcon,
   FolderSearch,
 } from "lucide-react";
 
@@ -126,4 +125,3 @@ export function ActivityTimelineView() {
   );
 }
 
-export const ActivityTimelineIcon = ActivityIcon;
