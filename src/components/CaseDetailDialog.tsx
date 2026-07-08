@@ -24,7 +24,7 @@ import {
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
 import { useAppState } from "@/lib/store";
 import type { Case, CaseStatus } from "@/lib/types";
-import { Link2, Save, Fingerprint, ExternalLink } from "lucide-react";
+import { Link2, Save, Fingerprint, ExternalLink, Download } from "lucide-react";
 
 const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
   { value: "open", label: "Open" },
