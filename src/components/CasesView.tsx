@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderSearch, Minus, Plus, Maximize2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { FolderSearch, Minus, Plus, Maximize2, Search } from "lucide-react";
 
 const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
   { value: "open", label: "Open" },
