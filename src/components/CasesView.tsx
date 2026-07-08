@@ -171,10 +171,17 @@ export function CasesView() {
             <span className="ml-1.5 opacity-60">{counts[opt.value] ?? 0}</span>
           </button>
         ))}
-        <Button size="sm" onClick={() => setNewOpen(true)} className="ml-auto gap-1.5">
-          <Plus className="h-3.5 w-3.5" />
-          Open Case
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1.5">
+            <Download className="h-3.5 w-3.5" /> CSV
+          </Button>
+          <Button size="sm" variant="outline" onClick={printBriefing} className="gap-1.5">
+            <Printer className="h-3.5 w-3.5" /> Print
+          </Button>
+          <Button size="sm" onClick={() => setNewOpen(true)} className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" /> Open Case
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -187,6 +194,40 @@ export function CasesView() {
           className="bg-surface pl-9 font-mono text-sm"
         />
       </div>
+
+      {/* Saved views */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <Star className="h-3 w-3" /> Views
+        </span>
+        {views.length === 0 && (
+          <span className="font-mono text-[10px] text-muted-foreground/60">None saved yet</span>
+        )}
+        {views.map((v) => {
+          const active = v.filter === filter && v.query === query;
+          return (
+            <span
+              key={v.id}
+              className={`group flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
+                active ? "border-tactical bg-tactical/10 text-tactical" : "border-border bg-surface text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <button onClick={() => applyView(v)} className="max-w-[160px] truncate">{v.name}</button>
+              <button onClick={() => removeView(v.id)} className="opacity-40 transition-opacity hover:opacity-100" aria-label={`Delete view ${v.name}`}>
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          );
+        })}
+        <button
+          onClick={saveCurrentView}
+          className="flex items-center gap-1 rounded-full border border-dashed border-border px-2.5 py-1 text-[11px] text-muted-foreground transition-colors hover:border-tactical hover:text-tactical"
+        >
+          <Bookmark className="h-3 w-3" /> Save current
+        </button>
+      </div>
+
+
 
 
 
