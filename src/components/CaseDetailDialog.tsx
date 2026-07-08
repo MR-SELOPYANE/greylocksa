@@ -239,6 +239,9 @@ export function CaseDetailDialog({
 
         <div className="flex justify-end gap-2 border-t border-border pt-3">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={exportReport} className="gap-1.5">
+            <Download className="h-3.5 w-3.5" /> Export report
+          </Button>
           <Button onClick={save} disabled={!dirty} className="gap-1.5">
             <Save className="h-3.5 w-3.5" /> Save changes
           </Button>
