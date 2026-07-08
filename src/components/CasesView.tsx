@@ -17,7 +17,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { FolderSearch, Minus, Plus, Maximize2, Search } from "lucide-react";
+import { FolderSearch, Minus, Plus, Maximize2, Search, Download, Printer, Bookmark, X, Star } from "lucide-react";
+
+interface SavedView { id: string; name: string; filter: string; query: string; }
+const VIEWS_KEY = "greylock:case-views";
 
 const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
   { value: "open", label: "Open" },
@@ -32,6 +35,30 @@ export function CasesView() {
   const [query, setQuery] = useState("");
   const [newOpen, setNewOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [views, setViews] = useState<SavedView[]>([]);
+
+  // Load saved views from localStorage (client-only to avoid SSR mismatch)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(VIEWS_KEY);
+      if (raw) setViews(JSON.parse(raw));
+    } catch { /* ignore corrupt storage */ }
+  }, []);
+
+  const persistViews = (next: SavedView[]) => {
+    setViews(next);
+    try { localStorage.setItem(VIEWS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  };
+
+  const saveCurrentView = () => {
+    const name = prompt("Name this view (e.g. My critical open cases):");
+    if (!name?.trim()) return;
+    persistViews([...views, { id: `view-${Date.now().toString(36)}`, name: name.trim(), filter, query }]);
+    toast.success(`Saved view "${name.trim()}"`);
+  };
+
+  const applyView = (v: SavedView) => { setFilter(v.filter); setQuery(v.query); };
+  const removeView = (id: string) => persistViews(views.filter((v) => v.id !== id));
 
   // Bridge for command palette: open new-case dialog or jump to a case
   useEffect(() => {
@@ -80,6 +107,52 @@ export function CasesView() {
     updateCaseProgress(id, current + delta);
   };
 
+  const exportCsv = () => {
+    const cols = ["ID", "Title", "Status", "Priority", "Analyst", "Progress", "Linked Entities", "Created", "Updated"];
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = filtered.map((c) =>
+      [c.id, c.title, c.status, c.priority, c.assignedAnalyst, `${c.progress}%`, c.linkedEntityIds.join(" "), c.createdAt, c.updatedAt]
+        .map((v) => esc(String(v)))
+        .join(",")
+    );
+    const blob = new Blob([[cols.join(","), ...rows].join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `greylock-cases-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${filtered.length} case${filtered.length === 1 ? "" : "s"} to CSV`);
+  };
+
+  const printBriefing = () => {
+    const rows = filtered
+      .map(
+        (c) => `<tr>
+          <td>${c.id}</td><td>${c.title}</td><td>${c.status.replace("_", " ")}</td>
+          <td>${c.priority}</td><td>${c.assignedAnalyst}</td><td>${c.progress}%</td>
+          <td>${c.linkedEntityIds.join(", ") || "—"}</td></tr>`
+      )
+      .join("");
+    const w = window.open("", "_blank", "width=900,height=700");
+    if (!w) { toast.error("Popup blocked — allow popups to print."); return; }
+    w.document.write(`<!doctype html><html><head><title>greyLock — Case Briefing</title>
+      <style>
+        body{font-family:ui-monospace,Menlo,monospace;padding:32px;color:#111}
+        h1{font-size:18px;margin:0 0 4px} .meta{color:#666;font-size:11px;margin-bottom:20px}
+        table{width:100%;border-collapse:collapse;font-size:11px}
+        th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}
+        th{background:#f2f2f2;text-transform:uppercase;font-size:10px;letter-spacing:.05em}
+      </style></head><body>
+      <h1>greyLock — Case Briefing</h1>
+      <div class="meta">${filtered.length} case(s) · filter: ${filter} · ${new Date().toLocaleString("en-US")}</div>
+      <table><thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Priority</th><th>Analyst</th><th>Progress</th><th>Linked Entities</th></tr></thead>
+      <tbody>${rows}</tbody></table></body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 250);
+  };
+
   return (
     <div className="space-y-4">
       {/* Status filter chips + new case */}
@@ -98,10 +171,17 @@ export function CasesView() {
             <span className="ml-1.5 opacity-60">{counts[opt.value] ?? 0}</span>
           </button>
         ))}
-        <Button size="sm" onClick={() => setNewOpen(true)} className="ml-auto gap-1.5">
-          <Plus className="h-3.5 w-3.5" />
-          Open Case
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={exportCsv} className="gap-1.5">
+            <Download className="h-3.5 w-3.5" /> CSV
+          </Button>
+          <Button size="sm" variant="outline" onClick={printBriefing} className="gap-1.5">
+            <Printer className="h-3.5 w-3.5" /> Print
+          </Button>
+          <Button size="sm" onClick={() => setNewOpen(true)} className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" /> Open Case
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -114,6 +194,40 @@ export function CasesView() {
           className="bg-surface pl-9 font-mono text-sm"
         />
       </div>
+
+      {/* Saved views */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <Star className="h-3 w-3" /> Views
+        </span>
+        {views.length === 0 && (
+          <span className="font-mono text-[10px] text-muted-foreground/60">None saved yet</span>
+        )}
+        {views.map((v) => {
+          const active = v.filter === filter && v.query === query;
+          return (
+            <span
+              key={v.id}
+              className={`group flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
+                active ? "border-tactical bg-tactical/10 text-tactical" : "border-border bg-surface text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <button onClick={() => applyView(v)} className="max-w-[160px] truncate">{v.name}</button>
+              <button onClick={() => removeView(v.id)} className="opacity-40 transition-opacity hover:opacity-100" aria-label={`Delete view ${v.name}`}>
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          );
+        })}
+        <button
+          onClick={saveCurrentView}
+          className="flex items-center gap-1 rounded-full border border-dashed border-border px-2.5 py-1 text-[11px] text-muted-foreground transition-colors hover:border-tactical hover:text-tactical"
+        >
+          <Bookmark className="h-3 w-3" /> Save current
+        </button>
+      </div>
+
+
 
 
 
