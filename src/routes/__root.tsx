@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { AppContext, useAppStateProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 import { CommandPalette } from "@/components/CommandPalette";
+import { GlobalShortcuts } from "@/components/GlobalShortcuts";
 
 import appCss from "../styles.css?url";
 
