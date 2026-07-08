@@ -79,6 +79,45 @@ export function CaseDetailDialog({
     toast.success(`${activeCase.id} updated`, { description: "Change written to chain-of-custody." });
   };
 
+  const exportReport = () => {
+    const lines = [
+      `CASE REPORT — ${activeCase.id}`,
+      `Title:     ${activeCase.title}`,
+      `Status:    ${activeCase.status.replace("_", " ").toUpperCase()}`,
+      `Priority:  ${activeCase.priority.toUpperCase()}`,
+      `Analyst:   ${activeCase.assignedAnalyst}`,
+      `Progress:  ${activeCase.progress}%`,
+      `Created:   ${formatDate(activeCase.createdAt)}`,
+      `Updated:   ${formatDate(activeCase.updatedAt)}`,
+      "",
+      "DESCRIPTION",
+      activeCase.description || "(none)",
+      "",
+      "INVESTIGATION NOTES",
+      activeCase.notes?.trim() || "(none)",
+      "",
+      `LINKED ENTITIES (${linkedEntities.length})`,
+      ...(linkedEntities.length
+        ? linkedEntities.map(({ id, entity }) => `- ${id}  ${entity ? entity.identifier : "unknown"}${entity ? `  (risk ${entity.riskScore})` : ""}`)
+        : ["(none)"]),
+      "",
+      `CHAIN OF CUSTODY (${trail.length})`,
+      ...(trail.length
+        ? trail.map((t) => `- [${formatDate(t.timestamp)}] ${t.action}  ${t.actor}: ${t.reason}`)
+        : ["(none)"]),
+      "",
+      `Generated ${new Date().toLocaleString("en-US")}`,
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${activeCase.id}-report.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${activeCase.id} report exported`);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl bg-card">
