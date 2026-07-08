@@ -107,6 +107,52 @@ export function CasesView() {
     updateCaseProgress(id, current + delta);
   };
 
+  const exportCsv = () => {
+    const cols = ["ID", "Title", "Status", "Priority", "Analyst", "Progress", "Linked Entities", "Created", "Updated"];
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = filtered.map((c) =>
+      [c.id, c.title, c.status, c.priority, c.assignedAnalyst, `${c.progress}%`, c.linkedEntityIds.join(" "), c.createdAt, c.updatedAt]
+        .map((v) => esc(String(v)))
+        .join(",")
+    );
+    const blob = new Blob([[cols.join(","), ...rows].join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `greylock-cases-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${filtered.length} case${filtered.length === 1 ? "" : "s"} to CSV`);
+  };
+
+  const printBriefing = () => {
+    const rows = filtered
+      .map(
+        (c) => `<tr>
+          <td>${c.id}</td><td>${c.title}</td><td>${c.status.replace("_", " ")}</td>
+          <td>${c.priority}</td><td>${c.assignedAnalyst}</td><td>${c.progress}%</td>
+          <td>${c.linkedEntityIds.join(", ") || "—"}</td></tr>`
+      )
+      .join("");
+    const w = window.open("", "_blank", "width=900,height=700");
+    if (!w) { toast.error("Popup blocked — allow popups to print."); return; }
+    w.document.write(`<!doctype html><html><head><title>greyLock — Case Briefing</title>
+      <style>
+        body{font-family:ui-monospace,Menlo,monospace;padding:32px;color:#111}
+        h1{font-size:18px;margin:0 0 4px} .meta{color:#666;font-size:11px;margin-bottom:20px}
+        table{width:100%;border-collapse:collapse;font-size:11px}
+        th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}
+        th{background:#f2f2f2;text-transform:uppercase;font-size:10px;letter-spacing:.05em}
+      </style></head><body>
+      <h1>greyLock — Case Briefing</h1>
+      <div class="meta">${filtered.length} case(s) · filter: ${filter} · ${new Date().toLocaleString("en-US")}</div>
+      <table><thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Priority</th><th>Analyst</th><th>Progress</th><th>Linked Entities</th></tr></thead>
+      <tbody>${rows}</tbody></table></body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 250);
+  };
+
   return (
     <div className="space-y-4">
       {/* Status filter chips + new case */}
