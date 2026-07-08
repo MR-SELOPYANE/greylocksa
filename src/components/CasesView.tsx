@@ -17,7 +17,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { FolderSearch, Minus, Plus, Maximize2, Search } from "lucide-react";
+import { FolderSearch, Minus, Plus, Maximize2, Search, Download, Printer, Bookmark, X, Star } from "lucide-react";
+
+interface SavedView { id: string; name: string; filter: string; query: string; }
+const VIEWS_KEY = "greylock:case-views";
 
 const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
   { value: "open", label: "Open" },
