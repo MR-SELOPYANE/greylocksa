@@ -74,6 +74,7 @@ function RootComponent() {
     <AppContext.Provider value={appState}>
       {isPublic ? <Outlet /> : <AppLayout><Outlet /></AppLayout>}
       {!isPublic && <CommandPalette />}
+      {!isPublic && <GlobalShortcuts />}
       <Toaster />
     </AppContext.Provider>
   );
