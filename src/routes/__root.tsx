@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { AppContext, useAppStateProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 import { CommandPalette } from "@/components/CommandPalette";
+import { GlobalShortcuts } from "@/components/GlobalShortcuts";
 
 import appCss from "../styles.css?url";
 
@@ -73,6 +74,7 @@ function RootComponent() {
     <AppContext.Provider value={appState}>
       {isPublic ? <Outlet /> : <AppLayout><Outlet /></AppLayout>}
       {!isPublic && <CommandPalette />}
+      {!isPublic && <GlobalShortcuts />}
       <Toaster />
     </AppContext.Provider>
   );
