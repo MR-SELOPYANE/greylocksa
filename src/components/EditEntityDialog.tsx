@@ -163,7 +163,7 @@ export function EditEntityDialog({
 
           <DialogFooter className="gap-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit">Save & Sign</Button>
+            <Button type="submit">{willResweep ? "Save, Sign & Re-sweep" : "Save & Sign"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
