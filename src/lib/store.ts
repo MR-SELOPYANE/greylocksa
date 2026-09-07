@@ -2,6 +2,7 @@ import { useState, useCallback, createContext, useContext } from "react";
 import type { UserRole, ClearanceLevel, Entity, EntityStatus, Scan, CustodyEntry, VulnFinding, ScanSeverity, EvidenceItem, Case, CaseStatus } from "./types";
 import { mockEntities, mockScans, mockCustody, mockCases } from "./mock-data";
 import { mockEvidence } from "./security-mock";
+import { runPassiveIntel } from "./passive-intel.functions";
 
 interface AppState {
   role: UserRole;
@@ -22,6 +23,10 @@ interface AppState {
 
   scans: Scan[];
   startScan: (entityId: string, profile: Scan["profile"]) => Scan;
+  /** Real passive OSINT sweep: WHOIS/RDAP, DNS, HTTP headers, crt.sh, Shodan, VirusTotal. */
+  runPassiveScan: (entityId: string, opts?: { silent?: boolean }) => Promise<Scan | null>;
+  /** True when a domain/ip/web entity is auto-eligible for a passive sweep. */
+  isPassiveEligible: (e: Pick<Entity, "type" | "identifier">) => boolean;
 
   cases: Case[];
   addCase: (input: { title: string; description: string; priority: Case["priority"]; assignedAnalyst: string; status?: CaseStatus; linkedEntityIds?: string[] }) => Case;
