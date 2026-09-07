@@ -31,20 +31,55 @@ const severityClasses: Record<ScanSeverity, string> = {
 };
 
 export function ScansView() {
-  const { entities, scans, startScan, role, lockdown, logCustody } = useAppState();
+  const { entities, scans, startScan, runPassiveScan, isPassiveEligible, role, lockdown, logCustody } = useAppState();
   const [target, setTarget] = useState<string>("");
-  const [profile, setProfile] = useState<Scan["profile"]>("active");
-  const [openScan, setOpenScan] = useState<Scan | null>(null);
+  const [profile, setProfile] = useState<Scan["profile"]>("passive");
+  const [openScanId, setOpenScanId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  // Keep the dialog bound to live store data so a running scan fills in.
+  const openScan = useMemo(
+    () => scans.find((s) => s.id === openScanId) ?? null,
+    [scans, openScanId]
+  );
 
   const targets = useMemo(
     () => entities.filter((e) => ["web", "app", "platform", "domain", "ip"].includes(e.type)),
     [entities]
   );
 
-  const handleStart = () => {
+  const selected = targets.find((t) => t.id === target);
+  const passiveOk = selected ? isPassiveEligible(selected) : false;
+
+  const handleStart = async () => {
     if (lockdown) return toast.error("System locked down — scans disabled");
     if (!target) return toast.error("Select a target");
     if (role !== "analyst" && role !== "admin") return;
+
+    if (profile === "passive") {
+      if (!passiveOk) {
+        return toast.error("Target is not a resolvable domain or IP", {
+          description: "Passive intel needs a hostname or IP address.",
+        });
+      }
+      setBusy(true);
+      toast.info("Passive intel sweep dispatched", {
+        description: "Querying WHOIS, DNS, HTTP, crt.sh, Shodan and VirusTotal…",
+      });
+      const scan = await runPassiveScan(target);
+      setBusy(false);
+      if (!scan) return toast.error("Could not start sweep");
+      if (scan.status === "failed") {
+        toast.error(`Sweep ${scan.id} failed`, { description: scan.error });
+      } else {
+        toast.success(`Sweep ${scan.id} complete`, {
+          description: `${scan.findings.length} finding(s) on ${scan.targetLabel}`,
+        });
+        setOpenScanId(scan.id);
+      }
+      return;
+    }
+
     const scan = startScan(target, profile);
     logCustody({ entityId: target, action: "SCAN", reason: `Started ${profile} scan` });
     toast.success(`Scan ${scan.id} dispatched`, { description: `${profile.toUpperCase()} profile against ${scan.targetLabel}` });
