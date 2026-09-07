@@ -24,7 +24,7 @@ interface AppState {
   scans: Scan[];
   startScan: (entityId: string, profile: Scan["profile"]) => Scan;
   /** Real passive OSINT sweep: WHOIS/RDAP, DNS, HTTP headers, crt.sh, Shodan, VirusTotal. */
-  runPassiveScan: (entityId: string, opts?: { silent?: boolean }) => Promise<Scan | null>;
+  runPassiveScan: (entityId: string, opts?: { silent?: boolean; entity?: Entity }) => Promise<Scan | null>;
   /** True when a domain/ip/web entity is auto-eligible for a passive sweep. */
   isPassiveEligible: (e: Pick<Entity, "type" | "identifier">) => boolean;
 
@@ -228,7 +228,9 @@ export function useAppStateProvider(): AppState {
   }, []);
 
   const runPassiveScan: AppState["runPassiveScan"] = useCallback(async (entityId, opts) => {
-    const target = entities.find((e) => e.id === entityId);
+    // Callers that just created/edited an entity pass it directly, since the
+    // `entities` closure here is one render behind.
+    const target = opts?.entity ?? entities.find((e) => e.id === entityId);
     if (!target) return null;
     if (!isPassiveEligible(target)) return null;
 
