@@ -108,17 +108,35 @@ export function ScansView() {
           <Select value={profile} onValueChange={(v) => setProfile(v as Scan["profile"])}>
             <SelectTrigger className="bg-secondary"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="passive">Passive — recon only</SelectItem>
-              <SelectItem value="active">Active — probe</SelectItem>
-              <SelectItem value="deep">Deep — auth scan</SelectItem>
-              <SelectItem value="fuzz">Fuzz — payload sweep</SelectItem>
+              <SelectItem value="passive">Passive — LIVE OSINT</SelectItem>
+              <SelectItem value="active">Active — probe (sim)</SelectItem>
+              <SelectItem value="deep">Deep — auth scan (sim)</SelectItem>
+              <SelectItem value="fuzz">Fuzz — payload sweep (sim)</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleStart} disabled={lockdown} className="gap-1.5">
-            <Play className="h-3.5 w-3.5" />
-            Run Scan
+          <Button onClick={handleStart} disabled={lockdown || busy} className="gap-1.5">
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
+            {busy ? "Sweeping…" : "Run Scan"}
           </Button>
         </div>
+        {profile === "passive" ? (
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <Globe className="h-3 w-3 text-tactical" />
+            <span className="font-mono text-[10px] uppercase tracking-wider text-tactical">Live sources</span>
+            {["RDAP/WHOIS", "DNS", "HTTP headers", "crt.sh", "Shodan", "VirusTotal"].map((s) => (
+              <Badge key={s} variant="outline" className="font-mono text-[9px]">{s}</Badge>
+            ))}
+            {selected && !passiveOk && (
+              <span className="ml-1 font-mono text-[10px] text-status-grey">
+                — {selected.identifier} is not a resolvable host
+              </span>
+            )}
+          </div>
+        ) : (
+          <p className="mt-2 text-[10px] font-mono text-muted-foreground">
+            Simulated profile. Only <span className="text-tactical">Passive</span> queries real-world intelligence sources.
+          </p>
+        )}
         <p className="mt-2 text-[10px] font-mono text-muted-foreground">
           {role === "admin"
             ? "Admin: all scan profiles available, including destructive fuzz."
