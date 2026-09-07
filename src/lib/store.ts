@@ -219,6 +219,69 @@ export function useAppStateProvider(): AppState {
     return queued;
   }, [entities]);
 
+  const isPassiveEligible: AppState["isPassiveEligible"] = useCallback((e) => {
+    if (!["domain", "ip", "web", "platform"].includes(e.type)) return false;
+    const host = e.identifier.replace(/^[a-z]+:\/\//i, "").split("/")[0].split(":")[0];
+    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(host)) return true;
+    if (/\.onion$/i.test(host)) return false;
+    return /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(host);
+  }, []);
+
+  const runPassiveScan: AppState["runPassiveScan"] = useCallback(async (entityId, opts) => {
+    const target = entities.find((e) => e.id === entityId);
+    if (!target) return null;
+    if (!isPassiveEligible(target)) return null;
+
+    const id = `SCN-${Date.now().toString(36).toUpperCase()}`;
+    const queued: Scan = {
+      id,
+      targetEntityId: entityId,
+      targetLabel: target.identifier,
+      profile: "passive",
+      status: "running",
+      startedAt: new Date().toISOString(),
+      startedBy: operator,
+      findings: [],
+      summary: { critical: 0, high: 0, medium: 0, low: 0, info: 0 },
+    };
+    setScans((prev) => [queued, ...prev]);
+
+    setCustody((prev) => [
+      {
+        id: `CUS-${Date.now().toString(36)}`,
+        actor: operator,
+        role,
+        entityId,
+        action: "SCAN",
+        reason: `${opts?.silent ? "Auto" : "Manual"} passive intel sweep against ${target.identifier}`,
+        timestamp: new Date().toISOString(),
+        ip: "10.0.1.42",
+        hash: genHash(),
+      },
+      ...prev,
+    ]);
+
+    try {
+      const { report, findings } = await runPassiveIntel({ data: { target: target.identifier } });
+      const done: Scan = {
+        ...queued,
+        status: "complete",
+        finishedAt: new Date().toISOString(),
+        findings,
+        summary: tally(findings),
+        intel: report,
+      };
+      setScans((prev) => prev.map((s) => (s.id === id ? done : s)));
+      return done;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Passive intel sweep failed";
+      const failed: Scan = { ...queued, status: "failed", finishedAt: new Date().toISOString(), error: message };
+      setScans((prev) => prev.map((s) => (s.id === id ? failed : s)));
+      return failed;
+    }
+  }, [entities, operator, role, isPassiveEligible]);
+
+
   const addCase: AppState["addCase"] = useCallback((input) => {
     const now = new Date().toISOString();
     const newCase: Case = {
