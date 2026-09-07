@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
-import type { Scan, ScanSeverity } from "@/lib/types";
+import type { Scan, ScanSeverity, PassiveIntelReport } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Select,
