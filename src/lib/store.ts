@@ -460,6 +460,8 @@ export function useAppStateProvider(): AppState {
     updateEntityStatus,
     deleteEntity,
     scans,
+    runPassiveScan,
+    isPassiveEligible,
     startScan,
     cases,
     addCase,
