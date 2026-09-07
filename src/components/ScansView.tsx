@@ -20,7 +20,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Bug, Play, Loader2, ShieldAlert, ChevronRight } from "lucide-react";
+import { Bug, Play, Loader2, ShieldAlert, ChevronRight, Globe, Server, FileSearch, Radar } from "lucide-react";
 
 const severityClasses: Record<ScanSeverity, string> = {
   critical: "bg-status-black text-status-black-foreground",
