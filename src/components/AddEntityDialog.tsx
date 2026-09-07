@@ -28,18 +28,22 @@ export function AddEntityDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { addEntity } = useAppState();
+  const { addEntity, runPassiveScan, isPassiveEligible } = useAppState();
   const [type, setType] = useState<EntityType>("web");
   const [identifier, setIdentifier] = useState("");
   const [risk, setRisk] = useState<number[]>([50]);
   const [status, setStatus] = useState<EntityStatus>("grey");
+  const [autoSweep, setAutoSweep] = useState(true);
 
   const reset = () => {
     setType("web");
     setIdentifier("");
     setRisk([50]);
     setStatus("grey");
+    setAutoSweep(true);
   };
+
+  const eligible = isPassiveEligible({ type, identifier });
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -53,6 +57,21 @@ export function AddEntityDialog({
     toast.success(`Entity provisioned: ${created.id}`, {
       description: `${created.identifier} added to ${status.toUpperCase()} pool`,
     });
+
+    if (autoSweep && isPassiveEligible(created)) {
+      toast.info("Passive intel sweep queued", { description: created.identifier });
+      void runPassiveScan(created.id, { silent: true, entity: created }).then((scan) => {
+        if (!scan) return;
+        if (scan.status === "failed") {
+          toast.error(`Auto-sweep failed for ${created.identifier}`, { description: scan.error });
+        } else {
+          toast.success(`Auto-sweep complete — ${scan.findings.length} finding(s)`, {
+            description: `${created.identifier} · see Scans → ${scan.id}`,
+          });
+        }
+      });
+    }
+
     reset();
     onOpenChange(false);
   };
