@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 import { useAppState } from "@/lib/store";
 import type { EntityType, EntityStatus } from "@/lib/types";
 
@@ -147,6 +149,30 @@ export function AddEntityDialog({
               </SelectContent>
             </Select>
           </div>
+
+          <label
+            className={cn(
+              "flex cursor-pointer items-start gap-2.5 rounded-md border border-border bg-secondary p-3",
+              !eligible && "cursor-not-allowed opacity-50"
+            )}
+          >
+            <Checkbox
+              checked={autoSweep && eligible}
+              disabled={!eligible}
+              onCheckedChange={(v) => setAutoSweep(v === true)}
+              className="mt-0.5"
+            />
+            <span className="space-y-0.5">
+              <span className="block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Auto passive intel sweep
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                {eligible
+                  ? "On save, query WHOIS, DNS, HTTP headers, crt.sh, Shodan and VirusTotal. Read-only — no packets are sent at the target beyond a single HTTP GET."
+                  : "Only domains, IPs and web/platform hosts can be swept."}
+              </span>
+            </span>
+          </label>
 
           <DialogFooter className="gap-2">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
