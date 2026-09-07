@@ -245,3 +245,137 @@ export function ScansView() {
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Live OSINT report renderer
+// ---------------------------------------------------------------------------
+
+const sourceTone: Record<string, string> = {
+  ok: "border-status-white text-status-white",
+  failed: "border-status-black text-status-black",
+  skipped: "border-border text-muted-foreground",
+  "no-key": "border-status-grey text-status-grey",
+  "no-data": "border-border text-muted-foreground",
+};
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  if (value === null || value === undefined || value === "") return null;
+  return (
+    <div className="flex gap-3 py-1">
+      <span className="w-32 shrink-0 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="min-w-0 flex-1 break-words font-mono text-xs">{value}</span>
+    </div>
+  );
+}
+
+function Section({ icon: Icon, title, children }: { icon: typeof Globe; title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-md border border-border bg-background p-3">
+      <div className="mb-2 flex items-center gap-1.5">
+        <Icon className="h-3.5 w-3.5 text-tactical" />
+        <h4 className="font-mono text-[11px] font-semibold uppercase tracking-wider">{title}</h4>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function IntelPanel({ report }: { report: PassiveIntelReport }) {
+  const vt = report.virustotal;
+  const sh = report.shodan;
+  return (
+    <div className="space-y-3">
+      {/* Source status strip */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Radar className="h-3.5 w-3.5 text-tactical" />
+        {Object.entries(report.sources).map(([k, v]) => (
+          <Badge key={k} variant="outline" className={cn("font-mono text-[9px] uppercase", sourceTone[v])}>
+            {k} · {v}
+          </Badge>
+        ))}
+      </div>
+
+      <Section icon={Globe} title={`Target — ${report.target}`}>
+        <Row label="Kind" value={report.isIp ? "IP address" : "Domain"} />
+        <Row label="Swept" value={new Date(report.finishedAt).toLocaleString()} />
+      </Section>
+
+      {report.whois && (
+        <Section icon={FileSearch} title="Registration (RDAP / WHOIS)">
+          <Row label="Registrar" value={report.whois.registrar} />
+          <Row label="Created" value={report.whois.created} />
+          <Row label="Updated" value={report.whois.updated} />
+          <Row label="Expires" value={report.whois.expires} />
+          <Row label="Status" value={report.whois.status.join(", ")} />
+          <Row label="Nameservers" value={report.whois.nameservers.join(", ")} />
+        </Section>
+      )}
+
+      {report.dns && Object.keys(report.dns).length > 0 && (
+        <Section icon={Server} title="DNS records">
+          {Object.entries(report.dns).map(([type, vals]) => (
+            <Row key={type} label={type} value={vals.join("  ·  ")} />
+          ))}
+        </Section>
+      )}
+
+      {report.http && (
+        <Section icon={Globe} title={`HTTP response — ${report.http.scheme.toUpperCase()} ${report.http.status}`}>
+          {Object.entries(report.http.headers).slice(0, 24).map(([k, v]) => (
+            <Row key={k} label={k} value={v.length > 220 ? `${v.slice(0, 220)}…` : v} />
+          ))}
+        </Section>
+      )}
+
+      {vt && (
+        <Section icon={ShieldAlert} title="VirusTotal reputation">
+          <Row
+            label="Verdicts"
+            value={
+              <span className="inline-flex flex-wrap gap-1.5">
+                <span className="rounded bg-status-black px-1.5 text-status-black-foreground">malicious {vt.malicious}</span>
+                <span className="rounded bg-status-grey px-1.5 text-status-grey-foreground">suspicious {vt.suspicious}</span>
+                <span className="rounded bg-status-white px-1.5 text-status-white-foreground">harmless {vt.harmless}</span>
+                <span className="rounded bg-muted px-1.5 text-muted-foreground">undetected {vt.undetected}</span>
+              </span>
+            }
+          />
+          <Row label="Reputation" value={String(vt.reputation)} />
+          <Row label="AS owner" value={vt.asOwner} />
+          <Row label="Country" value={vt.country} />
+          <Row label="Last analysis" value={vt.lastAnalysisDate ? new Date(vt.lastAnalysisDate).toLocaleString() : null} />
+          <Row label="Categories" value={Object.values(vt.categories ?? {}).slice(0, 6).join(", ")} />
+        </Section>
+      )}
+
+      {sh && (
+        <Section icon={Radar} title="Shodan exposure">
+          <Row label="Org" value={sh.org} />
+          <Row label="ISP" value={sh.isp} />
+          <Row label="Country" value={sh.country} />
+          <Row label="OS" value={sh.os} />
+          <Row label="Open ports" value={Array.isArray(sh.ports) ? sh.ports.join(", ") : null} />
+          <Row label="Hostnames" value={Array.isArray(sh.hostnames) ? sh.hostnames.join(", ") : null} />
+          <Row label="CVEs" value={Array.isArray(sh.vulns) ? sh.vulns.join(", ") : null} />
+          <Row label="Subdomains" value={typeof sh.subdomainCount === "number" ? String(sh.subdomainCount) : null} />
+          <Row label="Tags" value={Array.isArray(sh.tags) && sh.tags.length ? sh.tags.join(", ") : null} />
+        </Section>
+      )}
+
+      {report.subdomains && (
+        <Section icon={FileSearch} title={`Certificate transparency — ${report.subdomains.count} name(s)`}>
+          <div className="flex flex-wrap gap-1">
+            {report.subdomains.sample.map((s) => (
+              <Badge key={s} variant="outline" className="font-mono text-[9px]">{s}</Badge>
+            ))}
+            {report.subdomains.count > report.subdomains.sample.length && (
+              <Badge variant="outline" className="font-mono text-[9px] text-muted-foreground">
+                +{report.subdomains.count - report.subdomains.sample.length} more
+              </Badge>
+            )}
+          </div>
+        </Section>
+      )}
+    </div>
+  );
+}
