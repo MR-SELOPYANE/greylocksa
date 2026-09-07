@@ -90,6 +90,42 @@ export interface Scan {
   startedBy: string;
   findings: VulnFinding[];
   summary: { critical: number; high: number; medium: number; low: number; info: number };
+  /** Populated for real passive-intel scans (WHOIS/DNS/HTTP/crt.sh/Shodan/VT). */
+  intel?: PassiveIntelReport;
+  /** Optional error message if the scan failed. */
+  error?: string;
+}
+
+export interface PassiveIntelReport {
+  target: string;
+  isIp: boolean;
+  startedAt: string;
+  finishedAt: string;
+  sources: Record<"dns" | "whois" | "http" | "crtsh" | "shodan" | "virustotal", "ok" | "failed" | "skipped" | "no-key" | "no-data">;
+  dns: Record<string, string[]> | null;
+  whois: {
+    handle?: string;
+    registrar: string | null;
+    status: string[];
+    nameservers: string[];
+    created: string | null;
+    updated: string | null;
+    expires: string | null;
+  } | null;
+  http: { scheme: "http" | "https"; status: number; headers: Record<string, string> } | null;
+  subdomains: { count: number; sample: string[] } | null;
+  shodan: any | null;
+  virustotal: {
+    reputation: number;
+    malicious: number;
+    suspicious: number;
+    harmless: number;
+    undetected: number;
+    categories: Record<string, string>;
+    lastAnalysisDate: string | null;
+    asOwner: string | null;
+    country: string | null;
+  } | null;
 }
 
 export interface CustodyEntry {
