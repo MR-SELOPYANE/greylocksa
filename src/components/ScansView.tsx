@@ -158,7 +158,7 @@ export function ScansView() {
             {scans.map((s) => {
               const total = s.findings.length;
               return (
-                <tr key={s.id} className="border-b border-border hover:bg-accent cursor-pointer" onClick={() => setOpenScan(s)}>
+                <tr key={s.id} className="border-b border-border hover:bg-accent cursor-pointer" onClick={() => setOpenScanId(s.id)}>
                   <td className="px-4 py-3 font-mono text-xs text-tactical">{s.id}</td>
                   <td className="px-4 py-3 font-mono text-xs">{s.targetLabel}</td>
                   <td className="px-4 py-3"><Badge variant="outline" className="font-mono text-[10px] uppercase">{s.profile}</Badge></td>
@@ -196,7 +196,7 @@ export function ScansView() {
         </table>
       </div>
 
-      <Dialog open={!!openScan} onOpenChange={() => setOpenScan(null)}>
+      <Dialog open={!!openScan} onOpenChange={() => setOpenScanId(null)}>
         <DialogContent className="max-w-2xl bg-card">
           {openScan && (
             <>
@@ -207,10 +207,17 @@ export function ScansView() {
                 </DialogTitle>
                 <DialogDescription>
                   {openScan.profile.toUpperCase()} profile · started {new Date(openScan.startedAt).toLocaleString()} by {openScan.startedBy}
+                  {openScan.intel && " · live OSINT"}
                 </DialogDescription>
               </DialogHeader>
               <ScrollArea className="max-h-[60vh]">
                 <div className="space-y-3">
+                  {openScan.error && (
+                    <div className="rounded-md border border-status-black bg-status-black/10 p-3 font-mono text-xs text-status-black">
+                      {openScan.error}
+                    </div>
+                  )}
+                  {openScan.intel && <IntelPanel report={openScan.intel} />}
                   {openScan.findings.map((f) => (
                     <div key={f.id} className="rounded-md border border-border bg-background p-3">
                       <div className="flex items-center gap-2">
