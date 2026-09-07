@@ -30,7 +30,7 @@ export function EditEntityDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { updateEntity, logCustody } = useAppState();
+  const { updateEntity, logCustody, runPassiveScan, isPassiveEligible } = useAppState();
   const [type, setType] = useState<EntityType>("web");
   const [identifier, setIdentifier] = useState("");
   const [risk, setRisk] = useState<number[]>([50]);
@@ -49,15 +49,20 @@ export function EditEntityDialog({
 
   if (!entity) return null;
 
+  // The host actually changed → the old intel is stale, so re-sweep.
+  const targetChanged = identifier.trim() !== entity.identifier || type !== entity.type;
+  const willResweep = targetChanged && isPassiveEligible({ type, identifier: identifier.trim() });
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!identifier.trim() || !reason.trim()) {
       toast.error("Reason is required for chain-of-custody");
       return;
     }
+    const nextIdentifier = identifier.trim();
     updateEntity(entity.id, {
       type,
-      identifier: identifier.trim(),
+      identifier: nextIdentifier,
       riskScore: risk[0],
       status,
     });
@@ -67,6 +72,22 @@ export function EditEntityDialog({
       reason: reason.trim(),
     });
     toast.success(`Entity ${entity.id} updated`, { description: "Change recorded in chain-of-custody." });
+
+    if (willResweep) {
+      const updated = { ...entity, type, identifier: nextIdentifier, riskScore: risk[0], status };
+      toast.info("Target changed — re-running passive intel", { description: nextIdentifier });
+      void runPassiveScan(entity.id, { silent: true, entity: updated }).then((scan) => {
+        if (!scan) return;
+        if (scan.status === "failed") {
+          toast.error(`Re-sweep failed for ${nextIdentifier}`, { description: scan.error });
+        } else {
+          toast.success(`Re-sweep complete — ${scan.findings.length} finding(s)`, {
+            description: `${nextIdentifier} · see Scans → ${scan.id}`,
+          });
+        }
+      });
+    }
+
     onOpenChange(false);
   };
 
