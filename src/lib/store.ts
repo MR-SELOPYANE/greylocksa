@@ -1,19 +1,27 @@
-import { useState, useCallback, createContext, useContext } from "react";
-import type { UserRole, ClearanceLevel, Entity, EntityStatus, Scan, CustodyEntry, VulnFinding, ScanSeverity, EvidenceItem, Case, CaseStatus } from "./types";
+import { useState, useCallback, createContext, useContext, useRef, useEffect } from "react";
+import { toast } from "sonner";
+import type { UserRole, ClearanceLevel, Entity, EntityStatus, Scan, CustodyEntry, VulnFinding, ScanSeverity, EvidenceItem, Case, CaseStatus, Honeytoken, AppNotification, NotificationKind } from "./types";
 import { mockEntities, mockScans, mockCustody, mockCases } from "./mock-data";
-import { mockEvidence } from "./security-mock";
+import { mockEvidence, mockHoneytokens } from "./security-mock";
 import { runPassiveIntel } from "./passive-intel.functions";
+import { usePersistedState, clearPersistedState } from "./persist";
 
 interface AppState {
   role: UserRole;
   setRole: (role: UserRole) => void;
   /** Bypasses the analyst→admin guard. Use ONLY during onboarding/signup. */
   provisionRole: (role: UserRole) => void;
+  /** Establish a session: sets role/operator/clearance and writes a LOGIN custody event. */
+  login: (operator: string, role: UserRole, clearance: ClearanceLevel) => void;
   logout: () => void;
   operator: string;
   setOperator: (name: string) => void;
   clearance: ClearanceLevel;
   setClearance: (level: ClearanceLevel) => void;
+  /** True once persisted state has been loaded from this browser. */
+  hydrated: boolean;
+  /** Wipe all locally stored data and reload defaults. */
+  resetAllData: () => void;
 
   entities: Entity[];
   addEntity: (e: Omit<Entity, "id" | "lastUpdated" | "metadata" | "evidenceRefs" | "statusHistory"> & { metadata?: Record<string, unknown> }) => Entity;
@@ -39,10 +47,20 @@ interface AppState {
   logCustody: (e: Omit<CustodyEntry, "id" | "timestamp" | "ip" | "hash" | "actor" | "role">) => void;
 
   evidence: EvidenceItem[];
-  addEvidence: (input: { filename: string; sizeBytes: number; category: EvidenceItem["category"]; linkedEntityId?: string; notes?: string }) => EvidenceItem;
-  updateEvidence: (id: string, patch: Partial<Pick<EvidenceItem, "filename" | "category" | "linkedEntityId" | "notes" | "sealed">>, reason: string) => void;
+  addEvidence: (input: { filename: string; sizeBytes: number; category: EvidenceItem["category"]; linkedEntityId?: string; notes?: string; sha256?: string }) => EvidenceItem;
+  updateEvidence: (id: string, patch: Partial<Pick<EvidenceItem, "filename" | "category" | "linkedEntityId" | "notes" | "sealed" | "integrity">>, reason: string) => void;
   deleteEvidence: (id: string, reason: string) => void;
   canEditEvidence: (item: EvidenceItem) => boolean;
+
+  honeytokens: Honeytoken[];
+  addHoneytoken: (input: { label: string; kind: Honeytoken["kind"]; bait: string }) => Honeytoken;
+  triggerHoneytoken: (id: string, hit?: { ip?: string; ua?: string }) => void;
+  removeHoneytoken: (id: string) => void;
+
+  notifications: AppNotification[];
+  notify: (kind: NotificationKind, title: string, opts?: { description?: string; link?: string; silent?: boolean }) => void;
+  markNotificationsRead: () => void;
+  clearNotifications: () => void;
 
   lockdown: boolean;
   setLockdown: (v: boolean, reason?: string) => void;
