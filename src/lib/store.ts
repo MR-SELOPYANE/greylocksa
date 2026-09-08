@@ -1,19 +1,27 @@
-import { useState, useCallback, createContext, useContext } from "react";
-import type { UserRole, ClearanceLevel, Entity, EntityStatus, Scan, CustodyEntry, VulnFinding, ScanSeverity, EvidenceItem, Case, CaseStatus } from "./types";
+import { useState, useCallback, createContext, useContext, useRef, useEffect } from "react";
+import { toast } from "sonner";
+import type { UserRole, ClearanceLevel, Entity, EntityStatus, Scan, CustodyEntry, VulnFinding, ScanSeverity, EvidenceItem, Case, CaseStatus, Honeytoken, AppNotification, NotificationKind } from "./types";
 import { mockEntities, mockScans, mockCustody, mockCases } from "./mock-data";
-import { mockEvidence } from "./security-mock";
+import { mockEvidence, mockHoneytokens } from "./security-mock";
 import { runPassiveIntel } from "./passive-intel.functions";
+import { usePersistedState, clearPersistedState } from "./persist";
 
 interface AppState {
   role: UserRole;
   setRole: (role: UserRole) => void;
   /** Bypasses the analyst→admin guard. Use ONLY during onboarding/signup. */
   provisionRole: (role: UserRole) => void;
+  /** Establish a session: sets role/operator/clearance and writes a LOGIN custody event. */
+  login: (operator: string, role: UserRole, clearance: ClearanceLevel) => void;
   logout: () => void;
   operator: string;
   setOperator: (name: string) => void;
   clearance: ClearanceLevel;
   setClearance: (level: ClearanceLevel) => void;
+  /** True once persisted state has been loaded from this browser. */
+  hydrated: boolean;
+  /** Wipe all locally stored data and reload defaults. */
+  resetAllData: () => void;
 
   entities: Entity[];
   addEntity: (e: Omit<Entity, "id" | "lastUpdated" | "metadata" | "evidenceRefs" | "statusHistory"> & { metadata?: Record<string, unknown> }) => Entity;
@@ -39,10 +47,20 @@ interface AppState {
   logCustody: (e: Omit<CustodyEntry, "id" | "timestamp" | "ip" | "hash" | "actor" | "role">) => void;
 
   evidence: EvidenceItem[];
-  addEvidence: (input: { filename: string; sizeBytes: number; category: EvidenceItem["category"]; linkedEntityId?: string; notes?: string }) => EvidenceItem;
-  updateEvidence: (id: string, patch: Partial<Pick<EvidenceItem, "filename" | "category" | "linkedEntityId" | "notes" | "sealed">>, reason: string) => void;
+  addEvidence: (input: { filename: string; sizeBytes: number; category: EvidenceItem["category"]; linkedEntityId?: string; notes?: string; sha256?: string }) => EvidenceItem;
+  updateEvidence: (id: string, patch: Partial<Pick<EvidenceItem, "filename" | "category" | "linkedEntityId" | "notes" | "sealed" | "integrity">>, reason: string) => void;
   deleteEvidence: (id: string, reason: string) => void;
   canEditEvidence: (item: EvidenceItem) => boolean;
+
+  honeytokens: Honeytoken[];
+  addHoneytoken: (input: { label: string; kind: Honeytoken["kind"]; bait: string }) => Honeytoken;
+  triggerHoneytoken: (id: string, hit?: { ip?: string; ua?: string }) => void;
+  removeHoneytoken: (id: string) => void;
+
+  notifications: AppNotification[];
+  notify: (kind: NotificationKind, title: string, opts?: { description?: string; link?: string; silent?: boolean }) => void;
+  markNotificationsRead: () => void;
+  clearNotifications: () => void;
 
   lockdown: boolean;
   setLockdown: (v: boolean, reason?: string) => void;
@@ -88,26 +106,61 @@ function tally(findings: VulnFinding[]) {
   return acc;
 }
 
+interface SessionState { role: UserRole; operator: string; clearance: ClearanceLevel }
+const DEFAULT_SESSION: SessionState = { role: "analyst", operator: "analyst.you", clearance: "SECRET" };
+
 export function useAppStateProvider(): AppState {
-  const [role, setRoleState] = useState<UserRole>("analyst");
-  const [operator, setOperator] = useState<string>("analyst.you");
-  const [clearance, setClearance] = useState<ClearanceLevel>("SECRET");
-  const [entities, setEntities] = useState<Entity[]>(() => mockEntities);
-  const [scans, setScans] = useState<Scan[]>(() => mockScans);
-  const [cases, setCases] = useState<Case[]>(() => mockCases);
-  const [custody, setCustody] = useState<CustodyEntry[]>(() => mockCustody);
-  const [evidence, setEvidence] = useState<EvidenceItem[]>(() => mockEvidence);
+  const [session, setSession, sessionLoaded] = usePersistedState<SessionState>("session", DEFAULT_SESSION);
+  const { role, operator, clearance } = session;
+  const setRoleState = useCallback((v: UserRole | ((r: UserRole) => UserRole)) => setSession((s) => ({ ...s, role: typeof v === "function" ? v(s.role) : v })), [setSession]);
+  const setOperator = useCallback((v: string) => setSession((s) => ({ ...s, operator: v })), [setSession]);
+  const setClearance = useCallback((v: ClearanceLevel) => setSession((s) => ({ ...s, clearance: v })), [setSession]);
+
+  const [entities, setEntities, l1] = usePersistedState<Entity[]>("entities", () => mockEntities);
+  const [scans, setScans, l2] = usePersistedState<Scan[]>("scans", () => mockScans);
+  const [cases, setCases, l3] = usePersistedState<Case[]>("cases", () => mockCases);
+  const [custody, setCustody, l4] = usePersistedState<CustodyEntry[]>("custody", () => mockCustody);
+  const [evidence, setEvidence, l5] = usePersistedState<EvidenceItem[]>("evidence", () => mockEvidence);
+  const [honeytokens, setHoneytokens, l6] = usePersistedState<Honeytoken[]>("honeytokens", () => mockHoneytokens);
+  const [notifications, setNotifications, l7] = usePersistedState<AppNotification[]>("notifications", () => []);
   const [lockdown, setLockdownState] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const hydrated = sessionLoaded && l1 && l2 && l3 && l4 && l5 && l6 && l7;
+
+  // Any scan still "running" after a reload can never complete — mark it failed.
+  useEffect(() => {
+    if (!l2) return;
+    setScans((prev) => prev.some((s) => s.status === "running" || s.status === "queued")
+      ? prev.map((s) => (s.status === "running" || s.status === "queued") ? { ...s, status: "failed", finishedAt: new Date().toISOString(), error: "Interrupted by page reload" } : s)
+      : prev);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [l2]);
+
+  // Keep a ref of the current actor so custody writers don't go stale.
+  const actorRef = useRef({ operator, role });
+  actorRef.current = { operator, role };
+
+  const notify: AppState["notify"] = useCallback((kind, title, opts) => {
+    const n: AppNotification = {
+      id: `NTF-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`,
+      kind, title, description: opts?.description, link: opts?.link,
+      timestamp: new Date().toISOString(), read: false,
+    };
+    setNotifications((prev) => [n, ...prev].slice(0, 100));
+    if (!opts?.silent) {
+      const fn = kind === "critical" ? toast.error : kind === "warning" ? toast.warning : kind === "success" ? toast.success : toast.info;
+      fn(title, { description: opts?.description });
+    }
+  }, [setNotifications]);
+
+  const markNotificationsRead = useCallback(() => setNotifications((p) => p.some((n) => !n.read) ? p.map((n) => ({ ...n, read: true })) : p), [setNotifications]);
+  const clearNotifications = useCallback(() => setNotifications([]), [setNotifications]);
 
   // Guarded role setter: an analyst cannot self-promote to admin.
-  // Only an existing admin can change roles (e.g. demote themselves to analyst
-  // or grant admin via the proper admin flow). Silent fail for invalid attempts.
   const setRole: AppState["setRole"] = useCallback((next) => {
     setRoleState((current) => {
       if (current === next) return current;
       if (current === "analyst" && next === "admin") {
-        // Privilege escalation blocked — surface via toast in caller.
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("greylock:role-denied", { detail: { from: current, to: next } }));
         }
@@ -115,24 +168,16 @@ export function useAppStateProvider(): AppState {
       }
       return next;
     });
-  }, []);
+  }, [setRoleState]);
 
-  const provisionRole: AppState["provisionRole"] = useCallback((next) => setRoleState(next), []);
-
-  const logout: AppState["logout"] = useCallback(() => {
-    setRoleState("analyst");
-    setOperator("analyst.you");
-    setClearance("SECRET");
-    setLockdownState(false);
-    setCommandOpen(false);
-  }, []);
+  const provisionRole: AppState["provisionRole"] = useCallback((next) => setRoleState(next), [setRoleState]);
 
   const logCustody: AppState["logCustody"] = useCallback((e) => {
     setCustody((prev) => [
       {
-        id: `CUS-${Date.now().toString(36)}`,
-        actor: "analyst.you",
-        role: "analyst",
+        id: `CUS-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}`,
+        actor: actorRef.current.operator,
+        role: actorRef.current.role,
         timestamp: new Date().toISOString(),
         ip: "10.0.1.42",
         hash: genHash(),
@@ -140,6 +185,30 @@ export function useAppStateProvider(): AppState {
       },
       ...prev,
     ]);
+  }, [setCustody]);
+
+  const login: AppState["login"] = useCallback((op, r, cl) => {
+    setSession({ operator: op, role: r, clearance: cl });
+    setCustody((prev) => [
+      { id: `CUS-${Date.now().toString(36)}`, actor: op, role: r, entityId: "SESSION", action: "LOGIN", reason: `Operator signed in as ${r.toUpperCase()} (${cl})`, timestamp: new Date().toISOString(), ip: "10.0.1.42", hash: genHash() },
+      ...prev,
+    ]);
+  }, [setSession, setCustody]);
+
+  const logout: AppState["logout"] = useCallback(() => {
+    const { operator: op, role: r } = actorRef.current;
+    setCustody((prev) => [
+      { id: `CUS-${Date.now().toString(36)}`, actor: op, role: r, entityId: "SESSION", action: "LOGOUT", reason: "Operator signed out", timestamp: new Date().toISOString(), ip: "10.0.1.42", hash: genHash() },
+      ...prev,
+    ]);
+    setSession(DEFAULT_SESSION);
+    setLockdownState(false);
+    setCommandOpen(false);
+  }, [setSession, setCustody]);
+
+  const resetAllData = useCallback(() => {
+    clearPersistedState();
+    window.location.reload();
   }, []);
 
   const addEntity: AppState["addEntity"] = useCallback((input) => {

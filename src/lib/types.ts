@@ -133,7 +133,7 @@ export interface CustodyEntry {
   actor: string;
   role: UserRole;
   entityId: string;
-  action: "VIEW" | "EXPORT" | "EDIT" | "SCAN" | "STATUS_CHANGE" | "DELETE" | "LOCKDOWN" | "QUARANTINE" | "HONEYTOKEN";
+  action: "VIEW" | "EXPORT" | "EDIT" | "SCAN" | "STATUS_CHANGE" | "DELETE" | "LOCKDOWN" | "QUARANTINE" | "HONEYTOKEN" | "LOGIN" | "LOGOUT";
   reason: string;
   timestamp: string;
   ip: string;
@@ -205,4 +205,17 @@ export interface SessionEntry {
   active: boolean;
   anomalies: AnomalyKind[];
   riskScore: number;
+}
+
+// ===== Notifications =====
+export type NotificationKind = "info" | "success" | "warning" | "critical";
+export interface AppNotification {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  description?: string;
+  timestamp: string;
+  read: boolean;
+  /** Optional in-app link, e.g. "/scans" or "/entity/ENT-001". */
+  link?: string;
 }
