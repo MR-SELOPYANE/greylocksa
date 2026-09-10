@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
 import { mockThreats } from "@/lib/security-mock";
+import { deriveIocsFromScans } from "@/lib/derive";
 import type { IocType, ScanSeverity, ThreatIoc } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -36,11 +37,28 @@ const iocExplain: Record<IocType, string> = {
 };
 
 export function ThreatIntelView() {
-  const { entities, updateEntityStatus, logCustody } = useAppState();
-  const [feed, setFeed] = useState<ThreatIoc[]>(() => mockThreats);
+  const { entities, scans, updateEntityStatus, logCustody } = useAppState();
+  const [manual, setManual] = useState<ThreatIoc[]>(() => mockThreats);
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState<IocType | "all">("all");
-  const [selected, setSelected] = useState<ThreatIoc | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Indicators derived from real passive sweeps (VirusTotal verdicts, Shodan CVEs/ports).
+  const derived = useMemo(() => deriveIocsFromScans(scans), [scans]);
+
+  // Static/simulated indicators still correlate against the live watchlist.
+  const correlated = useMemo(() => manual.map((t) => {
+    const extra = entities
+      .filter((e) => e.identifier.toLowerCase() === t.value.toLowerCase() || e.identifier.toLowerCase().includes(t.value.toLowerCase()))
+      .map((e) => e.id);
+    const ids = Array.from(new Set([...t.matchedEntityIds, ...extra]));
+    return ids.length === t.matchedEntityIds.length ? t : { ...t, matchedEntityIds: ids };
+  }), [manual, entities]);
+
+  const feed = useMemo(() => [...derived, ...correlated], [derived, correlated]);
+  const selected = useMemo(() => feed.find((t) => t.id === selectedId) ?? null, [feed, selectedId]);
+  const setSelected = (t: ThreatIoc | null) => setSelectedId(t?.id ?? null);
+  const setFeed = (fn: (prev: ThreatIoc[]) => ThreatIoc[]) => setManual((p) => fn(p));
 
   const liveMatches = useMemo(() => {
     const set = new Set<string>();
