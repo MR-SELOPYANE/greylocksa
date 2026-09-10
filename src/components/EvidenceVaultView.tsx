@@ -80,6 +80,12 @@ export function EvidenceVaultView() {
 
   return (
     <div className="space-y-6">
+      <input
+        ref={verifyRef}
+        type="file"
+        className="hidden"
+        onChange={(ev) => { void onVerifyFile(ev.target.files?.[0]); ev.target.value = ""; }}
+      />
       <div className="flex items-start gap-3 rounded-md border border-tactical/40 bg-tactical/5 p-4">
         <Info className="mt-0.5 h-4 w-4 text-tactical shrink-0" />
         <div className="text-xs text-muted-foreground">
