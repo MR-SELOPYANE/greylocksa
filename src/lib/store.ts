@@ -444,7 +444,10 @@ export function useAppStateProvider(): AppState {
       },
       ...prev,
     ]);
-  }, [operator, role]);
+    if (status === "escalated") {
+      notify("critical", `Case ${id} escalated`, { description: reason, link: "/cases" });
+    }
+  }, [operator, role, setCases, setCustody, notify]);
 
   const updateCaseProgress: AppState["updateCaseProgress"] = useCallback((id, progress) => {
     const clamped = Math.max(0, Math.min(100, Math.round(progress)));
