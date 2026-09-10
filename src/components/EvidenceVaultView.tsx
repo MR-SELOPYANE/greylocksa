@@ -194,12 +194,29 @@ export function EvidenceVaultView() {
       </section>
 
       <section className="space-y-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Bomb className="h-4 w-4 text-destructive" />
           <h2 className="font-mono text-sm uppercase tracking-widest text-foreground">Honeytokens</h2>
           <span className="text-xs text-muted-foreground">— planted decoys that scream when touched</span>
+          <Badge variant="outline" className="font-mono text-[10px]">{tokens.filter((t) => t.triggered).length} triggered</Badge>
+          <Dialog open={tokenOpen} onOpenChange={setTokenOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="ml-auto h-7 gap-1.5"><Plus className="h-3.5 w-3.5" /> Plant token</Button>
+            </DialogTrigger>
+            <HoneytokenDialog onSubmit={(d) => {
+              const t = addHoneytoken(d);
+              logCustody({ entityId: "HONEYTOKEN", action: "HONEYTOKEN", reason: `Planted ${t.kind} decoy "${t.label}" (${t.id})` });
+              toast.success("Decoy planted", { description: "Any access will raise a critical alert." });
+              setTokenOpen(false);
+            }} />
+          </Dialog>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
+          {tokens.length === 0 && (
+            <p className="rounded-lg border border-border bg-surface p-6 text-center text-xs text-muted-foreground md:col-span-2">
+              No decoys planted. Plant a fake credential, document or canary URL — you get alerted the moment anyone touches it.
+            </p>
+          )}
           {tokens.map((t) => (
             <div key={t.id} className={cn("rounded-lg border p-4 space-y-2", t.triggered ? "border-destructive/50 bg-destructive/5" : "border-border bg-surface")}>
               <div className="flex items-start justify-between gap-2">
@@ -223,7 +240,14 @@ export function EvidenceVaultView() {
                   ))}
                 </ul>
               )}
-              <Button size="sm" variant="ghost" className="h-7 gap-1.5" onClick={() => triggerToken(t.id)}>Simulate trigger</Button>
+              <div className="flex items-center gap-1.5">
+                <Button size="sm" variant="ghost" className="h-7 gap-1.5" onClick={() => triggerToken(t.id)}>Simulate trigger</Button>
+                <Button size="sm" variant="ghost" className="h-7 gap-1.5" onClick={() => { void navigator.clipboard?.writeText(t.bait); toast.success("Decoy copied"); }}>Copy bait</Button>
+                <Button size="sm" variant="ghost" className="ml-auto h-7 w-7 p-0 text-destructive hover:text-destructive" title="Remove decoy"
+                  onClick={() => { removeHoneytoken(t.id); logCustody({ entityId: "HONEYTOKEN", action: "HONEYTOKEN", reason: `Removed decoy ${t.id}` }); }}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
