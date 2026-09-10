@@ -343,14 +343,24 @@ export function useAppStateProvider(): AppState {
         intel: report,
       };
       setScans((prev) => prev.map((s) => (s.id === id ? done : s)));
+      const sev = done.summary;
+      const vt = report.virustotal;
+      if (vt && vt.malicious > 0) {
+        notify("critical", `${target.identifier} flagged malicious`, { description: `${vt.malicious} VirusTotal engine(s) report this target as malicious.`, link: "/threats" });
+      } else if (sev.critical > 0 || sev.high > 0) {
+        notify("warning", `Sweep complete — ${target.identifier}`, { description: `${sev.critical} critical, ${sev.high} high severity findings.`, link: "/scans" });
+      } else {
+        notify("success", `Sweep complete — ${target.identifier}`, { description: `${done.findings.length} finding(s) recorded.`, link: "/scans", silent: opts?.silent });
+      }
       return done;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Passive intel sweep failed";
       const failed: Scan = { ...queued, status: "failed", finishedAt: new Date().toISOString(), error: message };
       setScans((prev) => prev.map((s) => (s.id === id ? failed : s)));
+      notify("warning", `Sweep failed — ${target.identifier}`, { description: message, link: "/scans", silent: opts?.silent });
       return failed;
     }
-  }, [entities, operator, role, isPassiveEligible]);
+  }, [entities, operator, role, isPassiveEligible, setScans, setCustody, notify]);
 
 
   const addCase: AppState["addCase"] = useCallback((input) => {
