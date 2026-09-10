@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { mockHoneytokens } from "@/lib/security-mock";
 import type { EvidenceItem, Honeytoken } from "@/lib/types";
+import { sha256File } from "@/lib/derive";
 import { useAppState } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,17 +11,21 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Archive, ShieldCheck, ShieldAlert, Hash, Lock, Unlock, Bomb, Upload, Pencil, Trash2, History, Info } from "lucide-react";
+import { Archive, ShieldCheck, ShieldAlert, Hash, Lock, Unlock, Bomb, Upload, Pencil, Trash2, History, Info, Plus } from "lucide-react";
 
 const CATEGORIES = ["pcap", "screenshot", "log", "binary", "doc", "memory", "other"] as const;
+const TOKEN_KINDS = ["credential", "document", "api_key", "canary_url", "beacon"] as const;
 
 export function EvidenceVaultView() {
-  const { evidence, addEvidence, updateEvidence, deleteEvidence, canEditEvidence, operator, role, entities, logCustody } = useAppState();
-  const [tokens, setTokens] = useState<Honeytoken[]>(() => mockHoneytokens);
+  const { evidence, addEvidence, updateEvidence, deleteEvidence, canEditEvidence, operator, role, entities, logCustody,
+    honeytokens, addHoneytoken, triggerHoneytoken, removeHoneytoken, notify } = useAppState();
   const [editing, setEditing] = useState<EvidenceItem | null>(null);
   const [history, setHistory] = useState<EvidenceItem | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [tokenOpen, setTokenOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "mine" | "broken">("all");
+  const verifyRef = useRef<HTMLInputElement | null>(null);
+  const [verifyTarget, setVerifyTarget] = useState<EvidenceItem | null>(null);
 
   const filtered = evidence.filter((e) => {
     if (filter === "mine") return e.uploadedBy === operator;
@@ -29,9 +33,22 @@ export function EvidenceVaultView() {
     return true;
   });
 
+  // Re-hash the original file with Web Crypto and compare against the sealed digest.
   const verify = (e: EvidenceItem) => {
-    toast.success(`Hash verified for ${e.filename}`, { description: `SHA-256 ${e.sha256.slice(0, 24)}… matches sealed digest.` });
-    logCustody({ entityId: e.linkedEntityId ?? "VAULT", action: "VIEW", reason: `Hash verify on ${e.id}` });
+    setVerifyTarget(e);
+    verifyRef.current?.click();
+  };
+
+  const onVerifyFile = async (file: File | undefined) => {
+    const target = verifyTarget;
+    setVerifyTarget(null);
+    if (!file || !target) return;
+    const digest = await sha256File(file);
+    const match = digest === target.sha256;
+    updateEvidence(target.id, { integrity: match ? "verified" : "broken" }, match ? "Hash re-verified against original file" : "Hash mismatch on re-verification");
+    logCustody({ entityId: target.linkedEntityId ?? "VAULT", action: "VIEW", reason: `Hash verify on ${target.id} — ${match ? "match" : "MISMATCH"}` });
+    if (match) toast.success(`Integrity confirmed for ${target.filename}`, { description: `SHA-256 ${digest.slice(0, 24)}… matches the sealed digest.` });
+    else notify("critical", `Integrity broken: ${target.filename}`, { description: `Computed ${digest.slice(0, 16)}… ≠ sealed ${target.sha256.slice(0, 16)}…`, link: "/vault" });
   };
 
   const reseal = (e: EvidenceItem) => {
@@ -51,13 +68,11 @@ export function EvidenceVaultView() {
     toast.success("Artifact removed", { description: "Deletion event sealed into chain-of-custody." });
   };
 
+  const tokens = honeytokens;
+
   const triggerToken = (id: string) => {
-    setTokens((prev) => prev.map((t) => t.id === id ? {
-      ...t,
-      triggered: true,
-      triggers: [...t.triggers, { ip: "203.0.113." + Math.floor(Math.random() * 254), ua: "curl/8.4", timestamp: new Date().toISOString() }],
-    } : t));
-    toast.warning("HONEYTOKEN TRIGGERED", { description: "Decoy access logged — investigate session." });
+    triggerHoneytoken(id);
+    notify("critical", "Honeytoken triggered", { description: `Decoy ${id} was accessed — investigate the session.`, link: "/vault" });
     logCustody({ entityId: "HONEYTOKEN", action: "HONEYTOKEN", reason: `Simulated trigger of token ${id}` });
   };
 
