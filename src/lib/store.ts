@@ -343,14 +343,24 @@ export function useAppStateProvider(): AppState {
         intel: report,
       };
       setScans((prev) => prev.map((s) => (s.id === id ? done : s)));
+      const sev = done.summary;
+      const vt = report.virustotal;
+      if (vt && vt.malicious > 0) {
+        notify("critical", `${target.identifier} flagged malicious`, { description: `${vt.malicious} VirusTotal engine(s) report this target as malicious.`, link: "/threats" });
+      } else if (sev.critical > 0 || sev.high > 0) {
+        notify("warning", `Sweep complete — ${target.identifier}`, { description: `${sev.critical} critical, ${sev.high} high severity findings.`, link: "/scans" });
+      } else {
+        notify("success", `Sweep complete — ${target.identifier}`, { description: `${done.findings.length} finding(s) recorded.`, link: "/scans", silent: opts?.silent });
+      }
       return done;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Passive intel sweep failed";
       const failed: Scan = { ...queued, status: "failed", finishedAt: new Date().toISOString(), error: message };
       setScans((prev) => prev.map((s) => (s.id === id ? failed : s)));
+      notify("warning", `Sweep failed — ${target.identifier}`, { description: message, link: "/scans", silent: opts?.silent });
       return failed;
     }
-  }, [entities, operator, role, isPassiveEligible]);
+  }, [entities, operator, role, isPassiveEligible, setScans, setCustody, notify]);
 
 
   const addCase: AppState["addCase"] = useCallback((input) => {
@@ -434,7 +444,10 @@ export function useAppStateProvider(): AppState {
       },
       ...prev,
     ]);
-  }, [operator, role]);
+    if (status === "escalated") {
+      notify("critical", `Case ${id} escalated`, { description: reason, link: "/cases" });
+    }
+  }, [operator, role, setCases, setCustody, notify]);
 
   const updateCaseProgress: AppState["updateCaseProgress"] = useCallback((id, progress) => {
     const clamped = Math.max(0, Math.min(100, Math.round(progress)));
@@ -474,12 +487,12 @@ export function useAppStateProvider(): AppState {
 
   const addEvidence: AppState["addEvidence"] = useCallback((input) => {
     const id = `EVD-${Date.now().toString(36).toUpperCase()}`;
-    const sha = Array.from({ length: 8 }, () => Math.random().toString(16).slice(2, 10)).join("");
+    const fallback = Array.from({ length: 8 }, () => Math.random().toString(16).slice(2, 10)).join("").slice(0, 64);
     const item: EvidenceItem = {
       id,
       filename: input.filename,
       sizeBytes: input.sizeBytes,
-      sha256: sha.slice(0, 64),
+      sha256: input.sha256 ?? fallback,
       uploadedBy: operator,
       uploadedAt: new Date().toISOString(),
       linkedEntityId: input.linkedEntityId,
@@ -491,7 +504,7 @@ export function useAppStateProvider(): AppState {
     };
     setEvidence((prev) => [item, ...prev]);
     return item;
-  }, [operator]);
+  }, [operator, setEvidence]);
 
   const updateEvidence: AppState["updateEvidence"] = useCallback((id, patch, reason) => {
     setEvidence((prev) => prev.map((e) => {
@@ -516,7 +529,44 @@ export function useAppStateProvider(): AppState {
     return role === "admin" || item.uploadedBy === operator;
   }, [role, operator]);
 
+  const addHoneytoken: AppState["addHoneytoken"] = useCallback((input) => {
+    const token: Honeytoken = {
+      id: `HT-${Date.now().toString(36).toUpperCase()}`,
+      label: input.label,
+      kind: input.kind,
+      bait: input.bait,
+      placedAt: new Date().toISOString(),
+      triggered: false,
+      triggers: [],
+    };
+    setHoneytokens((prev) => [token, ...prev]);
+    return token;
+  }, [setHoneytokens]);
+
+  const triggerHoneytoken: AppState["triggerHoneytoken"] = useCallback((id, hit) => {
+    setHoneytokens((prev) => prev.map((t) => t.id === id ? {
+      ...t,
+      triggered: true,
+      triggers: [...t.triggers, { ip: hit?.ip ?? `203.0.113.${Math.floor(Math.random() * 254)}`, ua: hit?.ua ?? "curl/8.4", timestamp: new Date().toISOString() }],
+    } : t));
+  }, [setHoneytokens]);
+
+  const removeHoneytoken: AppState["removeHoneytoken"] = useCallback((id) => {
+    setHoneytokens((prev) => prev.filter((t) => t.id !== id));
+  }, [setHoneytokens]);
+
   return {
+    login,
+    hydrated,
+    resetAllData,
+    honeytokens,
+    addHoneytoken,
+    triggerHoneytoken,
+    removeHoneytoken,
+    notifications,
+    notify,
+    markNotificationsRead,
+    clearNotifications,
     role,
     setRole,
     provisionRole,

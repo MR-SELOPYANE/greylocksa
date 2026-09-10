@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { mockSessions } from "@/lib/security-mock";
-import type { AnomalyKind, SessionEntry } from "@/lib/types";
+import { deriveSessions } from "@/lib/derive";
+import type { AnomalyKind } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -17,8 +18,16 @@ const anomalyMeta: Record<AnomalyKind, { label: string; icon: React.ComponentTyp
 };
 
 export function SessionsView() {
-  const { role } = useAppState();
-  const [sessions, setSessions] = useState<SessionEntry[]>(() => mockSessions);
+  const { role, custody, logCustody } = useAppState();
+  const [killed, setKilled] = useState<string[]>([]);
+  const [showSimulated, setShowSimulated] = useState(false);
+
+  // Real sessions are reconstructed from LOGIN/LOGOUT and activity in the custody log.
+  const real = useMemo(() => deriveSessions(custody), [custody]);
+  const sessions = useMemo(() => {
+    const base = showSimulated ? [...real, ...mockSessions] : real;
+    return base.map((s) => killed.includes(s.id) ? { ...s, active: false } : s);
+  }, [real, showSimulated, killed]);
 
   if (role !== "admin") {
     return (
@@ -31,7 +40,8 @@ export function SessionsView() {
   }
 
   const kill = (id: string) => {
-    setSessions((prev) => prev.map((s) => s.id === id ? { ...s, active: false, anomalies: s.anomalies } : s));
+    setKilled((prev) => [...prev, id]);
+    logCustody({ entityId: "SESSION", action: "STATUS_CHANGE", reason: `Session ${id} force-terminated by admin` });
     toast.warning(`Session ${id} terminated`, { description: "Forced logout dispatched. Logged to chain-of-custody." });
   };
 
@@ -40,12 +50,27 @@ export function SessionsView() {
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Activity className="h-4 w-4 text-tactical" />
+        <h2 className="font-mono text-sm uppercase tracking-widest text-foreground">Session monitor</h2>
+        <Badge variant="outline" className="font-mono text-[10px]">{real.length} real</Badge>
+        <Button size="sm" variant={showSimulated ? "default" : "outline"} className="ml-auto h-7 font-mono text-[10px] uppercase" onClick={() => setShowSimulated((v) => !v)}>
+          {showSimulated ? "Hide" : "Show"} simulated
+        </Button>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Stat label="Active sessions" value={active} accent />
         <Stat label="High-risk" value={highRisk} danger={highRisk > 0} />
         <Stat label="Anomalies flagged" value={sessions.reduce((a, s) => a + s.anomalies.length, 0)} />
         <Stat label="Total tracked" value={sessions.length} />
       </div>
+
+      {sessions.length === 0 && (
+        <p className="rounded-lg border border-border bg-surface p-6 text-center text-xs text-muted-foreground">
+          No sessions recorded yet. Sign out and back in to record one, or show simulated data.
+        </p>
+      )}
 
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">

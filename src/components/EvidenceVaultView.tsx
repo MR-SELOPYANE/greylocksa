@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { mockHoneytokens } from "@/lib/security-mock";
 import type { EvidenceItem, Honeytoken } from "@/lib/types";
+import { sha256File } from "@/lib/derive";
 import { useAppState } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,17 +11,21 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Archive, ShieldCheck, ShieldAlert, Hash, Lock, Unlock, Bomb, Upload, Pencil, Trash2, History, Info } from "lucide-react";
+import { Archive, ShieldCheck, ShieldAlert, Hash, Lock, Unlock, Bomb, Upload, Pencil, Trash2, History, Info, Plus } from "lucide-react";
 
 const CATEGORIES = ["pcap", "screenshot", "log", "binary", "doc", "memory", "other"] as const;
+const TOKEN_KINDS = ["credential", "document", "api_key", "canary_url", "beacon"] as const;
 
 export function EvidenceVaultView() {
-  const { evidence, addEvidence, updateEvidence, deleteEvidence, canEditEvidence, operator, role, entities, logCustody } = useAppState();
-  const [tokens, setTokens] = useState<Honeytoken[]>(() => mockHoneytokens);
+  const { evidence, addEvidence, updateEvidence, deleteEvidence, canEditEvidence, operator, role, entities, logCustody,
+    honeytokens, addHoneytoken, triggerHoneytoken, removeHoneytoken, notify } = useAppState();
   const [editing, setEditing] = useState<EvidenceItem | null>(null);
   const [history, setHistory] = useState<EvidenceItem | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [tokenOpen, setTokenOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "mine" | "broken">("all");
+  const verifyRef = useRef<HTMLInputElement | null>(null);
+  const [verifyTarget, setVerifyTarget] = useState<EvidenceItem | null>(null);
 
   const filtered = evidence.filter((e) => {
     if (filter === "mine") return e.uploadedBy === operator;
@@ -29,9 +33,22 @@ export function EvidenceVaultView() {
     return true;
   });
 
+  // Re-hash the original file with Web Crypto and compare against the sealed digest.
   const verify = (e: EvidenceItem) => {
-    toast.success(`Hash verified for ${e.filename}`, { description: `SHA-256 ${e.sha256.slice(0, 24)}… matches sealed digest.` });
-    logCustody({ entityId: e.linkedEntityId ?? "VAULT", action: "VIEW", reason: `Hash verify on ${e.id}` });
+    setVerifyTarget(e);
+    verifyRef.current?.click();
+  };
+
+  const onVerifyFile = async (file: File | undefined) => {
+    const target = verifyTarget;
+    setVerifyTarget(null);
+    if (!file || !target) return;
+    const digest = await sha256File(file);
+    const match = digest === target.sha256;
+    updateEvidence(target.id, { integrity: match ? "verified" : "broken" }, match ? "Hash re-verified against original file" : "Hash mismatch on re-verification");
+    logCustody({ entityId: target.linkedEntityId ?? "VAULT", action: "VIEW", reason: `Hash verify on ${target.id} — ${match ? "match" : "MISMATCH"}` });
+    if (match) toast.success(`Integrity confirmed for ${target.filename}`, { description: `SHA-256 ${digest.slice(0, 24)}… matches the sealed digest.` });
+    else notify("critical", `Integrity broken: ${target.filename}`, { description: `Computed ${digest.slice(0, 16)}… ≠ sealed ${target.sha256.slice(0, 16)}…`, link: "/vault" });
   };
 
   const reseal = (e: EvidenceItem) => {
@@ -51,13 +68,11 @@ export function EvidenceVaultView() {
     toast.success("Artifact removed", { description: "Deletion event sealed into chain-of-custody." });
   };
 
+  const tokens = honeytokens;
+
   const triggerToken = (id: string) => {
-    setTokens((prev) => prev.map((t) => t.id === id ? {
-      ...t,
-      triggered: true,
-      triggers: [...t.triggers, { ip: "203.0.113." + Math.floor(Math.random() * 254), ua: "curl/8.4", timestamp: new Date().toISOString() }],
-    } : t));
-    toast.warning("HONEYTOKEN TRIGGERED", { description: "Decoy access logged — investigate session." });
+    triggerHoneytoken(id);
+    notify("critical", "Honeytoken triggered", { description: `Decoy ${id} was accessed — investigate the session.`, link: "/vault" });
     logCustody({ entityId: "HONEYTOKEN", action: "HONEYTOKEN", reason: `Simulated trigger of token ${id}` });
   };
 
@@ -65,6 +80,12 @@ export function EvidenceVaultView() {
 
   return (
     <div className="space-y-6">
+      <input
+        ref={verifyRef}
+        type="file"
+        className="hidden"
+        onChange={(ev) => { void onVerifyFile(ev.target.files?.[0]); ev.target.value = ""; }}
+      />
       <div className="flex items-start gap-3 rounded-md border border-tactical/40 bg-tactical/5 p-4">
         <Info className="mt-0.5 h-4 w-4 text-tactical shrink-0" />
         <div className="text-xs text-muted-foreground">
@@ -173,12 +194,29 @@ export function EvidenceVaultView() {
       </section>
 
       <section className="space-y-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Bomb className="h-4 w-4 text-destructive" />
           <h2 className="font-mono text-sm uppercase tracking-widest text-foreground">Honeytokens</h2>
           <span className="text-xs text-muted-foreground">— planted decoys that scream when touched</span>
+          <Badge variant="outline" className="font-mono text-[10px]">{tokens.filter((t) => t.triggered).length} triggered</Badge>
+          <Dialog open={tokenOpen} onOpenChange={setTokenOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="ml-auto h-7 gap-1.5"><Plus className="h-3.5 w-3.5" /> Plant token</Button>
+            </DialogTrigger>
+            <HoneytokenDialog onSubmit={(d) => {
+              const t = addHoneytoken(d);
+              logCustody({ entityId: "HONEYTOKEN", action: "HONEYTOKEN", reason: `Planted ${t.kind} decoy "${t.label}" (${t.id})` });
+              toast.success("Decoy planted", { description: "Any access will raise a critical alert." });
+              setTokenOpen(false);
+            }} />
+          </Dialog>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
+          {tokens.length === 0 && (
+            <p className="rounded-lg border border-border bg-surface p-6 text-center text-xs text-muted-foreground md:col-span-2">
+              No decoys planted. Plant a fake credential, document or canary URL — you get alerted the moment anyone touches it.
+            </p>
+          )}
           {tokens.map((t) => (
             <div key={t.id} className={cn("rounded-lg border p-4 space-y-2", t.triggered ? "border-destructive/50 bg-destructive/5" : "border-border bg-surface")}>
               <div className="flex items-start justify-between gap-2">
@@ -202,7 +240,14 @@ export function EvidenceVaultView() {
                   ))}
                 </ul>
               )}
-              <Button size="sm" variant="ghost" className="h-7 gap-1.5" onClick={() => triggerToken(t.id)}>Simulate trigger</Button>
+              <div className="flex items-center gap-1.5">
+                <Button size="sm" variant="ghost" className="h-7 gap-1.5" onClick={() => triggerToken(t.id)}>Simulate trigger</Button>
+                <Button size="sm" variant="ghost" className="h-7 gap-1.5" onClick={() => { void navigator.clipboard?.writeText(t.bait); toast.success("Decoy copied"); }}>Copy bait</Button>
+                <Button size="sm" variant="ghost" className="ml-auto h-7 w-7 p-0 text-destructive hover:text-destructive" title="Remove decoy"
+                  onClick={() => { removeHoneytoken(t.id); logCustody({ entityId: "HONEYTOKEN", action: "HONEYTOKEN", reason: `Removed decoy ${t.id}` }); }}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
