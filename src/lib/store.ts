@@ -516,7 +516,44 @@ export function useAppStateProvider(): AppState {
     return role === "admin" || item.uploadedBy === operator;
   }, [role, operator]);
 
+  const addHoneytoken: AppState["addHoneytoken"] = useCallback((input) => {
+    const token: Honeytoken = {
+      id: `HT-${Date.now().toString(36).toUpperCase()}`,
+      label: input.label,
+      kind: input.kind,
+      bait: input.bait,
+      placedAt: new Date().toISOString(),
+      triggered: false,
+      triggers: [],
+    };
+    setHoneytokens((prev) => [token, ...prev]);
+    return token;
+  }, [setHoneytokens]);
+
+  const triggerHoneytoken: AppState["triggerHoneytoken"] = useCallback((id, hit) => {
+    setHoneytokens((prev) => prev.map((t) => t.id === id ? {
+      ...t,
+      triggered: true,
+      triggers: [...t.triggers, { ip: hit?.ip ?? `203.0.113.${Math.floor(Math.random() * 254)}`, ua: hit?.ua ?? "curl/8.4", timestamp: new Date().toISOString() }],
+    } : t));
+  }, [setHoneytokens]);
+
+  const removeHoneytoken: AppState["removeHoneytoken"] = useCallback((id) => {
+    setHoneytokens((prev) => prev.filter((t) => t.id !== id));
+  }, [setHoneytokens]);
+
   return {
+    login,
+    hydrated,
+    resetAllData,
+    honeytokens,
+    addHoneytoken,
+    triggerHoneytoken,
+    removeHoneytoken,
+    notifications,
+    notify,
+    markNotificationsRead,
+    clearNotifications,
     role,
     setRole,
     provisionRole,
