@@ -474,12 +474,12 @@ export function useAppStateProvider(): AppState {
 
   const addEvidence: AppState["addEvidence"] = useCallback((input) => {
     const id = `EVD-${Date.now().toString(36).toUpperCase()}`;
-    const sha = Array.from({ length: 8 }, () => Math.random().toString(16).slice(2, 10)).join("");
+    const fallback = Array.from({ length: 8 }, () => Math.random().toString(16).slice(2, 10)).join("").slice(0, 64);
     const item: EvidenceItem = {
       id,
       filename: input.filename,
       sizeBytes: input.sizeBytes,
-      sha256: sha.slice(0, 64),
+      sha256: input.sha256 ?? fallback,
       uploadedBy: operator,
       uploadedAt: new Date().toISOString(),
       linkedEntityId: input.linkedEntityId,
@@ -491,7 +491,7 @@ export function useAppStateProvider(): AppState {
     };
     setEvidence((prev) => [item, ...prev]);
     return item;
-  }, [operator]);
+  }, [operator, setEvidence]);
 
   const updateEvidence: AppState["updateEvidence"] = useCallback((id, patch, reason) => {
     setEvidence((prev) => prev.map((e) => {
