@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { Archive, ShieldCheck, ShieldAlert, Hash, Lock, Unlock, Bomb, Upload, Pencil, Trash2, History, Info, Plus } from "lucide-react";
 
 const CATEGORIES = ["pcap", "screenshot", "log", "binary", "doc", "memory", "other"] as const;
-const TOKEN_KINDS = ["credential", "document", "api_key", "canary_url", "beacon"] as const;
+const TOKEN_KINDS = ["credential", "doc", "api_key", "url"] as const;
 
 export function EvidenceVaultView() {
   const { evidence, addEvidence, updateEvidence, deleteEvidence, canEditEvidence, operator, role, entities, logCustody,
@@ -303,12 +303,80 @@ export function EvidenceVaultView() {
   );
 }
 
-function UploadDialog({ operator, entityOptions, onSubmit }: { operator: string; entityOptions: { id: string; label: string }[]; onSubmit: (d: { filename: string; sizeBytes: number; category: EvidenceItem["category"]; linkedEntityId?: string; notes?: string }) => void }) {
+function HoneytokenDialog({ onSubmit }: { onSubmit: (d: { label: string; kind: Honeytoken["kind"]; bait: string }) => void }) {
+  const [label, setLabel] = useState("");
+  const [kind, setKind] = useState<Honeytoken["kind"]>("credential");
+  const [bait, setBait] = useState("");
+
+  const suggest = () => {
+    const rand = Math.random().toString(36).slice(2, 10);
+    const presets: Record<Honeytoken["kind"], string> = {
+      credential: `svc_backup_admin / Wtr!${rand}`,
+      doc: `Q4-acquisition-terms-CONFIDENTIAL-${rand}.docx`,
+      api_key: `sk_live_${rand}${Math.random().toString(36).slice(2, 12)}`,
+      url: `https://intranet.greylock.internal/exports/${rand}`,
+    };
+    setBait(presets[kind]);
+  };
+
+  return (
+    <DialogContent className="max-w-lg">
+      <DialogHeader>
+        <DialogTitle className="font-mono text-sm">Plant a honeytoken</DialogTitle>
+        <DialogDescription>A decoy that has no legitimate use. If anyone ever touches it, you know you have an intruder.</DialogDescription>
+      </DialogHeader>
+      <div className="space-y-3">
+        <div><Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Label</Label>
+          <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Fake backup admin account" className="text-sm" />
+        </div>
+        <div><Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Kind</Label>
+          <Select value={kind} onValueChange={(v) => setKind(v as Honeytoken["kind"])}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>{TOKEN_KINDS.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        <div>
+          <div className="flex items-center justify-between">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Bait value</Label>
+            <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={suggest}>Generate</Button>
+          </div>
+          <Input value={bait} onChange={(e) => setBait(e.target.value)} placeholder="The decoy string you will plant" className="font-mono text-sm" />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button disabled={!label.trim() || !bait.trim()} onClick={() => onSubmit({ label: label.trim(), kind, bait: bait.trim() })}>Plant decoy</Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
+function UploadDialog({ operator, entityOptions, onSubmit }: { operator: string; entityOptions: { id: string; label: string }[]; onSubmit: (d: { filename: string; sizeBytes: number; category: EvidenceItem["category"]; linkedEntityId?: string; notes?: string; sha256?: string }) => void }) {
   const [filename, setFilename] = useState("");
   const [size, setSize] = useState("131072");
+  const [digest, setDigest] = useState<string | null>(null);
+  const [hashing, setHashing] = useState(false);
   const [category, setCategory] = useState<EvidenceItem["category"]>("doc");
   const [linked, setLinked] = useState<string>("");
   const [notes, setNotes] = useState("");
+
+  const pickFile = async (file: File | undefined) => {
+    if (!file) return;
+    setHashing(true);
+    try {
+      const sha = await sha256File(file);
+      setFilename(file.name);
+      setSize(String(file.size));
+      setDigest(sha);
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (ext === "pcap" || ext === "pcapng") setCategory("pcap");
+      else if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext ?? "")) setCategory("screenshot");
+      else if (["log", "txt"].includes(ext ?? "")) setCategory("log");
+      else if (["exe", "bin", "dll", "so"].includes(ext ?? "")) setCategory("binary");
+      else if (["mem", "dmp", "raw"].includes(ext ?? "")) setCategory("memory");
+    } finally {
+      setHashing(false);
+    }
+  };
 
   return (
     <DialogContent className="max-w-lg">
@@ -317,6 +385,14 @@ function UploadDialog({ operator, entityOptions, onSubmit }: { operator: string;
         <DialogDescription>Uploader will be recorded as <span className="font-mono text-tactical">{operator}</span>. Other operators can view & verify, but cannot edit unless they are admins.</DialogDescription>
       </DialogHeader>
       <div className="space-y-3">
+        <div className="rounded-md border border-dashed border-border bg-surface p-3">
+          <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Choose file (hashed in your browser — never uploaded)</Label>
+          <Input type="file" className="mt-1.5 text-xs" onChange={(e) => void pickFile(e.target.files?.[0])} />
+          {hashing && <p className="mt-2 font-mono text-[11px] text-muted-foreground">Computing SHA-256…</p>}
+          {digest && (
+            <p className="mt-2 break-all font-mono text-[10px] text-tactical">SHA-256 {digest}</p>
+          )}
+        </div>
         <div><Label className="text-[10px] uppercase tracking-widest text-muted-foreground">Filename</Label>
           <Input value={filename} onChange={(e) => setFilename(e.target.value)} placeholder="e.g. acme-prod-config.json" className="font-mono text-sm" />
         </div>
@@ -345,7 +421,7 @@ function UploadDialog({ operator, entityOptions, onSubmit }: { operator: string;
         </div>
       </div>
       <DialogFooter>
-        <Button disabled={!filename.trim()} onClick={() => onSubmit({ filename: filename.trim(), sizeBytes: Math.max(1, parseInt(size) || 0), category, linkedEntityId: linked || undefined, notes: notes.trim() || undefined })}>
+        <Button disabled={!filename.trim() || hashing} onClick={() => onSubmit({ filename: filename.trim(), sizeBytes: Math.max(1, parseInt(size) || 0), category, linkedEntityId: linked || undefined, notes: notes.trim() || undefined, sha256: digest ?? undefined })}>
           Upload & seal
         </Button>
       </DialogFooter>

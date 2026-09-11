@@ -37,6 +37,9 @@ export function CommandPalette() {
     setCommandOpen,
     entities,
     cases,
+    evidence,
+    honeytokens,
+    scans,
     role,
     setRole,
     lockdown,
@@ -152,30 +155,28 @@ export function CommandPalette() {
 
         <CommandSeparator />
 
-        <CommandGroup heading="Jump to target">
-          {entities.slice(0, 20).map((e) => (
+        <CommandGroup heading="Targets">
+          {entities.map((e) => (
             <CommandItem
               key={e.id}
-              value={`${e.id} ${e.identifier} ${e.type}`}
-              onSelect={() => run(() => {
-                navigate({ to: "/entities" });
-                window.dispatchEvent(new CustomEvent("greylock:open-entity", { detail: { id: e.id } }));
-              })}
+              value={`${e.id} ${e.identifier} ${e.type} ${e.status} ${Object.values(e.metadata ?? {}).join(" ")}`}
+              onSelect={() => run(() => navigate({ to: "/entity/$id", params: { id: e.id } }))}
             >
               <Eye />
               <span className="font-mono text-xs text-tactical">{e.id}</span>
               <span className="ml-2 truncate">{e.identifier}</span>
+              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">{e.type}</span>
             </CommandItem>
           ))}
         </CommandGroup>
 
         <CommandSeparator />
 
-        <CommandGroup heading="Jump to case">
-          {cases.slice(0, 20).map((c) => (
+        <CommandGroup heading="Cases">
+          {cases.map((c) => (
             <CommandItem
               key={c.id}
-              value={`${c.id} ${c.title} ${c.status}`}
+              value={`${c.id} ${c.title} ${c.status} ${c.description} ${c.assignedAnalyst} ${c.priority}`}
               onSelect={() => run(() => {
                 navigate({ to: "/cases" });
                 setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:open-case", { detail: { id: c.id } })), 80);
@@ -184,6 +185,58 @@ export function CommandPalette() {
               <FolderSearch />
               <span className="font-mono text-xs text-tactical">{c.id}</span>
               <span className="ml-2 truncate">{c.title}</span>
+              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">{c.status}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Evidence">
+          {evidence.map((ev) => (
+            <CommandItem
+              key={ev.id}
+              value={`${ev.id} ${ev.filename} ${ev.category} ${ev.notes ?? ""} ${ev.uploadedBy} ${ev.sha256}`}
+              onSelect={() => run(() => navigate({ to: "/vault" }))}
+            >
+              <Archive />
+              <span className="font-mono text-xs text-tactical">{ev.id}</span>
+              <span className="ml-2 truncate">{ev.filename}</span>
+              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">{ev.category}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Honeytokens">
+          {honeytokens.map((t) => (
+            <CommandItem
+              key={t.id}
+              value={`${t.id} ${t.label} ${t.kind} ${t.bait}`}
+              onSelect={() => run(() => navigate({ to: "/vault" }))}
+            >
+              <Radio />
+              <span className="font-mono text-xs text-tactical">{t.id}</span>
+              <span className="ml-2 truncate">{t.label}</span>
+              {t.triggered && <span className="ml-auto font-mono text-[10px] uppercase text-destructive">triggered</span>}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Scans">
+          {scans.slice(0, 40).map((s) => (
+            <CommandItem
+              key={s.id}
+              value={`${s.id} ${s.targetLabel} ${s.profile} ${s.status}`}
+              onSelect={() => run(() => navigate({ to: "/scans" }))}
+            >
+              <Bug />
+              <span className="font-mono text-xs text-tactical">{s.id}</span>
+              <span className="ml-2 truncate">{s.targetLabel}</span>
+              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">{s.status}</span>
             </CommandItem>
           ))}
         </CommandGroup>
