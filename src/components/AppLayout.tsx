@@ -21,6 +21,7 @@ import {
   ShieldAlert,
   Loader2,
   LogOut,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppState } from "@/lib/store";
@@ -214,6 +215,56 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 w-8 p-0"
+                title="Alerts"
+                onClick={() => { setBellOpen((v) => !v); if (!bellOpen) markNotificationsRead(); }}
+              >
+                <Bell className="h-3.5 w-3.5" />
+                {unread > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 font-mono text-[9px] text-destructive-foreground">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
+              </Button>
+              {bellOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setBellOpen(false)} />
+                  <div className="absolute right-0 top-9 z-50 w-80 rounded-md border border-border bg-card shadow-xl">
+                    <div className="flex items-center justify-between border-b border-border px-3 py-2">
+                      <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Alerts</span>
+                      <button className="text-[10px] text-tactical hover:underline" onClick={() => { clearNotifications(); setBellOpen(false); }}>Clear all</button>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length === 0 && (
+                        <p className="px-3 py-8 text-center text-xs text-muted-foreground">Nothing to report. Alerts appear here when a sweep finishes, a case is escalated, or a decoy is touched.</p>
+                      )}
+                      {notifications.slice(0, 30).map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => { setBellOpen(false); if (n.link) navigate({ to: n.link }); }}
+                          className="block w-full border-b border-border px-3 py-2 text-left last:border-0 hover:bg-accent"
+                        >
+                          <div className="flex items-start gap-2">
+                            <span className={cn("mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
+                              n.kind === "critical" ? "bg-destructive" : n.kind === "warning" ? "bg-status-grey" : n.kind === "success" ? "bg-status-white" : "bg-tactical")} />
+                            <div className="min-w-0">
+                              <p className="truncate font-mono text-[11px] text-foreground">{n.title}</p>
+                              {n.description && <p className="mt-0.5 line-clamp-2 text-[10px] text-muted-foreground">{n.description}</p>}
+                              <p className="mt-0.5 font-mono text-[9px] text-muted-foreground">{new Date(n.timestamp).toLocaleString()}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <Button onClick={handleLogout} variant="outline" size="sm" className="h-7 gap-1.5">
