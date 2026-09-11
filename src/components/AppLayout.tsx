@@ -53,7 +53,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { role, setRole, operator, clearance, lockdown, setLockdown, scans, logout } = useAppState();
+  const { role, setRole, operator, clearance, lockdown, setLockdown, scans, logout,
+    notifications, markNotificationsRead, clearNotifications } = useAppState();
+  const [bellOpen, setBellOpen] = useState(false);
 
   const navItems = baseNav.filter((n) => n.roles.includes(role));
 
@@ -69,6 +71,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return set.size;
   }, []);
   const alertCount = criticalFindings + liveIocMatches;
+  const unread = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
     const onDenied = () => {
