@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { Archive, ShieldCheck, ShieldAlert, Hash, Lock, Unlock, Bomb, Upload, Pencil, Trash2, History, Info, Plus } from "lucide-react";
 
 const CATEGORIES = ["pcap", "screenshot", "log", "binary", "doc", "memory", "other"] as const;
-const TOKEN_KINDS = ["credential", "document", "api_key", "canary_url", "beacon"] as const;
+const TOKEN_KINDS = ["credential", "doc", "api_key", "url"] as const;
 
 export function EvidenceVaultView() {
   const { evidence, addEvidence, updateEvidence, deleteEvidence, canEditEvidence, operator, role, entities, logCustody,
@@ -312,10 +312,9 @@ function HoneytokenDialog({ onSubmit }: { onSubmit: (d: { label: string; kind: H
     const rand = Math.random().toString(36).slice(2, 10);
     const presets: Record<Honeytoken["kind"], string> = {
       credential: `svc_backup_admin / Wtr!${rand}`,
-      document: `Q4-acquisition-terms-CONFIDENTIAL-${rand}.docx`,
+      doc: `Q4-acquisition-terms-CONFIDENTIAL-${rand}.docx`,
       api_key: `sk_live_${rand}${Math.random().toString(36).slice(2, 12)}`,
-      canary_url: `https://intranet.greylock.internal/exports/${rand}`,
-      beacon: `beacon://greylock/${rand}`,
+      url: `https://intranet.greylock.internal/exports/${rand}`,
     };
     setBait(presets[kind]);
   };
