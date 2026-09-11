@@ -23,6 +23,7 @@ import { Route as CasesRouteImport } from './routes/cases'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EntityIdRouteImport } from './routes/entity.$id'
 
 const VaultRoute = VaultRouteImport.update({
   id: '/vault',
@@ -94,6 +95,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EntityIdRoute = EntityIdRouteImport.update({
+  id: '/entity/$id',
+  path: '/entity/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/system': typeof SystemRoute
   '/threats': typeof ThreatsRoute
   '/vault': typeof VaultRoute
+  '/entity/$id': typeof EntityIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/system': typeof SystemRoute
   '/threats': typeof ThreatsRoute
   '/vault': typeof VaultRoute
+  '/entity/$id': typeof EntityIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/system': typeof SystemRoute
   '/threats': typeof ThreatsRoute
   '/vault': typeof VaultRoute
+  '/entity/$id': typeof EntityIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/system'
     | '/threats'
     | '/vault'
+    | '/entity/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/system'
     | '/threats'
     | '/vault'
+    | '/entity/$id'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/system'
     | '/threats'
     | '/vault'
+    | '/entity/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -210,6 +222,7 @@ export interface RootRouteChildren {
   SystemRoute: typeof SystemRoute
   ThreatsRoute: typeof ThreatsRoute
   VaultRoute: typeof VaultRoute
+  EntityIdRoute: typeof EntityIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/entity/$id': {
+      id: '/entity/$id'
+      path: '/entity/$id'
+      fullPath: '/entity/$id'
+      preLoaderRoute: typeof EntityIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -330,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   SystemRoute: SystemRoute,
   ThreatsRoute: ThreatsRoute,
   VaultRoute: VaultRoute,
+  EntityIdRoute: EntityIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
