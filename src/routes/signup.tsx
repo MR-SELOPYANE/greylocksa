@@ -19,7 +19,7 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
   const navigate = useNavigate();
-  const { provisionRole, setOperator, setClearance } = useAppState();
+  const { login } = useAppState();
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [role, setRoleLocal] = useState<UserRole>("analyst");
@@ -27,9 +27,11 @@ function SignupPage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    provisionRole(role);
-    setOperator(name.trim() || (role === "admin" ? "admin.you" : "analyst.you"));
-    setClearance(role === "admin" ? "SECRET" : "CONFIDENTIAL");
+    login(
+      name.trim() || (role === "admin" ? "admin.you" : "analyst.you"),
+      role,
+      role === "admin" ? "SECRET" : "CONFIDENTIAL"
+    );
     setTimeout(() => navigate({ to: role === "admin" ? "/system" : "/entities" }), 600);
   };
 

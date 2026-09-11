@@ -18,7 +18,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { provisionRole, setClearance, setOperator } = useAppState();
+  const { login } = useAppState();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRoleLocal] = useState<UserRole>("analyst");
@@ -27,9 +27,11 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     const normalizedEmail = email.trim().toLowerCase();
-    provisionRole(role);
-    setOperator(normalizedEmail || (role === "admin" ? "admin.you" : "analyst.you"));
-    setClearance(role === "admin" ? "SECRET" : "CONFIDENTIAL");
+    login(
+      normalizedEmail || (role === "admin" ? "admin.you" : "analyst.you"),
+      role,
+      role === "admin" ? "SECRET" : "CONFIDENTIAL"
+    );
     setTimeout(() => navigate({ to: "/system" }), 600);
   };
 
