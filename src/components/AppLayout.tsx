@@ -43,6 +43,7 @@ const baseNav = [
   { to: "/vault", icon: Archive, label: "Evidence Vault", roles: ["analyst", "admin"] as UserRole[] },
   { to: "/cases", icon: FolderSearch, label: "Cases", roles: ["analyst", "admin"] as UserRole[] },
   { to: "/sentinel", icon: MessageSquare, label: "Sentinel AI", roles: ["analyst", "admin"] as UserRole[] },
+  { to: "/terminal", icon: TerminalIcon, label: "Terminal", roles: ["analyst", "admin"] as UserRole[] },
   { to: "/custody", icon: Fingerprint, label: "Chain of Custody", roles: ["analyst", "admin"] as UserRole[] },
   { to: "/activity", icon: Activity, label: "Activity", roles: ["analyst", "admin"] as UserRole[] },
   { to: "/sessions", icon: Users, label: "Sessions", roles: ["admin"] as UserRole[] },
