@@ -424,7 +424,19 @@ export function EntitiesView() {
                     </Button>
                   )}
                 </DialogTitle>
-                <DialogDescription>{selectedEntity.identifier}</DialogDescription>
+                <DialogDescription className="flex items-center gap-3">
+                  <span>{selectedEntity.identifier}</span>
+                  <button
+                    className="text-[11px] text-tactical hover:underline"
+                    onClick={() => {
+                      const target = selectedEntity;
+                      setSelectedEntity(null);
+                      navigate({ to: "/entity/$id", params: { id: target.id } });
+                    }}
+                  >
+                    Open full dossier →
+                  </button>
+                </DialogDescription>
               </DialogHeader>
               <ScrollArea className="max-h-[60vh]">
                 <div className="space-y-4">
