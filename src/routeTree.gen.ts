@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as ThreatsRouteImport } from './routes/threats'
+import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SessionsRouteImport } from './routes/sessions'
@@ -33,6 +34,11 @@ const VaultRoute = VaultRouteImport.update({
 const ThreatsRoute = ThreatsRouteImport.update({
   id: '/threats',
   path: '/threats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerminalRoute = TerminalRouteImport.update({
+  id: '/terminal',
+  path: '/terminal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SystemRoute = SystemRouteImport.update({
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/sessions': typeof SessionsRoute
   '/signup': typeof SignupRoute
   '/system': typeof SystemRoute
+  '/terminal': typeof TerminalRoute
   '/threats': typeof ThreatsRoute
   '/vault': typeof VaultRoute
   '/entity/$id': typeof EntityIdRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/sessions': typeof SessionsRoute
   '/signup': typeof SignupRoute
   '/system': typeof SystemRoute
+  '/terminal': typeof TerminalRoute
   '/threats': typeof ThreatsRoute
   '/vault': typeof VaultRoute
   '/entity/$id': typeof EntityIdRoute
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/sessions': typeof SessionsRoute
   '/signup': typeof SignupRoute
   '/system': typeof SystemRoute
+  '/terminal': typeof TerminalRoute
   '/threats': typeof ThreatsRoute
   '/vault': typeof VaultRoute
   '/entity/$id': typeof EntityIdRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/sessions'
     | '/signup'
     | '/system'
+    | '/terminal'
     | '/threats'
     | '/vault'
     | '/entity/$id'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/sessions'
     | '/signup'
     | '/system'
+    | '/terminal'
     | '/threats'
     | '/vault'
     | '/entity/$id'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/sessions'
     | '/signup'
     | '/system'
+    | '/terminal'
     | '/threats'
     | '/vault'
     | '/entity/$id'
@@ -220,6 +232,7 @@ export interface RootRouteChildren {
   SessionsRoute: typeof SessionsRoute
   SignupRoute: typeof SignupRoute
   SystemRoute: typeof SystemRoute
+  TerminalRoute: typeof TerminalRoute
   ThreatsRoute: typeof ThreatsRoute
   VaultRoute: typeof VaultRoute
   EntityIdRoute: typeof EntityIdRoute
@@ -239,6 +252,13 @@ declare module '@tanstack/react-router' {
       path: '/threats'
       fullPath: '/threats'
       preLoaderRoute: typeof ThreatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terminal': {
+      id: '/terminal'
+      path: '/terminal'
+      fullPath: '/terminal'
+      preLoaderRoute: typeof TerminalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/system': {
@@ -348,6 +368,7 @@ const rootRouteChildren: RootRouteChildren = {
   SessionsRoute: SessionsRoute,
   SignupRoute: SignupRoute,
   SystemRoute: SystemRoute,
+  TerminalRoute: TerminalRoute,
   ThreatsRoute: ThreatsRoute,
   VaultRoute: VaultRoute,
   EntityIdRoute: EntityIdRoute,
