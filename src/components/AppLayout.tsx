@@ -22,6 +22,7 @@ import {
   Loader2,
   LogOut,
   Bell,
+  Terminal as TerminalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppState } from "@/lib/store";
