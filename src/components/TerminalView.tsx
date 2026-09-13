@@ -181,7 +181,7 @@ export function TerminalView() {
           await runLive("whois", host, (r) => {
             const w = r.report.whois;
             if (!w) return "(no data)";
-            return [`registrar: ${w.registrar ?? "—"}`, `created:   ${w.createdDate ?? "—"}`, `expires:   ${w.expiresDate ?? "—"}`, `ns:        ${(w.nameservers ?? []).join(", ") || "—"}`, `status:    ${(w.status ?? []).join(", ") || "—"}`].join("\n");
+            return [`registrar: ${w.registrar ?? "—"}`, `created:   ${w.created ?? "—"}`, `updated:   ${w.updated ?? "—"}`, `expires:   ${w.expires ?? "—"}`, `ns:        ${(w.nameservers ?? []).join(", ") || "—"}`, `status:    ${(w.status ?? []).join(", ") || "—"}`].join("\n");
           });
           break;
 
@@ -201,10 +201,9 @@ export function TerminalView() {
         case "headers":
           if (!host) { push("err", "usage: headers <host>"); break; }
           await runLive("headers", host, (r) => {
-            const h = r.report.http; if (!h) return "(no data)";
-            const fmt = (label: string, x: { status?: number; headers?: Record<string, string> } | undefined) =>
-              !x ? `${label}: unreachable` : `${label} ${x.status ?? "?"}\n${Object.entries(x.headers ?? {}).map(([k, v]) => `  ${k}: ${v}`).join("\n") || "  (no headers)"}`;
-            return `${fmt("HTTP  ", h.http)}\n\n${fmt("HTTPS ", h.https)}`;
+            const h = r.report.http; if (!h) return "(unreachable)";
+            const hdrs = Object.entries(h.headers ?? {}).map(([k, v]) => `  ${k}: ${v}`).join("\n") || "  (no headers)";
+            return `${h.scheme.toUpperCase()} ${h.status}\n${hdrs}`;
           });
           break;
 
@@ -221,16 +220,16 @@ export function TerminalView() {
           if (!host) { push("err", "usage: vt <host|ip>"); break; }
           await runLive("vt", host, (r) => {
             const v = r.report.virustotal; if (!v) return "(no vt data — key missing or no record)";
-            const s = v.last_analysis_stats ?? {};
-            return `malicious=${s.malicious ?? 0}  suspicious=${s.suspicious ?? 0}  harmless=${s.harmless ?? 0}  undetected=${s.undetected ?? 0}  reputation=${v.reputation ?? 0}`;
+            return `malicious=${v.malicious}  suspicious=${v.suspicious}  harmless=${v.harmless}  undetected=${v.undetected}  reputation=${v.reputation}  asOwner=${v.asOwner ?? "—"}  country=${v.country ?? "—"}`;
           });
           break;
 
         case "crtsh":
           if (!host) { push("err", "usage: crtsh <domain>"); break; }
           await runLive("crtsh", host, (r) => {
-            const subs = r.report.crtsh?.subdomains ?? [];
-            return subs.length ? subs.slice(0, 100).join("\n") : "(no certificates)";
+            const s = r.report.subdomains;
+            if (!s || !s.count) return "(no certificates)";
+            return `${s.count} subdomains discovered\n${s.sample.slice(0, 100).join("\n")}`;
           });
           break;
 
