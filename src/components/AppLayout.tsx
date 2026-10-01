@@ -23,6 +23,7 @@ import {
   LogOut,
   Bell,
   Menu,
+  X,
   Terminal as TerminalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -220,9 +221,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-muted-foreground">— mutations and scans disabled until lifted by admin.</span>
           </div>
         )}
-        <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6">
-          <div className="flex items-center gap-3">
-            <h1 className="font-mono text-sm font-semibold tracking-wide text-card-foreground">
+        <header className="flex h-14 items-center justify-between gap-2 border-b border-border bg-card px-4 md:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 w-8 shrink-0 p-0 md:hidden"
+              title="Menu"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+            <h1 className="truncate font-mono text-sm font-semibold tracking-wide text-card-foreground">
               {navItems.find((n) => location.pathname.startsWith(n.to))?.label ?? "Dashboard"}
             </h1>
           </div>
@@ -258,7 +268,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             )}
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Role:</span>
+              <span className="hidden text-xs text-muted-foreground sm:inline">Role:</span>
               <Select value={role} onValueChange={handleRoleChange}>
                 <SelectTrigger className="h-7 w-28 bg-secondary text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -325,14 +335,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               Logout
             </Button>
 
-            <div className="flex items-center gap-1.5">
+            <div className="hidden items-center gap-1.5 sm:flex">
               <div className={cn("h-2 w-2 rounded-full animate-pulse-glow", lockdown ? "bg-status-black" : "bg-status-white")} />
               <span className="font-mono text-[10px] uppercase text-muted-foreground">{lockdown ? "Locked" : "Secure"}</span>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
       </div>
     </div>
   );
