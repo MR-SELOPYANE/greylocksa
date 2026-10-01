@@ -124,7 +124,50 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <aside className={cn("flex flex-col border-r border-border bg-sidebar transition-all duration-300", collapsed ? "w-16" : "w-60")}>
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-border bg-sidebar shadow-2xl">
+            <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
+              <Shield className="h-6 w-6 shrink-0 text-tactical" />
+              <span className="font-mono text-sm font-bold tracking-wider text-sidebar-foreground">greyLock</span>
+              <button className="ml-auto text-muted-foreground hover:text-sidebar-foreground" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <nav className="flex-1 space-y-1 overflow-y-auto p-2">
+              {navItems.map((item) => {
+                const isActive = location.pathname.startsWith(item.to);
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      isActive ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="space-y-2 border-t border-sidebar-border p-3">
+              <div className="flex items-center gap-2">
+                <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{clearance}</span>
+              </div>
+              <div className="font-mono text-[10px] text-muted-foreground truncate">
+                {operator} · <span className="uppercase text-tactical">{role}</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      <aside className={cn("hidden flex-col border-r border-border bg-sidebar transition-all duration-300 md:flex", collapsed ? "w-16" : "w-60")}>
         <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
           <Shield className="h-6 w-6 shrink-0 text-tactical" />
           {!collapsed && <span className="font-mono text-sm font-bold tracking-wider text-sidebar-foreground">greyLock</span>}
