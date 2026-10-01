@@ -22,11 +22,12 @@ import {
   Loader2,
   LogOut,
   Bell,
+  Menu,
   Terminal as TerminalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppState } from "@/lib/store";
-import { mockThreats } from "@/lib/security-mock";
+import { deriveIocsFromScans } from "@/lib/derive";
 import type { UserRole } from "@/lib/types";
 import {
   Select,
@@ -54,6 +55,7 @@ const baseNav = [
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { role, setRole, operator, clearance, lockdown, setLockdown, scans, logout,
@@ -61,6 +63,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [bellOpen, setBellOpen] = useState(false);
 
   const navItems = baseNav.filter((n) => n.roles.includes(role));
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setMobileOpen(false);
+    setBellOpen(false);
+  }, [location.pathname]);
 
   // Live Ops metrics
   const running = scans.filter((s) => s.status === "running").length;
@@ -70,9 +78,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   );
   const liveIocMatches = useMemo(() => {
     const set = new Set<string>();
-    mockThreats.forEach((t) => t.matchedEntityIds.forEach((id) => set.add(id)));
+    deriveIocsFromScans(scans).forEach((t) => t.matchedEntityIds.forEach((id) => set.add(id)));
     return set.size;
-  }, []);
+  }, [scans]);
   const alertCount = criticalFindings + liveIocMatches;
   const unread = notifications.filter((n) => !n.read).length;
 
