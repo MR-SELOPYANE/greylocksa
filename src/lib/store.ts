@@ -244,10 +244,10 @@ export function useAppStateProvider(): AppState {
               ...e,
               status,
               lastUpdated: new Date().toISOString(),
-              statusHistory: [
-                ...e.statusHistory,
-                { from: e.status, to: status, changedBy: "operator", timestamp: new Date().toISOString(), reason },
-              ],
+               statusHistory: [
+                 ...e.statusHistory,
+                 { from: e.status, to: status, changedBy: actorRef.current.operator, timestamp: new Date().toISOString(), reason },
+               ],
             }
           : e
       )
@@ -269,7 +269,7 @@ export function useAppStateProvider(): AppState {
       profile,
       status: "running",
       startedAt: new Date().toISOString(),
-      startedBy: "analyst.you",
+      startedBy: actorRef.current.operator,
       findings: [],
       summary: { critical: 0, high: 0, medium: 0, low: 0, info: 0 },
     };
@@ -472,8 +472,8 @@ export function useAppStateProvider(): AppState {
     setCustody((prev) => [
       {
         id: `CUS-${Date.now().toString(36)}`,
-        actor: "admin.you",
-        role: "admin",
+        actor: actorRef.current.operator,
+        role: actorRef.current.role,
         entityId: "SYSTEM",
         action: "LOCKDOWN",
         reason: reason ?? (v ? "Emergency lockdown engaged" : "Lockdown lifted"),
