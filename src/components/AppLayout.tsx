@@ -22,11 +22,13 @@ import {
   Loader2,
   LogOut,
   Bell,
+  Menu,
+  X,
   Terminal as TerminalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppState } from "@/lib/store";
-import { mockThreats } from "@/lib/security-mock";
+import { deriveIocsFromScans } from "@/lib/derive";
 import type { UserRole } from "@/lib/types";
 import {
   Select,
@@ -54,6 +56,7 @@ const baseNav = [
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { role, setRole, operator, clearance, lockdown, setLockdown, scans, logout,
@@ -61,6 +64,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [bellOpen, setBellOpen] = useState(false);
 
   const navItems = baseNav.filter((n) => n.roles.includes(role));
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setMobileOpen(false);
+    setBellOpen(false);
+  }, [location.pathname]);
 
   // Live Ops metrics
   const running = scans.filter((s) => s.status === "running").length;
@@ -70,9 +79,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   );
   const liveIocMatches = useMemo(() => {
     const set = new Set<string>();
-    mockThreats.forEach((t) => t.matchedEntityIds.forEach((id) => set.add(id)));
+    deriveIocsFromScans(scans).forEach((t) => t.matchedEntityIds.forEach((id) => set.add(id)));
     return set.size;
-  }, []);
+  }, [scans]);
   const alertCount = criticalFindings + liveIocMatches;
   const unread = notifications.filter((n) => !n.read).length;
 
@@ -116,7 +125,50 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <aside className={cn("flex flex-col border-r border-border bg-sidebar transition-all duration-300", collapsed ? "w-16" : "w-60")}>
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-border bg-sidebar shadow-2xl">
+            <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
+              <Shield className="h-6 w-6 shrink-0 text-tactical" />
+              <span className="font-mono text-sm font-bold tracking-wider text-sidebar-foreground">greyLock</span>
+              <button className="ml-auto text-muted-foreground hover:text-sidebar-foreground" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <nav className="flex-1 space-y-1 overflow-y-auto p-2">
+              {navItems.map((item) => {
+                const isActive = location.pathname.startsWith(item.to);
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      isActive ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="space-y-2 border-t border-sidebar-border p-3">
+              <div className="flex items-center gap-2">
+                <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{clearance}</span>
+              </div>
+              <div className="font-mono text-[10px] text-muted-foreground truncate">
+                {operator} · <span className="uppercase text-tactical">{role}</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      <aside className={cn("hidden flex-col border-r border-border bg-sidebar transition-all duration-300 md:flex", collapsed ? "w-16" : "w-60")}>
         <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
           <Shield className="h-6 w-6 shrink-0 text-tactical" />
           {!collapsed && <span className="font-mono text-sm font-bold tracking-wider text-sidebar-foreground">greyLock</span>}
@@ -169,9 +221,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="text-muted-foreground">— mutations and scans disabled until lifted by admin.</span>
           </div>
         )}
-        <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6">
-          <div className="flex items-center gap-3">
-            <h1 className="font-mono text-sm font-semibold tracking-wide text-card-foreground">
+        <header className="flex h-14 items-center justify-between gap-2 border-b border-border bg-card px-4 md:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 w-8 shrink-0 p-0 md:hidden"
+              title="Menu"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+            <h1 className="truncate font-mono text-sm font-semibold tracking-wide text-card-foreground">
               {navItems.find((n) => location.pathname.startsWith(n.to))?.label ?? "Dashboard"}
             </h1>
           </div>
@@ -207,7 +268,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             )}
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Role:</span>
+              <span className="hidden text-xs text-muted-foreground sm:inline">Role:</span>
               <Select value={role} onValueChange={handleRoleChange}>
                 <SelectTrigger className="h-7 w-28 bg-secondary text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -274,14 +335,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               Logout
             </Button>
 
-            <div className="flex items-center gap-1.5">
+            <div className="hidden items-center gap-1.5 sm:flex">
               <div className={cn("h-2 w-2 rounded-full animate-pulse-glow", lockdown ? "bg-status-black" : "bg-status-white")} />
               <span className="font-mono text-[10px] uppercase text-muted-foreground">{lockdown ? "Locked" : "Secure"}</span>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
       </div>
     </div>
   );
