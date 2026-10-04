@@ -34,7 +34,7 @@ function requireSemver() {
       major: +myVersionMatch[1],
       minor: +myVersionMatch[2],
       patch: +myVersionMatch[3],
-      prerelease: myVersionMatch[4]
+      prerelease: myVersionMatch[4],
     };
     if (ownVersionParsed.prerelease != null) {
       return function isExactmatch(globalVersion) {
@@ -64,7 +64,7 @@ function requireSemver() {
         major: +globalVersionMatch[1],
         minor: +globalVersionMatch[2],
         patch: +globalVersionMatch[3],
-        prerelease: globalVersionMatch[4]
+        prerelease: globalVersionMatch[4],
       };
       if (globalVersionParsed.prerelease != null) {
         return _reject(globalVersion);
@@ -73,7 +73,10 @@ function requireSemver() {
         return _reject(globalVersion);
       }
       if (ownVersionParsed.major === 0) {
-        if (ownVersionParsed.minor === globalVersionParsed.minor && ownVersionParsed.patch <= globalVersionParsed.patch) {
+        if (
+          ownVersionParsed.minor === globalVersionParsed.minor &&
+          ownVersionParsed.patch <= globalVersionParsed.patch
+        ) {
           return _accept(globalVersion);
         }
         return _reject(globalVersion);
@@ -98,19 +101,33 @@ function requireGlobalUtils() {
   const semver_1 = /* @__PURE__ */ requireSemver();
   const major = version_1.VERSION.split(".")[0];
   const GLOBAL_OPENTELEMETRY_API_KEY = /* @__PURE__ */ Symbol.for(`opentelemetry.js.api.${major}`);
-  const _global = typeof globalThis === "object" ? globalThis : typeof self === "object" ? self : typeof window === "object" ? window : typeof commonjsGlobal === "object" ? commonjsGlobal : {};
+  const _global =
+    typeof globalThis === "object"
+      ? globalThis
+      : typeof self === "object"
+        ? self
+        : typeof window === "object"
+          ? window
+          : typeof commonjsGlobal === "object"
+            ? commonjsGlobal
+            : {};
   function registerGlobal(type, instance, diag2, allowOverride = false) {
     var _a;
-    const api = _global[GLOBAL_OPENTELEMETRY_API_KEY] = (_a = _global[GLOBAL_OPENTELEMETRY_API_KEY]) !== null && _a !== void 0 ? _a : {
-      version: version_1.VERSION
-    };
+    const api = (_global[GLOBAL_OPENTELEMETRY_API_KEY] =
+      (_a = _global[GLOBAL_OPENTELEMETRY_API_KEY]) !== null && _a !== void 0
+        ? _a
+        : {
+            version: version_1.VERSION,
+          });
     if (!allowOverride && api[type]) {
       const err = new Error(`@opentelemetry/api: Attempted duplicate registration of API: ${type}`);
       diag2.error(err.stack || err.message);
       return false;
     }
     if (api.version !== version_1.VERSION) {
-      const err = new Error(`@opentelemetry/api: Registration of version v${api.version} for ${type} does not match previously registered API v${version_1.VERSION}`);
+      const err = new Error(
+        `@opentelemetry/api: Registration of version v${api.version} for ${type} does not match previously registered API v${version_1.VERSION}`,
+      );
       diag2.error(err.stack || err.message);
       return false;
     }
@@ -121,11 +138,14 @@ function requireGlobalUtils() {
   globalUtils.registerGlobal = registerGlobal;
   function getGlobal(type) {
     var _a, _b;
-    const globalVersion = (_a = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _a === void 0 ? void 0 : _a.version;
+    const globalVersion =
+      (_a = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _a === void 0 ? void 0 : _a.version;
     if (!globalVersion || !(0, semver_1.isCompatible)(globalVersion)) {
       return;
     }
-    return (_b = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _b === void 0 ? void 0 : _b[type];
+    return (_b = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _b === void 0
+      ? void 0
+      : _b[type];
   }
   globalUtils.getGlobal = getGlobal;
   function unregisterGlobal(type, diag2) {
@@ -181,17 +201,17 @@ var hasRequiredTypes;
 function requireTypes() {
   if (hasRequiredTypes) return types;
   hasRequiredTypes = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DiagLogLevel = void 0;
-    (function(DiagLogLevel) {
-      DiagLogLevel[DiagLogLevel["NONE"] = 0] = "NONE";
-      DiagLogLevel[DiagLogLevel["ERROR"] = 30] = "ERROR";
-      DiagLogLevel[DiagLogLevel["WARN"] = 50] = "WARN";
-      DiagLogLevel[DiagLogLevel["INFO"] = 60] = "INFO";
-      DiagLogLevel[DiagLogLevel["DEBUG"] = 70] = "DEBUG";
-      DiagLogLevel[DiagLogLevel["VERBOSE"] = 80] = "VERBOSE";
-      DiagLogLevel[DiagLogLevel["ALL"] = 9999] = "ALL";
+    (function (DiagLogLevel) {
+      DiagLogLevel[(DiagLogLevel["NONE"] = 0)] = "NONE";
+      DiagLogLevel[(DiagLogLevel["ERROR"] = 30)] = "ERROR";
+      DiagLogLevel[(DiagLogLevel["WARN"] = 50)] = "WARN";
+      DiagLogLevel[(DiagLogLevel["INFO"] = 60)] = "INFO";
+      DiagLogLevel[(DiagLogLevel["DEBUG"] = 70)] = "DEBUG";
+      DiagLogLevel[(DiagLogLevel["VERBOSE"] = 80)] = "VERBOSE";
+      DiagLogLevel[(DiagLogLevel["ALL"] = 9999)] = "ALL";
     })(exports.DiagLogLevel || (exports.DiagLogLevel = {}));
   })(types);
   return types;
@@ -215,15 +235,14 @@ function requireLogLevelLogger() {
       if (typeof theFunc === "function" && maxLevel >= theLevel) {
         return theFunc.bind(logger);
       }
-      return function() {
-      };
+      return function () {};
     }
     return {
       error: _filterFunc("error", types_1.DiagLogLevel.ERROR),
       warn: _filterFunc("warn", types_1.DiagLogLevel.WARN),
       info: _filterFunc("info", types_1.DiagLogLevel.INFO),
       debug: _filterFunc("debug", types_1.DiagLogLevel.DEBUG),
-      verbose: _filterFunc("verbose", types_1.DiagLogLevel.VERBOSE)
+      verbose: _filterFunc("verbose", types_1.DiagLogLevel.VERBOSE),
     };
   }
   logLevelLogger.createLogLevelDiagLogger = createLogLevelDiagLogger;
@@ -254,10 +273,9 @@ function requireDiag() {
      */
     constructor() {
       function _logProxy(funcName) {
-        return function(...args) {
+        return function (...args) {
           const logger = (0, global_utils_1.getGlobal)("diag");
-          if (!logger)
-            return;
+          if (!logger) return;
           return logger[funcName](...args);
         };
       }
@@ -265,19 +283,29 @@ function requireDiag() {
       const setLogger = (logger, optionsOrLogLevel = { logLevel: types_1.DiagLogLevel.INFO }) => {
         var _a, _b, _c;
         if (logger === self2) {
-          const err = new Error("Cannot use diag as the logger for itself. Please use a DiagLogger implementation like ConsoleDiagLogger or a custom implementation");
+          const err = new Error(
+            "Cannot use diag as the logger for itself. Please use a DiagLogger implementation like ConsoleDiagLogger or a custom implementation",
+          );
           self2.error((_a = err.stack) !== null && _a !== void 0 ? _a : err.message);
           return false;
         }
         if (typeof optionsOrLogLevel === "number") {
           optionsOrLogLevel = {
-            logLevel: optionsOrLogLevel
+            logLevel: optionsOrLogLevel,
           };
         }
         const oldLogger = (0, global_utils_1.getGlobal)("diag");
-        const newLogger = (0, logLevelLogger_1.createLogLevelDiagLogger)((_b = optionsOrLogLevel.logLevel) !== null && _b !== void 0 ? _b : types_1.DiagLogLevel.INFO, logger);
+        const newLogger = (0, logLevelLogger_1.createLogLevelDiagLogger)(
+          (_b = optionsOrLogLevel.logLevel) !== null && _b !== void 0
+            ? _b
+            : types_1.DiagLogLevel.INFO,
+          logger,
+        );
         if (oldLogger && !optionsOrLogLevel.suppressOverrideMessage) {
-          const stack = (_c = new Error().stack) !== null && _c !== void 0 ? _c : "<failed to generate stacktrace>";
+          const stack =
+            (_c = new Error().stack) !== null && _c !== void 0
+              ? _c
+              : "<failed to generate stacktrace>";
           oldLogger.warn(`Current logger will be overwritten from ${stack}`);
           newLogger.warn(`Current logger will overwrite one already registered from ${stack}`);
         }
@@ -378,7 +406,7 @@ function requireUtils$1() {
       __TYPE__: symbol_1.baggageEntryMetadataSymbol,
       toString() {
         return str;
-      }
+      },
     };
   }
   utils$1.baggageEntryMetadataFromString = baggageEntryMetadataFromString;
@@ -425,7 +453,7 @@ var hasRequiredConsoleLogger;
 function requireConsoleLogger() {
   if (hasRequiredConsoleLogger) return consoleLogger;
   hasRequiredConsoleLogger = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DiagConsoleLogger = exports._originalConsoleMethods = void 0;
     const consoleMap = [
@@ -433,18 +461,11 @@ function requireConsoleLogger() {
       { n: "warn", c: "warn" },
       { n: "info", c: "info" },
       { n: "debug", c: "debug" },
-      { n: "verbose", c: "trace" }
+      { n: "verbose", c: "trace" },
     ];
     exports._originalConsoleMethods = {};
     if (typeof console !== "undefined") {
-      const keys = [
-        "error",
-        "warn",
-        "info",
-        "debug",
-        "trace",
-        "log"
-      ];
+      const keys = ["error", "warn", "info", "debug", "trace", "log"];
       for (const key of keys) {
         if (typeof console[key] === "function") {
           exports._originalConsoleMethods[key] = console[key];
@@ -454,7 +475,7 @@ function requireConsoleLogger() {
     class DiagConsoleLogger {
       constructor() {
         function _consoleFunc(funcName) {
-          return function(...args) {
+          return function (...args) {
             let theFunc = exports._originalConsoleMethods[funcName];
             if (typeof theFunc !== "function") {
               theFunc = exports._originalConsoleMethods["log"];
@@ -484,12 +505,30 @@ var hasRequiredNoopMeter;
 function requireNoopMeter() {
   if (hasRequiredNoopMeter) return NoopMeter;
   hasRequiredNoopMeter = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.createNoopMeter = exports.NOOP_OBSERVABLE_UP_DOWN_COUNTER_METRIC = exports.NOOP_OBSERVABLE_GAUGE_METRIC = exports.NOOP_OBSERVABLE_COUNTER_METRIC = exports.NOOP_UP_DOWN_COUNTER_METRIC = exports.NOOP_HISTOGRAM_METRIC = exports.NOOP_GAUGE_METRIC = exports.NOOP_COUNTER_METRIC = exports.NOOP_METER = exports.NoopObservableUpDownCounterMetric = exports.NoopObservableGaugeMetric = exports.NoopObservableCounterMetric = exports.NoopObservableMetric = exports.NoopHistogramMetric = exports.NoopGaugeMetric = exports.NoopUpDownCounterMetric = exports.NoopCounterMetric = exports.NoopMetric = exports.NoopMeter = void 0;
+    exports.createNoopMeter =
+      exports.NOOP_OBSERVABLE_UP_DOWN_COUNTER_METRIC =
+      exports.NOOP_OBSERVABLE_GAUGE_METRIC =
+      exports.NOOP_OBSERVABLE_COUNTER_METRIC =
+      exports.NOOP_UP_DOWN_COUNTER_METRIC =
+      exports.NOOP_HISTOGRAM_METRIC =
+      exports.NOOP_GAUGE_METRIC =
+      exports.NOOP_COUNTER_METRIC =
+      exports.NOOP_METER =
+      exports.NoopObservableUpDownCounterMetric =
+      exports.NoopObservableGaugeMetric =
+      exports.NoopObservableCounterMetric =
+      exports.NoopObservableMetric =
+      exports.NoopHistogramMetric =
+      exports.NoopGaugeMetric =
+      exports.NoopUpDownCounterMetric =
+      exports.NoopCounterMetric =
+      exports.NoopMetric =
+      exports.NoopMeter =
+        void 0;
     class NoopMeter2 {
-      constructor() {
-      }
+      constructor() {}
       /**
        * @see {@link Meter.createGauge}
        */
@@ -535,53 +574,41 @@ function requireNoopMeter() {
       /**
        * @see {@link Meter.addBatchObservableCallback}
        */
-      addBatchObservableCallback(_callback, _observables) {
-      }
+      addBatchObservableCallback(_callback, _observables) {}
       /**
        * @see {@link Meter.removeBatchObservableCallback}
        */
-      removeBatchObservableCallback(_callback) {
-      }
+      removeBatchObservableCallback(_callback) {}
     }
     exports.NoopMeter = NoopMeter2;
-    class NoopMetric {
-    }
+    class NoopMetric {}
     exports.NoopMetric = NoopMetric;
     class NoopCounterMetric extends NoopMetric {
-      add(_value, _attributes) {
-      }
+      add(_value, _attributes) {}
     }
     exports.NoopCounterMetric = NoopCounterMetric;
     class NoopUpDownCounterMetric extends NoopMetric {
-      add(_value, _attributes) {
-      }
+      add(_value, _attributes) {}
     }
     exports.NoopUpDownCounterMetric = NoopUpDownCounterMetric;
     class NoopGaugeMetric extends NoopMetric {
-      record(_value, _attributes) {
-      }
+      record(_value, _attributes) {}
     }
     exports.NoopGaugeMetric = NoopGaugeMetric;
     class NoopHistogramMetric extends NoopMetric {
-      record(_value, _attributes) {
-      }
+      record(_value, _attributes) {}
     }
     exports.NoopHistogramMetric = NoopHistogramMetric;
     class NoopObservableMetric {
-      addCallback(_callback) {
-      }
-      removeCallback(_callback) {
-      }
+      addCallback(_callback) {}
+      removeCallback(_callback) {}
     }
     exports.NoopObservableMetric = NoopObservableMetric;
-    class NoopObservableCounterMetric extends NoopObservableMetric {
-    }
+    class NoopObservableCounterMetric extends NoopObservableMetric {}
     exports.NoopObservableCounterMetric = NoopObservableCounterMetric;
-    class NoopObservableGaugeMetric extends NoopObservableMetric {
-    }
+    class NoopObservableGaugeMetric extends NoopObservableMetric {}
     exports.NoopObservableGaugeMetric = NoopObservableGaugeMetric;
-    class NoopObservableUpDownCounterMetric extends NoopObservableMetric {
-    }
+    class NoopObservableUpDownCounterMetric extends NoopObservableMetric {}
     exports.NoopObservableUpDownCounterMetric = NoopObservableUpDownCounterMetric;
     exports.NOOP_METER = new NoopMeter2();
     exports.NOOP_COUNTER_METRIC = new NoopCounterMetric();
@@ -603,12 +630,12 @@ var hasRequiredMetric;
 function requireMetric() {
   if (hasRequiredMetric) return Metric;
   hasRequiredMetric = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ValueType = void 0;
-    (function(ValueType) {
-      ValueType[ValueType["INT"] = 0] = "INT";
-      ValueType[ValueType["DOUBLE"] = 1] = "DOUBLE";
+    (function (ValueType) {
+      ValueType[(ValueType["INT"] = 0)] = "INT";
+      ValueType[(ValueType["DOUBLE"] = 1)] = "DOUBLE";
     })(exports.ValueType || (exports.ValueType = {}));
   })(Metric);
   return Metric;
@@ -632,7 +659,7 @@ function requireTextMapPropagator() {
         return [];
       }
       return Object.keys(carrier);
-    }
+    },
   };
   TextMapPropagator.defaultTextMapSetter = {
     set(carrier, key, value) {
@@ -640,7 +667,7 @@ function requireTextMapPropagator() {
         return;
       }
       carrier[key] = value;
-    }
+    },
   };
   return TextMapPropagator;
 }
@@ -688,8 +715,7 @@ function requireContext() {
   const NOOP_CONTEXT_MANAGER = new NoopContextManager_1.NoopContextManager();
   class ContextAPI {
     /** Empty private constructor prevents end users from constructing a new instance of the API */
-    constructor() {
-    }
+    constructor() {}
     /** Get the singleton instance of the Context API */
     static getInstance() {
       if (!this._instance) {
@@ -703,7 +729,11 @@ function requireContext() {
      * @returns true if the context manager was successfully registered, else false
      */
     setGlobalContextManager(contextManager) {
-      return (0, global_utils_1.registerGlobal)(API_NAME, contextManager, diag_1.DiagAPI.instance());
+      return (0, global_utils_1.registerGlobal)(
+        API_NAME,
+        contextManager,
+        diag_1.DiagAPI.instance(),
+      );
     }
     /**
      * Get the currently active context
@@ -751,12 +781,12 @@ var hasRequiredTrace_flags;
 function requireTrace_flags() {
   if (hasRequiredTrace_flags) return trace_flags;
   hasRequiredTrace_flags = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TraceFlags = void 0;
-    (function(TraceFlags) {
-      TraceFlags[TraceFlags["NONE"] = 0] = "NONE";
-      TraceFlags[TraceFlags["SAMPLED"] = 1] = "SAMPLED";
+    (function (TraceFlags) {
+      TraceFlags[(TraceFlags["NONE"] = 0)] = "NONE";
+      TraceFlags[(TraceFlags["SAMPLED"] = 1)] = "SAMPLED";
     })(exports.TraceFlags || (exports.TraceFlags = {}));
   })(trace_flags);
   return trace_flags;
@@ -765,7 +795,7 @@ var hasRequiredInvalidSpanConstants;
 function requireInvalidSpanConstants() {
   if (hasRequiredInvalidSpanConstants) return invalidSpanConstants;
   hasRequiredInvalidSpanConstants = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.INVALID_SPAN_CONTEXT = exports.INVALID_TRACEID = exports.INVALID_SPANID = void 0;
     const trace_flags_1 = /* @__PURE__ */ requireTrace_flags();
@@ -774,7 +804,7 @@ function requireInvalidSpanConstants() {
     exports.INVALID_SPAN_CONTEXT = {
       traceId: exports.INVALID_TRACEID,
       spanId: exports.INVALID_SPANID,
-      traceFlags: trace_flags_1.TraceFlags.NONE
+      traceFlags: trace_flags_1.TraceFlags.NONE,
     };
   })(invalidSpanConstants);
   return invalidSpanConstants;
@@ -821,15 +851,13 @@ function requireNonRecordingSpan() {
       return this;
     }
     // By default does nothing
-    end(_endTime) {
-    }
+    end(_endTime) {}
     // isRecording always returns false for NonRecordingSpan.
     isRecording() {
       return false;
     }
     // By default does nothing
-    recordException(_exception, _time) {
-    }
+    recordException(_exception, _time) {}
   };
   NonRecordingSpan.NonRecordingSpan = NonRecordingSpan$1;
   return NonRecordingSpan;
@@ -839,7 +867,13 @@ function requireContextUtils() {
   if (hasRequiredContextUtils) return contextUtils;
   hasRequiredContextUtils = 1;
   Object.defineProperty(contextUtils, "__esModule", { value: true });
-  contextUtils.getSpanContext = contextUtils.setSpanContext = contextUtils.deleteSpan = contextUtils.setSpan = contextUtils.getActiveSpan = contextUtils.getSpan = void 0;
+  contextUtils.getSpanContext =
+    contextUtils.setSpanContext =
+    contextUtils.deleteSpan =
+    contextUtils.setSpan =
+    contextUtils.getActiveSpan =
+    contextUtils.getSpan =
+      void 0;
   const context_1 = /* @__PURE__ */ requireContext$1();
   const NonRecordingSpan_1 = /* @__PURE__ */ requireNonRecordingSpan();
   const context_2 = /* @__PURE__ */ requireContext();
@@ -877,120 +911,28 @@ function requireSpancontextUtils() {
   if (hasRequiredSpancontextUtils) return spancontextUtils;
   hasRequiredSpancontextUtils = 1;
   Object.defineProperty(spancontextUtils, "__esModule", { value: true });
-  spancontextUtils.wrapSpanContext = spancontextUtils.isSpanContextValid = spancontextUtils.isValidSpanId = spancontextUtils.isValidTraceId = void 0;
+  spancontextUtils.wrapSpanContext =
+    spancontextUtils.isSpanContextValid =
+    spancontextUtils.isValidSpanId =
+    spancontextUtils.isValidTraceId =
+      void 0;
   const invalid_span_constants_1 = /* @__PURE__ */ requireInvalidSpanConstants();
   const NonRecordingSpan_1 = /* @__PURE__ */ requireNonRecordingSpan();
   const isHex = new Uint8Array([
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 1, 1,
   ]);
   function isValidHex(id, length) {
-    if (typeof id !== "string" || id.length !== length)
-      return false;
+    if (typeof id !== "string" || id.length !== length) return false;
     let r = 0;
     for (let i = 0; i < id.length; i += 4) {
-      r += (isHex[id.charCodeAt(i)] | 0) + (isHex[id.charCodeAt(i + 1)] | 0) + (isHex[id.charCodeAt(i + 2)] | 0) + (isHex[id.charCodeAt(i + 3)] | 0);
+      r +=
+        (isHex[id.charCodeAt(i)] | 0) +
+        (isHex[id.charCodeAt(i + 1)] | 0) +
+        (isHex[id.charCodeAt(i + 2)] | 0) +
+        (isHex[id.charCodeAt(i + 3)] | 0);
     }
     return r === length;
   }
@@ -1031,7 +973,10 @@ function requireNoopTracer() {
         return new NonRecordingSpan_1.NonRecordingSpan();
       }
       const parentFromContext = context2 && (0, context_utils_1.getSpanContext)(context2);
-      if (isSpanContext(parentFromContext) && (0, spancontext_utils_1.isSpanContextValid)(parentFromContext)) {
+      if (
+        isSpanContext(parentFromContext) &&
+        (0, spancontext_utils_1.isSpanContextValid)(parentFromContext)
+      ) {
         return new NonRecordingSpan_1.NonRecordingSpan(parentFromContext);
       } else {
         return new NonRecordingSpan_1.NonRecordingSpan();
@@ -1061,7 +1006,16 @@ function requireNoopTracer() {
   };
   NoopTracer.NoopTracer = NoopTracer$1;
   function isSpanContext(spanContext) {
-    return spanContext !== null && typeof spanContext === "object" && "spanId" in spanContext && typeof spanContext["spanId"] === "string" && "traceId" in spanContext && typeof spanContext["traceId"] === "string" && "traceFlags" in spanContext && typeof spanContext["traceFlags"] === "number";
+    return (
+      spanContext !== null &&
+      typeof spanContext === "object" &&
+      "spanId" in spanContext &&
+      typeof spanContext["spanId"] === "string" &&
+      "traceId" in spanContext &&
+      typeof spanContext["traceId"] === "string" &&
+      "traceFlags" in spanContext &&
+      typeof spanContext["traceFlags"] === "number"
+    );
   }
   return NoopTracer;
 }
@@ -1138,7 +1092,9 @@ function requireProxyTracerProvider() {
      */
     getTracer(name, version2, options) {
       var _a;
-      return (_a = this.getDelegateTracer(name, version2, options)) !== null && _a !== void 0 ? _a : new ProxyTracer_1.ProxyTracer(this, name, version2, options);
+      return (_a = this.getDelegateTracer(name, version2, options)) !== null && _a !== void 0
+        ? _a
+        : new ProxyTracer_1.ProxyTracer(this, name, version2, options);
     }
     getDelegate() {
       var _a;
@@ -1152,7 +1108,9 @@ function requireProxyTracerProvider() {
     }
     getDelegateTracer(name, version2, options) {
       var _a;
-      return (_a = this._delegate) === null || _a === void 0 ? void 0 : _a.getTracer(name, version2, options);
+      return (_a = this._delegate) === null || _a === void 0
+        ? void 0
+        : _a.getTracer(name, version2, options);
     }
   };
   ProxyTracerProvider.ProxyTracerProvider = ProxyTracerProvider$1;
@@ -1163,13 +1121,13 @@ var hasRequiredSamplingResult;
 function requireSamplingResult() {
   if (hasRequiredSamplingResult) return SamplingResult;
   hasRequiredSamplingResult = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SamplingDecision = void 0;
-    (function(SamplingDecision) {
-      SamplingDecision[SamplingDecision["NOT_RECORD"] = 0] = "NOT_RECORD";
-      SamplingDecision[SamplingDecision["RECORD"] = 1] = "RECORD";
-      SamplingDecision[SamplingDecision["RECORD_AND_SAMPLED"] = 2] = "RECORD_AND_SAMPLED";
+    (function (SamplingDecision) {
+      SamplingDecision[(SamplingDecision["NOT_RECORD"] = 0)] = "NOT_RECORD";
+      SamplingDecision[(SamplingDecision["RECORD"] = 1)] = "RECORD";
+      SamplingDecision[(SamplingDecision["RECORD_AND_SAMPLED"] = 2)] = "RECORD_AND_SAMPLED";
     })(exports.SamplingDecision || (exports.SamplingDecision = {}));
   })(SamplingResult);
   return SamplingResult;
@@ -1179,15 +1137,15 @@ var hasRequiredSpan_kind;
 function requireSpan_kind() {
   if (hasRequiredSpan_kind) return span_kind;
   hasRequiredSpan_kind = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SpanKind = void 0;
-    (function(SpanKind) {
-      SpanKind[SpanKind["INTERNAL"] = 0] = "INTERNAL";
-      SpanKind[SpanKind["SERVER"] = 1] = "SERVER";
-      SpanKind[SpanKind["CLIENT"] = 2] = "CLIENT";
-      SpanKind[SpanKind["PRODUCER"] = 3] = "PRODUCER";
-      SpanKind[SpanKind["CONSUMER"] = 4] = "CONSUMER";
+    (function (SpanKind) {
+      SpanKind[(SpanKind["INTERNAL"] = 0)] = "INTERNAL";
+      SpanKind[(SpanKind["SERVER"] = 1)] = "SERVER";
+      SpanKind[(SpanKind["CLIENT"] = 2)] = "CLIENT";
+      SpanKind[(SpanKind["PRODUCER"] = 3)] = "PRODUCER";
+      SpanKind[(SpanKind["CONSUMER"] = 4)] = "CONSUMER";
     })(exports.SpanKind || (exports.SpanKind = {}));
   })(span_kind);
   return span_kind;
@@ -1197,13 +1155,13 @@ var hasRequiredStatus;
 function requireStatus() {
   if (hasRequiredStatus) return status;
   hasRequiredStatus = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SpanStatusCode = void 0;
-    (function(SpanStatusCode) {
-      SpanStatusCode[SpanStatusCode["UNSET"] = 0] = "UNSET";
-      SpanStatusCode[SpanStatusCode["OK"] = 1] = "OK";
-      SpanStatusCode[SpanStatusCode["ERROR"] = 2] = "ERROR";
+    (function (SpanStatusCode) {
+      SpanStatusCode[(SpanStatusCode["UNSET"] = 0)] = "UNSET";
+      SpanStatusCode[(SpanStatusCode["OK"] = 1)] = "OK";
+      SpanStatusCode[(SpanStatusCode["ERROR"] = 2)] = "ERROR";
     })(exports.SpanStatusCode || (exports.SpanStatusCode = {}));
   })(status);
   return status;
@@ -1247,8 +1205,7 @@ function requireTracestateImpl() {
   class TraceStateImpl {
     constructor(rawTraceState) {
       this._internalState = /* @__PURE__ */ new Map();
-      if (rawTraceState)
-        this._parse(rawTraceState);
+      if (rawTraceState) this._parse(rawTraceState);
     }
     set(key, value) {
       const traceState = this._clone();
@@ -1267,28 +1224,34 @@ function requireTracestateImpl() {
       return this._internalState.get(key);
     }
     serialize() {
-      return Array.from(this._internalState.keys()).reduceRight((agg, key) => {
-        agg.push(key + LIST_MEMBER_KEY_VALUE_SPLITTER + this.get(key));
-        return agg;
-      }, []).join(LIST_MEMBERS_SEPARATOR);
+      return Array.from(this._internalState.keys())
+        .reduceRight((agg, key) => {
+          agg.push(key + LIST_MEMBER_KEY_VALUE_SPLITTER + this.get(key));
+          return agg;
+        }, [])
+        .join(LIST_MEMBERS_SEPARATOR);
     }
     _parse(rawTraceState) {
-      if (rawTraceState.length > MAX_TRACE_STATE_LEN)
-        return;
+      if (rawTraceState.length > MAX_TRACE_STATE_LEN) return;
       this._internalState = rawTraceState.split(LIST_MEMBERS_SEPARATOR).reduceRight((agg, part) => {
         const listMember = part.trim();
         const i = listMember.indexOf(LIST_MEMBER_KEY_VALUE_SPLITTER);
         if (i !== -1) {
           const key = listMember.slice(0, i);
           const value = listMember.slice(i + 1, part.length);
-          if ((0, tracestate_validators_1.validateKey)(key) && (0, tracestate_validators_1.validateValue)(value)) {
+          if (
+            (0, tracestate_validators_1.validateKey)(key) &&
+            (0, tracestate_validators_1.validateValue)(value)
+          ) {
             agg.set(key, value);
           }
         }
         return agg;
       }, /* @__PURE__ */ new Map());
       if (this._internalState.size > MAX_TRACE_STATE_ITEMS) {
-        this._internalState = new Map(Array.from(this._internalState.entries()).reverse().slice(0, MAX_TRACE_STATE_ITEMS));
+        this._internalState = new Map(
+          Array.from(this._internalState.entries()).reverse().slice(0, MAX_TRACE_STATE_ITEMS),
+        );
       }
     }
     // @ts-expect-error TS6133 Accessed in tests only.
@@ -1370,8 +1333,7 @@ function requireMetrics() {
   const API_NAME = "metrics";
   class MetricsAPI {
     /** Empty private constructor prevents end users from constructing a new instance of the API */
-    constructor() {
-    }
+    constructor() {}
     /** Get the singleton instance of the Metrics API */
     static getInstance() {
       if (!this._instance) {
@@ -1427,8 +1389,7 @@ function requireNoopTextMapPropagator() {
   NoopTextMapPropagator.NoopTextMapPropagator = void 0;
   let NoopTextMapPropagator$1 = class NoopTextMapPropagator {
     /** Noop inject function does nothing */
-    inject(_context, _carrier) {
-    }
+    inject(_context, _carrier) {}
     /** Noop extract function does nothing and returns the input context */
     extract(context2, _carrier) {
       return context2;
@@ -1446,7 +1407,11 @@ function requireContextHelpers() {
   if (hasRequiredContextHelpers) return contextHelpers;
   hasRequiredContextHelpers = 1;
   Object.defineProperty(contextHelpers, "__esModule", { value: true });
-  contextHelpers.deleteBaggage = contextHelpers.setBaggage = contextHelpers.getActiveBaggage = contextHelpers.getBaggage = void 0;
+  contextHelpers.deleteBaggage =
+    contextHelpers.setBaggage =
+    contextHelpers.getActiveBaggage =
+    contextHelpers.getBaggage =
+      void 0;
   const context_1 = /* @__PURE__ */ requireContext();
   const context_2 = /* @__PURE__ */ requireContext$1();
   const BAGGAGE_KEY = (0, context_2.createContextKey)("OpenTelemetry Baggage Key");
@@ -1593,7 +1558,11 @@ function requireTrace() {
      * @returns true if the tracer provider was successfully registered, else false
      */
     setGlobalTracerProvider(provider) {
-      const success = (0, global_utils_1.registerGlobal)(API_NAME, this._proxyTracerProvider, diag_1.DiagAPI.instance());
+      const success = (0, global_utils_1.registerGlobal)(
+        API_NAME,
+        this._proxyTracerProvider,
+        diag_1.DiagAPI.instance(),
+      );
       if (success) {
         this._proxyTracerProvider.setDelegate(provider);
       }
@@ -1634,122 +1603,228 @@ var hasRequiredSrc;
 function requireSrc() {
   if (hasRequiredSrc) return src;
   hasRequiredSrc = 1;
-  (function(exports) {
+  (function (exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.trace = exports.propagation = exports.metrics = exports.diag = exports.context = exports.INVALID_SPAN_CONTEXT = exports.INVALID_TRACEID = exports.INVALID_SPANID = exports.isValidSpanId = exports.isValidTraceId = exports.isSpanContextValid = exports.createTraceState = exports.TraceFlags = exports.SpanStatusCode = exports.SpanKind = exports.SamplingDecision = exports.ProxyTracerProvider = exports.ProxyTracer = exports.defaultTextMapSetter = exports.defaultTextMapGetter = exports.ValueType = exports.createNoopMeter = exports.DiagLogLevel = exports.DiagConsoleLogger = exports.ROOT_CONTEXT = exports.createContextKey = exports.baggageEntryMetadataFromString = void 0;
+    exports.trace =
+      exports.propagation =
+      exports.metrics =
+      exports.diag =
+      exports.context =
+      exports.INVALID_SPAN_CONTEXT =
+      exports.INVALID_TRACEID =
+      exports.INVALID_SPANID =
+      exports.isValidSpanId =
+      exports.isValidTraceId =
+      exports.isSpanContextValid =
+      exports.createTraceState =
+      exports.TraceFlags =
+      exports.SpanStatusCode =
+      exports.SpanKind =
+      exports.SamplingDecision =
+      exports.ProxyTracerProvider =
+      exports.ProxyTracer =
+      exports.defaultTextMapSetter =
+      exports.defaultTextMapGetter =
+      exports.ValueType =
+      exports.createNoopMeter =
+      exports.DiagLogLevel =
+      exports.DiagConsoleLogger =
+      exports.ROOT_CONTEXT =
+      exports.createContextKey =
+      exports.baggageEntryMetadataFromString =
+        void 0;
     var utils_1 = /* @__PURE__ */ requireUtils$1();
-    Object.defineProperty(exports, "baggageEntryMetadataFromString", { enumerable: true, get: function() {
-      return utils_1.baggageEntryMetadataFromString;
-    } });
+    Object.defineProperty(exports, "baggageEntryMetadataFromString", {
+      enumerable: true,
+      get: function () {
+        return utils_1.baggageEntryMetadataFromString;
+      },
+    });
     var context_1 = /* @__PURE__ */ requireContext$1();
-    Object.defineProperty(exports, "createContextKey", { enumerable: true, get: function() {
-      return context_1.createContextKey;
-    } });
-    Object.defineProperty(exports, "ROOT_CONTEXT", { enumerable: true, get: function() {
-      return context_1.ROOT_CONTEXT;
-    } });
+    Object.defineProperty(exports, "createContextKey", {
+      enumerable: true,
+      get: function () {
+        return context_1.createContextKey;
+      },
+    });
+    Object.defineProperty(exports, "ROOT_CONTEXT", {
+      enumerable: true,
+      get: function () {
+        return context_1.ROOT_CONTEXT;
+      },
+    });
     var consoleLogger_1 = /* @__PURE__ */ requireConsoleLogger();
-    Object.defineProperty(exports, "DiagConsoleLogger", { enumerable: true, get: function() {
-      return consoleLogger_1.DiagConsoleLogger;
-    } });
+    Object.defineProperty(exports, "DiagConsoleLogger", {
+      enumerable: true,
+      get: function () {
+        return consoleLogger_1.DiagConsoleLogger;
+      },
+    });
     var types_1 = /* @__PURE__ */ requireTypes();
-    Object.defineProperty(exports, "DiagLogLevel", { enumerable: true, get: function() {
-      return types_1.DiagLogLevel;
-    } });
+    Object.defineProperty(exports, "DiagLogLevel", {
+      enumerable: true,
+      get: function () {
+        return types_1.DiagLogLevel;
+      },
+    });
     var NoopMeter_1 = /* @__PURE__ */ requireNoopMeter();
-    Object.defineProperty(exports, "createNoopMeter", { enumerable: true, get: function() {
-      return NoopMeter_1.createNoopMeter;
-    } });
+    Object.defineProperty(exports, "createNoopMeter", {
+      enumerable: true,
+      get: function () {
+        return NoopMeter_1.createNoopMeter;
+      },
+    });
     var Metric_1 = /* @__PURE__ */ requireMetric();
-    Object.defineProperty(exports, "ValueType", { enumerable: true, get: function() {
-      return Metric_1.ValueType;
-    } });
+    Object.defineProperty(exports, "ValueType", {
+      enumerable: true,
+      get: function () {
+        return Metric_1.ValueType;
+      },
+    });
     var TextMapPropagator_1 = /* @__PURE__ */ requireTextMapPropagator();
-    Object.defineProperty(exports, "defaultTextMapGetter", { enumerable: true, get: function() {
-      return TextMapPropagator_1.defaultTextMapGetter;
-    } });
-    Object.defineProperty(exports, "defaultTextMapSetter", { enumerable: true, get: function() {
-      return TextMapPropagator_1.defaultTextMapSetter;
-    } });
+    Object.defineProperty(exports, "defaultTextMapGetter", {
+      enumerable: true,
+      get: function () {
+        return TextMapPropagator_1.defaultTextMapGetter;
+      },
+    });
+    Object.defineProperty(exports, "defaultTextMapSetter", {
+      enumerable: true,
+      get: function () {
+        return TextMapPropagator_1.defaultTextMapSetter;
+      },
+    });
     var ProxyTracer_1 = /* @__PURE__ */ requireProxyTracer();
-    Object.defineProperty(exports, "ProxyTracer", { enumerable: true, get: function() {
-      return ProxyTracer_1.ProxyTracer;
-    } });
+    Object.defineProperty(exports, "ProxyTracer", {
+      enumerable: true,
+      get: function () {
+        return ProxyTracer_1.ProxyTracer;
+      },
+    });
     var ProxyTracerProvider_1 = /* @__PURE__ */ requireProxyTracerProvider();
-    Object.defineProperty(exports, "ProxyTracerProvider", { enumerable: true, get: function() {
-      return ProxyTracerProvider_1.ProxyTracerProvider;
-    } });
+    Object.defineProperty(exports, "ProxyTracerProvider", {
+      enumerable: true,
+      get: function () {
+        return ProxyTracerProvider_1.ProxyTracerProvider;
+      },
+    });
     var SamplingResult_1 = /* @__PURE__ */ requireSamplingResult();
-    Object.defineProperty(exports, "SamplingDecision", { enumerable: true, get: function() {
-      return SamplingResult_1.SamplingDecision;
-    } });
+    Object.defineProperty(exports, "SamplingDecision", {
+      enumerable: true,
+      get: function () {
+        return SamplingResult_1.SamplingDecision;
+      },
+    });
     var span_kind_1 = /* @__PURE__ */ requireSpan_kind();
-    Object.defineProperty(exports, "SpanKind", { enumerable: true, get: function() {
-      return span_kind_1.SpanKind;
-    } });
+    Object.defineProperty(exports, "SpanKind", {
+      enumerable: true,
+      get: function () {
+        return span_kind_1.SpanKind;
+      },
+    });
     var status_1 = /* @__PURE__ */ requireStatus();
-    Object.defineProperty(exports, "SpanStatusCode", { enumerable: true, get: function() {
-      return status_1.SpanStatusCode;
-    } });
+    Object.defineProperty(exports, "SpanStatusCode", {
+      enumerable: true,
+      get: function () {
+        return status_1.SpanStatusCode;
+      },
+    });
     var trace_flags_1 = /* @__PURE__ */ requireTrace_flags();
-    Object.defineProperty(exports, "TraceFlags", { enumerable: true, get: function() {
-      return trace_flags_1.TraceFlags;
-    } });
+    Object.defineProperty(exports, "TraceFlags", {
+      enumerable: true,
+      get: function () {
+        return trace_flags_1.TraceFlags;
+      },
+    });
     var utils_2 = /* @__PURE__ */ requireUtils();
-    Object.defineProperty(exports, "createTraceState", { enumerable: true, get: function() {
-      return utils_2.createTraceState;
-    } });
+    Object.defineProperty(exports, "createTraceState", {
+      enumerable: true,
+      get: function () {
+        return utils_2.createTraceState;
+      },
+    });
     var spancontext_utils_1 = /* @__PURE__ */ requireSpancontextUtils();
-    Object.defineProperty(exports, "isSpanContextValid", { enumerable: true, get: function() {
-      return spancontext_utils_1.isSpanContextValid;
-    } });
-    Object.defineProperty(exports, "isValidTraceId", { enumerable: true, get: function() {
-      return spancontext_utils_1.isValidTraceId;
-    } });
-    Object.defineProperty(exports, "isValidSpanId", { enumerable: true, get: function() {
-      return spancontext_utils_1.isValidSpanId;
-    } });
+    Object.defineProperty(exports, "isSpanContextValid", {
+      enumerable: true,
+      get: function () {
+        return spancontext_utils_1.isSpanContextValid;
+      },
+    });
+    Object.defineProperty(exports, "isValidTraceId", {
+      enumerable: true,
+      get: function () {
+        return spancontext_utils_1.isValidTraceId;
+      },
+    });
+    Object.defineProperty(exports, "isValidSpanId", {
+      enumerable: true,
+      get: function () {
+        return spancontext_utils_1.isValidSpanId;
+      },
+    });
     var invalid_span_constants_1 = /* @__PURE__ */ requireInvalidSpanConstants();
-    Object.defineProperty(exports, "INVALID_SPANID", { enumerable: true, get: function() {
-      return invalid_span_constants_1.INVALID_SPANID;
-    } });
-    Object.defineProperty(exports, "INVALID_TRACEID", { enumerable: true, get: function() {
-      return invalid_span_constants_1.INVALID_TRACEID;
-    } });
-    Object.defineProperty(exports, "INVALID_SPAN_CONTEXT", { enumerable: true, get: function() {
-      return invalid_span_constants_1.INVALID_SPAN_CONTEXT;
-    } });
+    Object.defineProperty(exports, "INVALID_SPANID", {
+      enumerable: true,
+      get: function () {
+        return invalid_span_constants_1.INVALID_SPANID;
+      },
+    });
+    Object.defineProperty(exports, "INVALID_TRACEID", {
+      enumerable: true,
+      get: function () {
+        return invalid_span_constants_1.INVALID_TRACEID;
+      },
+    });
+    Object.defineProperty(exports, "INVALID_SPAN_CONTEXT", {
+      enumerable: true,
+      get: function () {
+        return invalid_span_constants_1.INVALID_SPAN_CONTEXT;
+      },
+    });
     const context_api_1 = /* @__PURE__ */ requireContextApi();
-    Object.defineProperty(exports, "context", { enumerable: true, get: function() {
-      return context_api_1.context;
-    } });
+    Object.defineProperty(exports, "context", {
+      enumerable: true,
+      get: function () {
+        return context_api_1.context;
+      },
+    });
     const diag_api_1 = /* @__PURE__ */ requireDiagApi();
-    Object.defineProperty(exports, "diag", { enumerable: true, get: function() {
-      return diag_api_1.diag;
-    } });
+    Object.defineProperty(exports, "diag", {
+      enumerable: true,
+      get: function () {
+        return diag_api_1.diag;
+      },
+    });
     const metrics_api_1 = /* @__PURE__ */ requireMetricsApi();
-    Object.defineProperty(exports, "metrics", { enumerable: true, get: function() {
-      return metrics_api_1.metrics;
-    } });
+    Object.defineProperty(exports, "metrics", {
+      enumerable: true,
+      get: function () {
+        return metrics_api_1.metrics;
+      },
+    });
     const propagation_api_1 = /* @__PURE__ */ requirePropagationApi();
-    Object.defineProperty(exports, "propagation", { enumerable: true, get: function() {
-      return propagation_api_1.propagation;
-    } });
+    Object.defineProperty(exports, "propagation", {
+      enumerable: true,
+      get: function () {
+        return propagation_api_1.propagation;
+      },
+    });
     const trace_api_1 = /* @__PURE__ */ requireTraceApi();
-    Object.defineProperty(exports, "trace", { enumerable: true, get: function() {
-      return trace_api_1.trace;
-    } });
+    Object.defineProperty(exports, "trace", {
+      enumerable: true,
+      get: function () {
+        return trace_api_1.trace;
+      },
+    });
     exports.default = {
       context: context_api_1.context,
       diag: diag_api_1.diag,
       metrics: metrics_api_1.metrics,
       propagation: propagation_api_1.propagation,
-      trace: trace_api_1.trace
+      trace: trace_api_1.trace,
     };
   })(src);
   return src;
 }
 var srcExports = /* @__PURE__ */ requireSrc();
-export {
-  srcExports as s
-};
+export { srcExports as s };

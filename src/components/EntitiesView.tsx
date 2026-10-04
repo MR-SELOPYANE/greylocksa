@@ -31,10 +31,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Filter, Eye, Pencil, Trash2, Database, X, Plus, Download, ChevronDown, Bug, FolderSearch } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Eye,
+  Pencil,
+  Trash2,
+  Database,
+  X,
+  Plus,
+  Download,
+  ChevronDown,
+  Bug,
+  FolderSearch,
+} from "lucide-react";
 
 export function EntitiesView() {
-  const { role, entities, cases, scans, updateEntityStatus, deleteEntity, startScan, logCustody, lockdown } = useAppState();
+  const {
+    role,
+    entities,
+    cases,
+    scans,
+    updateEntityStatus,
+    deleteEntity,
+    startScan,
+    logCustody,
+    lockdown,
+  } = useAppState();
   const navigate = useNavigate();
   const [addOpen, setAddOpen] = useState(false);
   const [editEntity, setEditEntity] = useState<Entity | null>(null);
@@ -51,7 +74,8 @@ export function EntitiesView() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      const typing = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+      const typing =
+        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
       if (e.key === "/" && !typing) {
         e.preventDefault();
         searchRef.current?.focus();
@@ -66,7 +90,11 @@ export function EntitiesView() {
   }, []);
 
   const hasActiveFilters =
-    typeFilter !== "all" || statusFilter !== "all" || riskRange[0] !== 0 || riskRange[1] !== 100 || search !== "";
+    typeFilter !== "all" ||
+    statusFilter !== "all" ||
+    riskRange[0] !== 0 ||
+    riskRange[1] !== 100 ||
+    search !== "";
 
   const resetFilters = () => {
     setSearch("");
@@ -77,7 +105,12 @@ export function EntitiesView() {
 
   const filtered = useMemo(() => {
     return entities.filter((e) => {
-      if (search && !e.identifier.toLowerCase().includes(search.toLowerCase()) && !e.id.toLowerCase().includes(search.toLowerCase())) return false;
+      if (
+        search &&
+        !e.identifier.toLowerCase().includes(search.toLowerCase()) &&
+        !e.id.toLowerCase().includes(search.toLowerCase())
+      )
+        return false;
       if (typeFilter !== "all" && e.type !== typeFilter) return false;
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
       if (e.riskScore < riskRange[0] || e.riskScore > riskRange[1]) return false;
@@ -120,7 +153,9 @@ export function EntitiesView() {
 
   const bulkPromote = (status: EntityStatus) => {
     const ids = Array.from(selectedIds);
-    ids.forEach((id) => updateEntityStatus(id, status, `Bulk promotion to ${status.toUpperCase()}`));
+    ids.forEach((id) =>
+      updateEntityStatus(id, status, `Bulk promotion to ${status.toUpperCase()}`),
+    );
     toast.success(`${ids.length} entities → ${status.toUpperCase()}`);
     clearSelection();
   };
@@ -131,7 +166,13 @@ export function EntitiesView() {
     clearSelection();
   };
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   const canMutate = role === "analyst" || role === "admin";
   const canDelete = role === "admin";
@@ -163,7 +204,12 @@ export function EntitiesView() {
           Filters
         </Button>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1.5 text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetFilters}
+            className="gap-1.5 text-muted-foreground"
+          >
             <X className="h-3.5 w-3.5" />
             Clear
           </Button>
@@ -193,9 +239,7 @@ export function EntitiesView() {
       {/* Bulk action toolbar */}
       {selectedIds.size > 0 && (
         <div className="flex flex-wrap items-center gap-3 rounded-md border border-tactical/40 bg-tactical/5 px-4 py-2">
-          <span className="font-mono text-xs text-tactical">
-            {selectedIds.size} selected
-          </span>
+          <span className="font-mono text-xs text-tactical">{selectedIds.size} selected</span>
           {canMutate && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -204,9 +248,15 @@ export function EntitiesView() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => bulkPromote("grey")}>Grey (review)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => bulkPromote("black")}>Black (block)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => bulkPromote("white")}>White (clear)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => bulkPromote("grey")}>
+                  Grey (review)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => bulkPromote("black")}>
+                  Black (block)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => bulkPromote("white")}>
+                  White (clear)
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -221,7 +271,12 @@ export function EntitiesView() {
               Purge
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={clearSelection} className="ml-auto h-7 gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearSelection}
+            className="ml-auto h-7 gap-1.5"
+          >
             <X className="h-3 w-3" />
             Clear
           </Button>
@@ -231,9 +286,13 @@ export function EntitiesView() {
       {showFilters && (
         <div className="flex flex-wrap items-end gap-4 rounded-lg border border-border bg-surface p-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Type</label>
+            <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+              Type
+            </label>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="h-8 w-32 bg-input text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-8 w-32 bg-input text-xs">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="web">Website</SelectItem>
@@ -247,9 +306,13 @@ export function EntitiesView() {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Status</label>
+            <label className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+              Status
+            </label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-8 w-28 bg-input text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-8 w-28 bg-input text-xs">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
                 <SelectItem value="grey">Grey</SelectItem>
@@ -286,99 +349,147 @@ export function EntitiesView() {
                   aria-label="Select all"
                 />
               </th>
-              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">ID</th>
-              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Type</th>
-              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Identifier</th>
-              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Risk</th>
-              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Status</th>
-              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Updated</th>
-              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Actions</th>
+              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                ID
+              </th>
+              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Type
+              </th>
+              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Identifier
+              </th>
+              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Risk
+              </th>
+              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Status
+              </th>
+              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Updated
+              </th>
+              <th className="px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((e) => {
               const scannable = ["web", "app", "platform", "domain", "ip"].includes(e.type);
               return (
-              <tr
-                key={e.id}
-                onClick={() => {
-                  setSelectedEntity(e);
-                  logCustody({ entityId: e.id, action: "VIEW", reason: "Detail panel opened" });
-                }}
-                className={`cursor-pointer border-b border-border transition-colors hover:bg-accent ${selectedIds.has(e.id) ? "bg-tactical/5" : ""}`}
-              >
-                <td className="px-4 py-3" onClick={(ev) => ev.stopPropagation()}>
-                  <Checkbox
-                    checked={selectedIds.has(e.id)}
-                    onCheckedChange={() => toggleOne(e.id)}
-                    aria-label={`Select ${e.id}`}
-                  />
-                </td>
-                <td className="px-4 py-3 font-mono text-xs text-tactical">{e.id}</td>
-                <td className="px-4 py-3"><TypeBadge type={e.type} /></td>
-                <td className="px-4 py-3 text-foreground">{e.identifier}</td>
-                <td className="px-4 py-3"><RiskScore score={e.riskScore} /></td>
-                <td className="px-4 py-3"><StatusBadge status={e.status} /></td>
-                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{formatDate(e.lastUpdated)}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(ev) => {
-                      ev.stopPropagation();
-                      setSelectedEntity(e);
-                      logCustody({ entityId: e.id, action: "VIEW", reason: "Detail panel opened" });
-                    }}>
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
-                    {scannable && canMutate && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-tactical"
-                        title="Run vulnerability scan"
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          if (lockdown) { toast.error("System locked down"); return; }
-                          const scan = startScan(e.id, "active");
-                          logCustody({ entityId: e.id, action: "SCAN", reason: "Active scan from row action" });
-                          toast.success(`Scan ${scan.id} dispatched`, { description: `View results in Scans tab.` });
-                          navigate({ to: "/scans" });
-                        }}
-                      >
-                        <Bug className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                    {canMutate && (
+                <tr
+                  key={e.id}
+                  onClick={() => {
+                    setSelectedEntity(e);
+                    logCustody({ entityId: e.id, action: "VIEW", reason: "Detail panel opened" });
+                  }}
+                  className={`cursor-pointer border-b border-border transition-colors hover:bg-accent ${selectedIds.has(e.id) ? "bg-tactical/5" : ""}`}
+                >
+                  <td className="px-4 py-3" onClick={(ev) => ev.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedIds.has(e.id)}
+                      onCheckedChange={() => toggleOne(e.id)}
+                      aria-label={`Select ${e.id}`}
+                    />
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-tactical">{e.id}</td>
+                  <td className="px-4 py-3">
+                    <TypeBadge type={e.type} />
+                  </td>
+                  <td className="px-4 py-3 text-foreground">{e.identifier}</td>
+                  <td className="px-4 py-3">
+                    <RiskScore score={e.riskScore} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={e.status} />
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                    {formatDate(e.lastUpdated)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        title="Edit"
-                        onClick={(ev) => { ev.stopPropagation(); setEditEntity(e); }}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                    {canDelete && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive"
                         onClick={(ev) => {
                           ev.stopPropagation();
-                          if (lockdown) { toast.error("System locked down"); return; }
-                          const reason = prompt(`Reason for purging ${e.id}:`);
-                          if (!reason) return;
-                          deleteEntity(e.id);
-                          logCustody({ entityId: e.id, action: "DELETE", reason });
-                          toast.warning(`Purged ${e.id}`, { description: "Chain-of-custody updated." });
+                          setSelectedEntity(e);
+                          logCustody({
+                            entityId: e.id,
+                            action: "VIEW",
+                            reason: "Detail panel opened",
+                          });
                         }}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Eye className="h-3.5 w-3.5" />
                       </Button>
-                    )}
-                  </div>
-                </td>
-              </tr>
+                      {scannable && canMutate && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-tactical"
+                          title="Run vulnerability scan"
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            if (lockdown) {
+                              toast.error("System locked down");
+                              return;
+                            }
+                            const scan = startScan(e.id, "active");
+                            logCustody({
+                              entityId: e.id,
+                              action: "SCAN",
+                              reason: "Active scan from row action",
+                            });
+                            toast.success(`Scan ${scan.id} dispatched`, {
+                              description: `View results in Scans tab.`,
+                            });
+                            navigate({ to: "/scans" });
+                          }}
+                        >
+                          <Bug className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {canMutate && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          title="Edit"
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            setEditEntity(e);
+                          }}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive"
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            if (lockdown) {
+                              toast.error("System locked down");
+                              return;
+                            }
+                            const reason = prompt(`Reason for purging ${e.id}:`);
+                            if (!reason) return;
+                            deleteEntity(e.id);
+                            logCustody({ entityId: e.id, action: "DELETE", reason });
+                            toast.warning(`Purged ${e.id}`, {
+                              description: "Chain-of-custody updated.",
+                            });
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
               );
             })}
           </tbody>
@@ -387,7 +498,9 @@ export function EntitiesView() {
           <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
             <Database className="h-8 w-8 text-muted-foreground/50" />
             <p className="font-mono text-sm text-foreground">No entities match the filter</p>
-            <p className="text-xs text-muted-foreground">Adjust your query or clear active filters.</p>
+            <p className="text-xs text-muted-foreground">
+              Adjust your query or clear active filters.
+            </p>
             {hasActiveFilters && (
               <Button variant="outline" size="sm" onClick={resetFilters} className="mt-2 gap-1.5">
                 <X className="h-3.5 w-3.5" />
@@ -442,18 +555,28 @@ export function EntitiesView() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-6">
                     <div>
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Risk Score</span>
-                      <div className="mt-1"><RiskScore score={selectedEntity.riskScore} /></div>
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                        Risk Score
+                      </span>
+                      <div className="mt-1">
+                        <RiskScore score={selectedEntity.riskScore} />
+                      </div>
                     </div>
                     <div>
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Last Updated</span>
-                      <div className="mt-1 font-mono text-xs text-muted-foreground">{formatDate(selectedEntity.lastUpdated)}</div>
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                        Last Updated
+                      </span>
+                      <div className="mt-1 font-mono text-xs text-muted-foreground">
+                        {formatDate(selectedEntity.lastUpdated)}
+                      </div>
                     </div>
                   </div>
 
                   {/* Metadata */}
                   <div>
-                    <h4 className="mb-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Metadata</h4>
+                    <h4 className="mb-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                      Metadata
+                    </h4>
                     <pre className="overflow-auto rounded-md bg-background p-3 font-mono text-xs text-foreground">
                       {JSON.stringify(selectedEntity.metadata, null, 2)}
                     </pre>
@@ -462,10 +585,17 @@ export function EntitiesView() {
                   {/* Evidence */}
                   {selectedEntity.evidenceRefs.length > 0 && (
                     <div>
-                      <h4 className="mb-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Evidence References</h4>
+                      <h4 className="mb-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                        Evidence References
+                      </h4>
                       <div className="flex flex-wrap gap-2">
                         {selectedEntity.evidenceRefs.map((ref) => (
-                          <span key={ref} className="rounded bg-accent px-2 py-1 font-mono text-xs text-accent-foreground">{ref}</span>
+                          <span
+                            key={ref}
+                            className="rounded bg-accent px-2 py-1 font-mono text-xs text-accent-foreground"
+                          >
+                            {ref}
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -474,17 +604,26 @@ export function EntitiesView() {
                   {/* Status History */}
                   {selectedEntity.statusHistory.length > 0 && (
                     <div>
-                      <h4 className="mb-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Status History</h4>
+                      <h4 className="mb-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                        Status History
+                      </h4>
                       <div className="space-y-2">
                         {selectedEntity.statusHistory.map((h, i) => (
-                          <div key={i} className="rounded-md border border-border bg-background p-3 text-xs">
+                          <div
+                            key={i}
+                            className="rounded-md border border-border bg-background p-3 text-xs"
+                          >
                             <div className="flex items-center gap-2">
                               <StatusBadge status={h.from} />
                               <span className="text-muted-foreground">→</span>
                               <StatusBadge status={h.to} />
-                              <span className="ml-auto font-mono text-muted-foreground">{formatDate(h.timestamp)}</span>
+                              <span className="ml-auto font-mono text-muted-foreground">
+                                {formatDate(h.timestamp)}
+                              </span>
                             </div>
-                            <p className="mt-1.5 text-muted-foreground">by <span className="text-tactical">{h.changedBy}</span> — {h.reason}</p>
+                            <p className="mt-1.5 text-muted-foreground">
+                              by <span className="text-tactical">{h.changedBy}</span> — {h.reason}
+                            </p>
                           </div>
                         ))}
                       </div>
@@ -493,14 +632,18 @@ export function EntitiesView() {
 
                   {/* Linked Cases */}
                   {(() => {
-                    const linked = cases.filter((c) => c.linkedEntityIds.includes(selectedEntity.id));
+                    const linked = cases.filter((c) =>
+                      c.linkedEntityIds.includes(selectedEntity.id),
+                    );
                     return (
                       <div>
                         <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
                           <FolderSearch className="h-3 w-3" /> Linked Cases ({linked.length})
                         </h4>
                         {linked.length === 0 ? (
-                          <p className="font-mono text-[11px] text-muted-foreground/60">Not linked to any case.</p>
+                          <p className="font-mono text-[11px] text-muted-foreground/60">
+                            Not linked to any case.
+                          </p>
                         ) : (
                           <div className="space-y-1.5">
                             {linked.map((c) => (
@@ -509,7 +652,15 @@ export function EntitiesView() {
                                 onClick={() => {
                                   setSelectedEntity(null);
                                   navigate({ to: "/cases" });
-                                  setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:open-case", { detail: { id: c.id } })), 80);
+                                  setTimeout(
+                                    () =>
+                                      window.dispatchEvent(
+                                        new CustomEvent("greylock:open-case", {
+                                          detail: { id: c.id },
+                                        }),
+                                      ),
+                                    80,
+                                  );
                                 }}
                                 className="flex w-full items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-left text-xs transition-colors hover:border-tactical hover:text-tactical"
                               >
@@ -526,21 +677,34 @@ export function EntitiesView() {
 
                   {/* Recent Scans */}
                   {(() => {
-                    const own = scans.filter((s) => s.targetEntityId === selectedEntity.id).slice(0, 5);
+                    const own = scans
+                      .filter((s) => s.targetEntityId === selectedEntity.id)
+                      .slice(0, 5);
                     return (
                       <div>
                         <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
                           <Bug className="h-3 w-3" /> Recent Scans ({own.length})
                         </h4>
                         {own.length === 0 ? (
-                          <p className="font-mono text-[11px] text-muted-foreground/60">No scans run against this target.</p>
+                          <p className="font-mono text-[11px] text-muted-foreground/60">
+                            No scans run against this target.
+                          </p>
                         ) : (
                           <div className="space-y-1.5">
                             {own.map((s) => (
-                              <div key={s.id} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs">
+                              <div
+                                key={s.id}
+                                className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs"
+                              >
                                 <span className="font-mono text-tactical">{s.id}</span>
-                                <span className="font-mono uppercase text-muted-foreground">{s.profile}</span>
-                                <span className={`font-mono ${s.status === "running" ? "text-tactical" : "text-muted-foreground"}`}>{s.status}</span>
+                                <span className="font-mono uppercase text-muted-foreground">
+                                  {s.profile}
+                                </span>
+                                <span
+                                  className={`font-mono ${s.status === "running" ? "text-tactical" : "text-muted-foreground"}`}
+                                >
+                                  {s.status}
+                                </span>
                                 {s.status === "complete" && (
                                   <span className="ml-auto font-mono text-[10px] text-status-black">
                                     {s.summary.critical}C · {s.summary.high}H
@@ -561,7 +725,11 @@ export function EntitiesView() {
       </Dialog>
 
       <AddEntityDialog open={addOpen} onOpenChange={setAddOpen} />
-      <EditEntityDialog entity={editEntity} open={!!editEntity} onOpenChange={(v) => !v && setEditEntity(null)} />
+      <EditEntityDialog
+        entity={editEntity}
+        open={!!editEntity}
+        onOpenChange={(v) => !v && setEditEntity(null)}
+      />
     </div>
   );
 }
@@ -579,7 +747,7 @@ function exportEntitiesToCsv(rows: Entity[]) {
   const lines = [
     headers.join(","),
     ...rows.map((r) =>
-      [r.id, r.type, r.identifier, r.riskScore, r.status, r.lastUpdated].map(escape).join(",")
+      [r.id, r.type, r.identifier, r.riskScore, r.status, r.lastUpdated].map(escape).join(","),
     ),
   ];
   const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });

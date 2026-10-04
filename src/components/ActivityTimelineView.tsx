@@ -1,12 +1,7 @@
 import { useMemo, useState } from "react";
 import { useAppState } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
-import {
-  Fingerprint,
-  Bug,
-  ArrowRightLeft,
-  FolderSearch,
-} from "lucide-react";
+import { Fingerprint, Bug, ArrowRightLeft, FolderSearch } from "lucide-react";
 
 type FeedKind = "custody" | "scan" | "status";
 
@@ -59,20 +54,27 @@ export function ActivityTimelineView() {
     });
 
     return [...custodyEvents, ...scanEvents].sort(
-      (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
+      (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
     );
   }, [custody, scans]);
 
   const counts = useMemo(() => {
     const acc: Record<string, number> = { all: events.length, custody: 0, scan: 0, status: 0 };
-    events.forEach((e) => { acc[e.kind] += 1; });
+    events.forEach((e) => {
+      acc[e.kind] += 1;
+    });
     return acc;
   }, [events]);
 
   const filtered = filter === "all" ? events : events.filter((e) => e.kind === filter);
 
   const formatTime = (d: string) =>
-    new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    new Date(d).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   return (
     <div className="space-y-4">
@@ -104,8 +106,12 @@ export function ActivityTimelineView() {
               </span>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-semibold text-card-foreground">{e.title}</span>
-                <Badge variant="outline" className="font-mono text-[9px]">{e.tag}</Badge>
-                <span className="ml-auto font-mono text-[10px] text-muted-foreground">{formatTime(e.time)}</span>
+                <Badge variant="outline" className="font-mono text-[9px]">
+                  {e.tag}
+                </Badge>
+                <span className="ml-auto font-mono text-[10px] text-muted-foreground">
+                  {formatTime(e.time)}
+                </span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{e.detail}</p>
               <p className="mt-1 font-mono text-[10px] text-tactical">{e.actor}</p>
@@ -124,4 +130,3 @@ export function ActivityTimelineView() {
     </div>
   );
 }
-

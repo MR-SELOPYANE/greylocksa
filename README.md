@@ -1,6 +1,6 @@
 # greylocksa
 
-Build a secure, government-grade web dashboard for managing a watchlist intelligence system called "greyLock". Use React 18, TypeScript, Tailwind CSS, and shadcn/ui components. 
+Build a secure, government-grade web dashboard for managing a watchlist intelligence system called "greyLock". Use React 18, TypeScript, Tailwind CSS, and shadcn/ui components.
 
 Core Features:
 

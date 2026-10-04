@@ -17,15 +17,43 @@ type Shortcut = {
 };
 
 const SEQUENCES: Shortcut[] = [
-  { keys: ["g", "t"], label: "Go to Targets", run: ({ navigate }) => navigate({ to: "/entities" }) },
+  {
+    keys: ["g", "t"],
+    label: "Go to Targets",
+    run: ({ navigate }) => navigate({ to: "/entities" }),
+  },
   { keys: ["g", "s"], label: "Go to Scans", run: ({ navigate }) => navigate({ to: "/scans" }) },
   { keys: ["g", "c"], label: "Go to Cases", run: ({ navigate }) => navigate({ to: "/cases" }) },
-  { keys: ["g", "v"], label: "Go to Evidence Vault", run: ({ navigate }) => navigate({ to: "/vault" }) },
-  { keys: ["g", "r"], label: "Go to Threat Intel", run: ({ navigate }) => navigate({ to: "/threats" }) },
-  { keys: ["g", "u"], label: "Go to Chain of Custody", run: ({ navigate }) => navigate({ to: "/custody" }) },
-  { keys: ["g", "a"], label: "Go to Activity Timeline", run: ({ navigate }) => navigate({ to: "/activity" }) },
-  { keys: ["g", "i"], label: "Go to Sentinel AI", run: ({ navigate }) => navigate({ to: "/sentinel" }) },
-  { keys: ["g", "d"], label: "Go to Command Dashboard", run: ({ navigate }) => navigate({ to: "/system" }) },
+  {
+    keys: ["g", "v"],
+    label: "Go to Evidence Vault",
+    run: ({ navigate }) => navigate({ to: "/vault" }),
+  },
+  {
+    keys: ["g", "r"],
+    label: "Go to Threat Intel",
+    run: ({ navigate }) => navigate({ to: "/threats" }),
+  },
+  {
+    keys: ["g", "u"],
+    label: "Go to Chain of Custody",
+    run: ({ navigate }) => navigate({ to: "/custody" }),
+  },
+  {
+    keys: ["g", "a"],
+    label: "Go to Activity Timeline",
+    run: ({ navigate }) => navigate({ to: "/activity" }),
+  },
+  {
+    keys: ["g", "i"],
+    label: "Go to Sentinel AI",
+    run: ({ navigate }) => navigate({ to: "/sentinel" }),
+  },
+  {
+    keys: ["g", "d"],
+    label: "Go to Command Dashboard",
+    run: ({ navigate }) => navigate({ to: "/system" }),
+  },
 ];
 
 const SINGLES: Shortcut[] = [
@@ -103,7 +131,10 @@ export function GlobalShortcuts() {
 
   const rows = [
     { keys: ["⌘", "K"], label: "Command palette" },
-    ...SINGLES.map((s) => ({ keys: s.keys.map((k) => (k === "/" ? "/" : k.toUpperCase())), label: s.label })),
+    ...SINGLES.map((s) => ({
+      keys: s.keys.map((k) => (k === "/" ? "/" : k.toUpperCase())),
+      label: s.label,
+    })),
     ...SEQUENCES.map((s) => ({ keys: s.keys.map((k) => k.toUpperCase()), label: s.label })),
     { keys: ["?"], label: "Toggle this help" },
   ];
@@ -115,15 +146,24 @@ export function GlobalShortcuts() {
           <DialogTitle className="flex items-center gap-2 font-mono">
             <Keyboard className="h-4 w-4 text-tactical" /> Keyboard Shortcuts
           </DialogTitle>
-          <DialogDescription>Press <kbd className="rounded bg-secondary px-1 font-mono">?</kbd> anytime to toggle this panel.</DialogDescription>
+          <DialogDescription>
+            Press <kbd className="rounded bg-secondary px-1 font-mono">?</kbd> anytime to toggle
+            this panel.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-1">
           {rows.map((r) => (
-            <div key={r.label} className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent">
+            <div
+              key={r.label}
+              className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+            >
               <span className="text-muted-foreground">{r.label}</span>
               <span className="flex items-center gap-1">
                 {r.keys.map((k, i) => (
-                  <kbd key={i} className="rounded border border-border bg-secondary px-1.5 py-0.5 font-mono text-[11px] text-foreground">
+                  <kbd
+                    key={i}
+                    className="rounded border border-border bg-secondary px-1.5 py-0.5 font-mono text-[11px] text-foreground"
+                  >
                     {k}
                   </kbd>
                 ))}

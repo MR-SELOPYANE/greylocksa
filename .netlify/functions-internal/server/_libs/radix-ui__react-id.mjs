@@ -9,6 +9,4 @@ function useId(deterministicId) {
   }, [deterministicId]);
   return id ? `radix-${id}` : "";
 }
-export {
-  useId as u
-};
+export { useId as u };

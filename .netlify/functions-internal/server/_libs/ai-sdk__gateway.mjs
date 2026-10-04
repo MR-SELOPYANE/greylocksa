@@ -1,20 +1,61 @@
-import { w as withoutTrailingSlash, r as resolve, a as postJsonToApi, c as createJsonErrorResponseHandler, h as createJsonResponseHandler, b as combineHeaders, i as withUserAgentSuffix, m as loadOptionalSetting, n as parseJsonEventStream, o as getFromApi, s as safeValidateTypes, q as convertUint8ArrayToBase64, d as createEventSourceResponseHandler, t as createProviderToolFactoryWithOutputSchema, u as lazySchema, v as secureJsonParse, z as zodSchema } from "./ai-sdk__provider-utils.mjs";
+import {
+  w as withoutTrailingSlash,
+  r as resolve,
+  a as postJsonToApi,
+  c as createJsonErrorResponseHandler,
+  h as createJsonResponseHandler,
+  b as combineHeaders,
+  i as withUserAgentSuffix,
+  m as loadOptionalSetting,
+  n as parseJsonEventStream,
+  o as getFromApi,
+  s as safeValidateTypes,
+  q as convertUint8ArrayToBase64,
+  d as createEventSourceResponseHandler,
+  t as createProviderToolFactoryWithOutputSchema,
+  u as lazySchema,
+  v as secureJsonParse,
+  z as zodSchema,
+} from "./ai-sdk__provider-utils.mjs";
 import { a as APICallError } from "./ai-sdk__provider.mjs";
 import { d as distExports } from "./@vercel/oidc.mjs";
-import { b as any, o as object, r as record, a as string, d as array, f as discriminatedUnion, e as literal, g as unknown, n as number, u as union, _ as _enum, c as boolean, h as objectType, i as numberType, j as unionType, k as stringType, m as arrayType, p as booleanType, q as enumType, v as recordType, w as anyType } from "./zod.mjs";
+import {
+  b as any,
+  o as object,
+  r as record,
+  a as string,
+  d as array,
+  f as discriminatedUnion,
+  e as literal,
+  g as unknown,
+  n as number,
+  u as union,
+  _ as _enum,
+  c as boolean,
+  h as objectType,
+  i as numberType,
+  j as unionType,
+  k as stringType,
+  m as arrayType,
+  p as booleanType,
+  q as enumType,
+  v as recordType,
+  w as anyType,
+} from "./zod.mjs";
 var marker = "vercel.ai.gateway.error";
 var symbol = Symbol.for(marker);
 var _a, _b;
-var GatewayError = class _GatewayError extends (_b = Error, _a = symbol, _b) {
+var GatewayError = class _GatewayError extends ((_b = Error), (_a = symbol), _b) {
   constructor({
     message,
     statusCode = 500,
     cause,
     generationId,
-    isRetryable = statusCode != null && (statusCode === 408 || // request timeout
-    statusCode === 409 || // conflict
-    statusCode === 429 || // too many requests
-    statusCode >= 500)
+    isRetryable = statusCode != null &&
+      (statusCode === 408 || // request timeout
+        statusCode === 409 || // conflict
+        statusCode === 429 || // too many requests
+        statusCode >= 500),
     // server error
   }) {
     super(generationId ? `${message} [${generationId}]` : message);
@@ -40,13 +81,10 @@ var name = "GatewayAuthenticationError";
 var marker2 = `vercel.ai.gateway.error.${name}`;
 var symbol2 = Symbol.for(marker2);
 var _a2, _b2;
-var GatewayAuthenticationError = class _GatewayAuthenticationError extends (_b2 = GatewayError, _a2 = symbol2, _b2) {
-  constructor({
-    message = "Authentication failed",
-    statusCode = 401,
-    cause,
-    generationId
-  } = {}) {
+var GatewayAuthenticationError = class _GatewayAuthenticationError extends ((_b2 = GatewayError),
+(_a2 = symbol2),
+_b2) {
+  constructor({ message = "Authentication failed", statusCode = 401, cause, generationId } = {}) {
     super({ message, statusCode, cause, generationId });
     this[_a2] = true;
     this.name = name;
@@ -64,7 +102,7 @@ var GatewayAuthenticationError = class _GatewayAuthenticationError extends (_b2 
     message = "Authentication failed",
     statusCode = 401,
     cause,
-    generationId
+    generationId,
   }) {
     let contextualMessage;
     if (apiKeyProvided) {
@@ -93,7 +131,7 @@ Run 'npx vercel link' to link your project, then 'vc env pull' to fetch the toke
       message: contextualMessage,
       statusCode,
       cause,
-      generationId
+      generationId,
     });
   }
 };
@@ -101,13 +139,8 @@ var name2 = "GatewayInvalidRequestError";
 var marker3 = `vercel.ai.gateway.error.${name2}`;
 var symbol3 = Symbol.for(marker3);
 var _a3, _b3;
-var GatewayInvalidRequestError = class extends (_b3 = GatewayError, _a3 = symbol3, _b3) {
-  constructor({
-    message = "Invalid request",
-    statusCode = 400,
-    cause,
-    generationId
-  } = {}) {
+var GatewayInvalidRequestError = class extends ((_b3 = GatewayError), (_a3 = symbol3), _b3) {
+  constructor({ message = "Invalid request", statusCode = 400, cause, generationId } = {}) {
     super({ message, statusCode, cause, generationId });
     this[_a3] = true;
     this.name = name2;
@@ -121,13 +154,8 @@ var name3 = "GatewayRateLimitError";
 var marker4 = `vercel.ai.gateway.error.${name3}`;
 var symbol4 = Symbol.for(marker4);
 var _a4, _b4;
-var GatewayRateLimitError = class extends (_b4 = GatewayError, _a4 = symbol4, _b4) {
-  constructor({
-    message = "Rate limit exceeded",
-    statusCode = 429,
-    cause,
-    generationId
-  } = {}) {
+var GatewayRateLimitError = class extends ((_b4 = GatewayError), (_a4 = symbol4), _b4) {
+  constructor({ message = "Rate limit exceeded", statusCode = 429, cause, generationId } = {}) {
     super({ message, statusCode, cause, generationId });
     this[_a4] = true;
     this.name = name3;
@@ -140,21 +168,21 @@ var GatewayRateLimitError = class extends (_b4 = GatewayError, _a4 = symbol4, _b
 var name4 = "GatewayModelNotFoundError";
 var marker5 = `vercel.ai.gateway.error.${name4}`;
 var symbol5 = Symbol.for(marker5);
-var modelNotFoundParamSchema = lazySchema(
-  () => zodSchema(
+var modelNotFoundParamSchema = lazySchema(() =>
+  zodSchema(
     object({
-      modelId: string()
-    })
-  )
+      modelId: string(),
+    }),
+  ),
 );
 var _a5, _b5;
-var GatewayModelNotFoundError = class extends (_b5 = GatewayError, _a5 = symbol5, _b5) {
+var GatewayModelNotFoundError = class extends ((_b5 = GatewayError), (_a5 = symbol5), _b5) {
   constructor({
     message = "Model not found",
     statusCode = 404,
     modelId,
     cause,
-    generationId
+    generationId,
   } = {}) {
     super({ message, statusCode, cause, generationId });
     this[_a5] = true;
@@ -170,13 +198,8 @@ var name5 = "GatewayInternalServerError";
 var marker6 = `vercel.ai.gateway.error.${name5}`;
 var symbol6 = Symbol.for(marker6);
 var _a6, _b6;
-var GatewayInternalServerError = class extends (_b6 = GatewayError, _a6 = symbol6, _b6) {
-  constructor({
-    message = "Internal server error",
-    statusCode = 500,
-    cause,
-    generationId
-  } = {}) {
+var GatewayInternalServerError = class extends ((_b6 = GatewayError), (_a6 = symbol6), _b6) {
+  constructor({ message = "Internal server error", statusCode = 500, cause, generationId } = {}) {
     super({ message, statusCode, cause, generationId });
     this[_a6] = true;
     this.name = name5;
@@ -190,13 +213,8 @@ var name6 = "GatewayFailedDependencyError";
 var marker7 = `vercel.ai.gateway.error.${name6}`;
 var symbol7 = Symbol.for(marker7);
 var _a7, _b7;
-var GatewayFailedDependencyError = class extends (_b7 = GatewayError, _a7 = symbol7, _b7) {
-  constructor({
-    message = "Failed dependency",
-    statusCode = 424,
-    cause,
-    generationId
-  } = {}) {
+var GatewayFailedDependencyError = class extends ((_b7 = GatewayError), (_a7 = symbol7), _b7) {
+  constructor({ message = "Failed dependency", statusCode = 424, cause, generationId } = {}) {
     super({ message, statusCode, cause, generationId });
     this[_a7] = true;
     this.name = name6;
@@ -210,13 +228,8 @@ var name7 = "GatewayForbiddenError";
 var marker8 = `vercel.ai.gateway.error.${name7}`;
 var symbol8 = Symbol.for(marker8);
 var _a8, _b8;
-var GatewayForbiddenError = class extends (_b8 = GatewayError, _a8 = symbol8, _b8) {
-  constructor({
-    message = "Forbidden",
-    statusCode = 403,
-    cause,
-    generationId
-  } = {}) {
+var GatewayForbiddenError = class extends ((_b8 = GatewayError), (_a8 = symbol8), _b8) {
+  constructor({ message = "Forbidden", statusCode = 403, cause, generationId } = {}) {
     super({ message, statusCode, cause, generationId });
     this[_a8] = true;
     this.name = name7;
@@ -230,14 +243,14 @@ var name8 = "GatewayResponseError";
 var marker9 = `vercel.ai.gateway.error.${name8}`;
 var symbol9 = Symbol.for(marker9);
 var _a9, _b9;
-var GatewayResponseError = class extends (_b9 = GatewayError, _a9 = symbol9, _b9) {
+var GatewayResponseError = class extends ((_b9 = GatewayError), (_a9 = symbol9), _b9) {
   constructor({
     message = "Invalid response from Gateway",
     statusCode = 502,
     response,
     validationError,
     cause,
-    generationId
+    generationId,
   } = {}) {
     super({ message, statusCode, cause, generationId });
     this[_a9] = true;
@@ -255,22 +268,25 @@ async function createGatewayErrorFromResponse({
   statusCode,
   defaultMessage = "Gateway request failed",
   cause,
-  authMethod
+  authMethod,
 }) {
   var _a11;
   const parseResult = await safeValidateTypes({
     value: response,
-    schema: gatewayErrorResponseSchema
+    schema: gatewayErrorResponseSchema,
   });
   if (!parseResult.success) {
-    const rawGenerationId = typeof response === "object" && response !== null && "generationId" in response ? response.generationId : void 0;
+    const rawGenerationId =
+      typeof response === "object" && response !== null && "generationId" in response
+        ? response.generationId
+        : void 0;
     return new GatewayResponseError({
       message: `Invalid error response format: ${defaultMessage}`,
       statusCode,
       response,
       validationError: parseResult.error,
       cause,
-      generationId: rawGenerationId
+      generationId: rawGenerationId,
     });
   }
   const validatedResponse = parseResult.value;
@@ -284,33 +300,33 @@ async function createGatewayErrorFromResponse({
         oidcTokenProvided: authMethod === "oidc",
         statusCode,
         cause,
-        generationId
+        generationId,
       });
     case "invalid_request_error":
       return new GatewayInvalidRequestError({
         message,
         statusCode,
         cause,
-        generationId
+        generationId,
       });
     case "rate_limit_exceeded":
       return new GatewayRateLimitError({
         message,
         statusCode,
         cause,
-        generationId
+        generationId,
       });
     case "model_not_found": {
       const modelResult = await safeValidateTypes({
         value: validatedResponse.error.param,
-        schema: modelNotFoundParamSchema
+        schema: modelNotFoundParamSchema,
       });
       return new GatewayModelNotFoundError({
         message,
         statusCode,
         modelId: modelResult.success ? modelResult.value.modelId : void 0,
         cause,
-        generationId
+        generationId,
       });
     }
     case "internal_server_error":
@@ -318,43 +334,43 @@ async function createGatewayErrorFromResponse({
         message,
         statusCode,
         cause,
-        generationId
+        generationId,
       });
     case "failed_dependency":
       return new GatewayFailedDependencyError({
         message,
         statusCode,
         cause,
-        generationId
+        generationId,
       });
     case "forbidden":
       return new GatewayForbiddenError({
         message,
         statusCode,
         cause,
-        generationId
+        generationId,
       });
     default:
       return new GatewayInternalServerError({
         message,
         statusCode,
         cause,
-        generationId
+        generationId,
       });
   }
 }
-var gatewayErrorResponseSchema = lazySchema(
-  () => zodSchema(
+var gatewayErrorResponseSchema = lazySchema(() =>
+  zodSchema(
     object({
       error: object({
         message: string(),
         type: string().nullish(),
         param: unknown().nullish(),
-        code: union([string(), number()]).nullish()
+        code: union([string(), number()]).nullish(),
       }),
-      generationId: string().nullish()
-    })
-  )
+      generationId: string().nullish(),
+    }),
+  ),
 );
 function extractApiCallResponse(error) {
   if (error.data !== void 0) {
@@ -373,13 +389,10 @@ var name9 = "GatewayTimeoutError";
 var marker10 = `vercel.ai.gateway.error.${name9}`;
 var symbol10 = Symbol.for(marker10);
 var _a10, _b10;
-var GatewayTimeoutError = class _GatewayTimeoutError extends (_b10 = GatewayError, _a10 = symbol10, _b10) {
-  constructor({
-    message = "Request timed out",
-    statusCode = 408,
-    cause,
-    generationId
-  } = {}) {
+var GatewayTimeoutError = class _GatewayTimeoutError extends ((_b10 = GatewayError),
+(_a10 = symbol10),
+_b10) {
+  constructor({ message = "Request timed out", statusCode = 408, cause, generationId } = {}) {
     super({ message, statusCode, cause, generationId });
     this[_a10] = true;
     this.name = name9;
@@ -391,12 +404,7 @@ var GatewayTimeoutError = class _GatewayTimeoutError extends (_b10 = GatewayErro
   /**
    * Creates a helpful timeout error message with troubleshooting guidance
    */
-  static createTimeoutError({
-    originalMessage,
-    statusCode = 408,
-    cause,
-    generationId
-  }) {
+  static createTimeoutError({ originalMessage, statusCode = 408, cause, generationId }) {
     const message = `Gateway request timed out: ${originalMessage}
 
     This is a client-side timeout. To resolve this, increase your timeout configuration: https://vercel.com/docs/ai-gateway/capabilities/video-generation#extending-timeouts-for-node.js`;
@@ -404,7 +412,7 @@ var GatewayTimeoutError = class _GatewayTimeoutError extends (_b10 = GatewayErro
       message,
       statusCode,
       cause,
-      generationId
+      generationId,
     });
   }
 };
@@ -417,7 +425,7 @@ function isTimeoutError(error) {
     const undiciTimeoutCodes = [
       "UND_ERR_HEADERS_TIMEOUT",
       "UND_ERR_BODY_TIMEOUT",
-      "UND_ERR_CONNECT_TIMEOUT"
+      "UND_ERR_CONNECT_TIMEOUT",
     ];
     return undiciTimeoutCodes.includes(errorCode);
   }
@@ -431,14 +439,14 @@ async function asGatewayError(error, authMethod) {
   if (isTimeoutError(error)) {
     return GatewayTimeoutError.createTimeoutError({
       originalMessage: error instanceof Error ? error.message : "Unknown error",
-      cause: error
+      cause: error,
     });
   }
   if (APICallError.isInstance(error)) {
     if (error.cause && isTimeoutError(error.cause)) {
       return GatewayTimeoutError.createTimeoutError({
         originalMessage: error.message,
-        cause: error
+        cause: error,
       });
     }
     return await createGatewayErrorFromResponse({
@@ -446,27 +454,28 @@ async function asGatewayError(error, authMethod) {
       statusCode: (_a11 = error.statusCode) != null ? _a11 : 500,
       defaultMessage: "Gateway request failed",
       cause: error,
-      authMethod
+      authMethod,
     });
   }
   return await createGatewayErrorFromResponse({
     response: {},
     statusCode: 500,
-    defaultMessage: error instanceof Error ? `Gateway request failed: ${error.message}` : "Unknown Gateway error",
+    defaultMessage:
+      error instanceof Error ? `Gateway request failed: ${error.message}` : "Unknown Gateway error",
     cause: error,
-    authMethod
+    authMethod,
   });
 }
 var GATEWAY_AUTH_METHOD_HEADER = "ai-gateway-auth-method";
 async function parseAuthMethod(headers) {
   const result = await safeValidateTypes({
     value: headers[GATEWAY_AUTH_METHOD_HEADER],
-    schema: gatewayAuthMethodSchema
+    schema: gatewayAuthMethodSchema,
   });
   return result.success ? result.value : void 0;
 }
-var gatewayAuthMethodSchema = lazySchema(
-  () => zodSchema(union([literal("api-key"), literal("oidc")]))
+var gatewayAuthMethodSchema = lazySchema(() =>
+  zodSchema(union([literal("api-key"), literal("oidc")])),
 );
 var KNOWN_MODEL_TYPES = [
   "embedding",
@@ -475,7 +484,7 @@ var KNOWN_MODEL_TYPES = [
   "reranking",
   "speech",
   "transcription",
-  "video"
+  "video",
 ];
 var GatewayFetchMetadata = class {
   constructor(config) {
@@ -486,14 +495,12 @@ var GatewayFetchMetadata = class {
       const { value } = await getFromApi({
         url: `${this.config.baseURL}/config`,
         headers: await resolve(this.config.headers()),
-        successfulResponseHandler: createJsonResponseHandler(
-          gatewayAvailableModelsResponseSchema
-        ),
+        successfulResponseHandler: createJsonResponseHandler(gatewayAvailableModelsResponseSchema),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        fetch: this.config.fetch
+        fetch: this.config.fetch,
       });
       return value;
     } catch (error) {
@@ -506,14 +513,12 @@ var GatewayFetchMetadata = class {
       const { value } = await getFromApi({
         url: `${baseUrl.origin}/v1/credits`,
         headers: await resolve(this.config.headers()),
-        successfulResponseHandler: createJsonResponseHandler(
-          gatewayCreditsResponseSchema
-        ),
+        successfulResponseHandler: createJsonResponseHandler(gatewayCreditsResponseSchema),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        fetch: this.config.fetch
+        fetch: this.config.fetch,
       });
       return value;
     } catch (error) {
@@ -521,8 +526,8 @@ var GatewayFetchMetadata = class {
     }
   }
 };
-var gatewayAvailableModelsResponseSchema = lazySchema(
-  () => zodSchema(
+var gatewayAvailableModelsResponseSchema = lazySchema(() =>
+  zodSchema(
     object({
       models: array(
         object({
@@ -533,40 +538,38 @@ var gatewayAvailableModelsResponseSchema = lazySchema(
             input: string(),
             output: string(),
             input_cache_read: string().nullish(),
-            input_cache_write: string().nullish()
-          }).transform(
-            ({ input, output, input_cache_read, input_cache_write }) => ({
+            input_cache_write: string().nullish(),
+          })
+            .transform(({ input, output, input_cache_read, input_cache_write }) => ({
               input,
               output,
-              ...input_cache_read ? { cachedInputTokens: input_cache_read } : {},
-              ...input_cache_write ? { cacheCreationInputTokens: input_cache_write } : {}
-            })
-          ).nullish(),
+              ...(input_cache_read ? { cachedInputTokens: input_cache_read } : {}),
+              ...(input_cache_write ? { cacheCreationInputTokens: input_cache_write } : {}),
+            }))
+            .nullish(),
           specification: object({
             specificationVersion: literal("v3"),
             provider: string(),
-            modelId: string()
+            modelId: string(),
           }),
-          modelType: string().nullish()
-        })
-      ).transform(
-        (models) => models.filter(
-          (m) => m.modelType == null || KNOWN_MODEL_TYPES.includes(m.modelType)
-        )
-      )
-    })
-  )
+          modelType: string().nullish(),
+        }),
+      ).transform((models) =>
+        models.filter((m) => m.modelType == null || KNOWN_MODEL_TYPES.includes(m.modelType)),
+      ),
+    }),
+  ),
 );
-var gatewayCreditsResponseSchema = lazySchema(
-  () => zodSchema(
+var gatewayCreditsResponseSchema = lazySchema(() =>
+  zodSchema(
     object({
       balance: string(),
-      total_used: string()
+      total_used: string(),
     }).transform(({ balance, total_used }) => ({
       balance,
-      totalUsed: total_used
-    }))
-  )
+      totalUsed: total_used,
+    })),
+  ),
 );
 var GatewaySpendReport = class {
   constructor(config) {
@@ -602,14 +605,12 @@ var GatewaySpendReport = class {
       const { value } = await getFromApi({
         url: `${baseUrl.origin}/v1/report?${searchParams.toString()}`,
         headers: await resolve(this.config.headers()),
-        successfulResponseHandler: createJsonResponseHandler(
-          gatewaySpendReportResponseSchema
-        ),
+        successfulResponseHandler: createJsonResponseHandler(gatewaySpendReportResponseSchema),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        fetch: this.config.fetch
+        fetch: this.config.fetch,
       });
       return value;
     } catch (error) {
@@ -617,8 +618,8 @@ var GatewaySpendReport = class {
     }
   }
 };
-var gatewaySpendReportResponseSchema = lazySchema(
-  () => zodSchema(
+var gatewaySpendReportResponseSchema = lazySchema(() =>
+  zodSchema(
     object({
       results: array(
         object({
@@ -636,7 +637,7 @@ var gatewaySpendReportResponseSchema = lazySchema(
           cached_input_tokens: number().optional(),
           cache_creation_input_tokens: number().optional(),
           reasoning_tokens: number().optional(),
-          request_count: number().optional()
+          request_count: number().optional(),
         }).transform(
           ({
             credential_type,
@@ -651,20 +652,22 @@ var gatewaySpendReportResponseSchema = lazySchema(
             ...rest
           }) => ({
             ...rest,
-            ...credential_type !== void 0 ? { credentialType: credential_type } : {},
+            ...(credential_type !== void 0 ? { credentialType: credential_type } : {}),
             totalCost: total_cost,
-            ...market_cost !== void 0 ? { marketCost: market_cost } : {},
-            ...input_tokens !== void 0 ? { inputTokens: input_tokens } : {},
-            ...output_tokens !== void 0 ? { outputTokens: output_tokens } : {},
-            ...cached_input_tokens !== void 0 ? { cachedInputTokens: cached_input_tokens } : {},
-            ...cache_creation_input_tokens !== void 0 ? { cacheCreationInputTokens: cache_creation_input_tokens } : {},
-            ...reasoning_tokens !== void 0 ? { reasoningTokens: reasoning_tokens } : {},
-            ...request_count !== void 0 ? { requestCount: request_count } : {}
-          })
-        )
-      )
-    })
-  )
+            ...(market_cost !== void 0 ? { marketCost: market_cost } : {}),
+            ...(input_tokens !== void 0 ? { inputTokens: input_tokens } : {}),
+            ...(output_tokens !== void 0 ? { outputTokens: output_tokens } : {}),
+            ...(cached_input_tokens !== void 0 ? { cachedInputTokens: cached_input_tokens } : {}),
+            ...(cache_creation_input_tokens !== void 0
+              ? { cacheCreationInputTokens: cache_creation_input_tokens }
+              : {}),
+            ...(reasoning_tokens !== void 0 ? { reasoningTokens: reasoning_tokens } : {}),
+            ...(request_count !== void 0 ? { requestCount: request_count } : {}),
+          }),
+        ),
+      ),
+    }),
+  ),
 );
 var GatewayGenerationInfoFetcher = class {
   constructor(config) {
@@ -676,14 +679,12 @@ var GatewayGenerationInfoFetcher = class {
       const { value } = await getFromApi({
         url: `${baseUrl.origin}/v1/generation?id=${encodeURIComponent(params.id)}`,
         headers: await resolve(this.config.headers()),
-        successfulResponseHandler: createJsonResponseHandler(
-          gatewayGenerationInfoResponseSchema
-        ),
+        successfulResponseHandler: createJsonResponseHandler(gatewayGenerationInfoResponseSchema),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        fetch: this.config.fetch
+        fetch: this.config.fetch,
       });
       return value;
     } catch (error) {
@@ -691,8 +692,8 @@ var GatewayGenerationInfoFetcher = class {
     }
   }
 };
-var gatewayGenerationInfoResponseSchema = lazySchema(
-  () => zodSchema(
+var gatewayGenerationInfoResponseSchema = lazySchema(() =>
+  zodSchema(
     object({
       data: object({
         id: string(),
@@ -712,7 +713,7 @@ var gatewayGenerationInfoResponseSchema = lazySchema(
         native_tokens_reasoning: number(),
         native_tokens_cached: number(),
         native_tokens_cache_creation: number(),
-        billable_web_search_calls: number()
+        billable_web_search_calls: number(),
       }).transform(
         ({
           total_cost,
@@ -743,11 +744,11 @@ var gatewayGenerationInfoResponseSchema = lazySchema(
           reasoningTokens: native_tokens_reasoning,
           cachedTokens: native_tokens_cached,
           cacheCreationTokens: native_tokens_cache_creation,
-          billableWebSearchCalls: billable_web_search_calls
-        })
-      )
-    }).transform(({ data }) => data)
-  )
+          billableWebSearchCalls: billable_web_search_calls,
+        }),
+      ),
+    }).transform(({ data }) => data),
+  ),
 );
 var GatewayLanguageModel = class {
   constructor(modelId, config) {
@@ -763,7 +764,7 @@ var GatewayLanguageModel = class {
     const { abortSignal: _abortSignal, ...optionsWithoutSignal } = options;
     return {
       args: this.maybeEncodeFileParts(optionsWithoutSignal),
-      warnings: []
+      warnings: [],
     };
   }
   async doGenerate(options) {
@@ -774,29 +775,29 @@ var GatewayLanguageModel = class {
       const {
         responseHeaders,
         value: responseBody,
-        rawValue: rawResponse
+        rawValue: rawResponse,
       } = await postJsonToApi({
         url: this.getUrl(),
         headers: combineHeaders(
           resolvedHeaders,
           options.headers,
           this.getModelConfigHeaders(this.modelId, false),
-          await resolve(this.config.o11yHeaders)
+          await resolve(this.config.o11yHeaders),
         ),
         body: args,
         successfulResponseHandler: createJsonResponseHandler(any()),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        ...abortSignal && { abortSignal },
-        fetch: this.config.fetch
+        ...(abortSignal && { abortSignal }),
+        fetch: this.config.fetch,
       });
       return {
         ...responseBody,
         request: { body: args },
         response: { headers: responseHeaders, body: rawResponse },
-        warnings
+        warnings,
       };
     } catch (error) {
       throw await asGatewayError(error, await parseAuthMethod(resolvedHeaders));
@@ -813,16 +814,16 @@ var GatewayLanguageModel = class {
           resolvedHeaders,
           options.headers,
           this.getModelConfigHeaders(this.modelId, true),
-          await resolve(this.config.o11yHeaders)
+          await resolve(this.config.o11yHeaders),
         ),
         body: args,
         successfulResponseHandler: createEventSourceResponseHandler(any()),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        ...abortSignal && { abortSignal },
-        fetch: this.config.fetch
+        ...(abortSignal && { abortSignal }),
+        fetch: this.config.fetch,
       });
       return {
         stream: response.pipeThrough(
@@ -838,20 +839,22 @@ var GatewayLanguageModel = class {
                 if (streamPart.type === "raw" && !options.includeRawChunks) {
                   return;
                 }
-                if (streamPart.type === "response-metadata" && streamPart.timestamp && typeof streamPart.timestamp === "string") {
+                if (
+                  streamPart.type === "response-metadata" &&
+                  streamPart.timestamp &&
+                  typeof streamPart.timestamp === "string"
+                ) {
                   streamPart.timestamp = new Date(streamPart.timestamp);
                 }
                 controller.enqueue(streamPart);
               } else {
-                controller.error(
-                  chunk.error
-                );
+                controller.error(chunk.error);
               }
-            }
-          })
+            },
+          }),
         ),
         request: { body: args },
-        response: { headers: responseHeaders }
+        response: { headers: responseHeaders },
       };
     } catch (error) {
       throw await asGatewayError(error, await parseAuthMethod(resolvedHeaders));
@@ -875,7 +878,7 @@ var GatewayLanguageModel = class {
             const buffer = Uint8Array.from(filePart.data);
             const base64Data = Buffer.from(buffer).toString("base64");
             filePart.data = new URL(
-              `data:${filePart.mediaType || "application/octet-stream"};base64,${base64Data}`
+              `data:${filePart.mediaType || "application/octet-stream"};base64,${base64Data}`,
             );
           }
         }
@@ -890,7 +893,7 @@ var GatewayLanguageModel = class {
     return {
       "ai-language-model-specification-version": "3",
       "ai-language-model-id": modelId,
-      "ai-language-model-streaming": String(streaming)
+      "ai-language-model-streaming": String(streaming),
     };
   }
 };
@@ -905,47 +908,40 @@ var GatewayEmbeddingModel = class {
   get provider() {
     return this.config.provider;
   }
-  async doEmbed({
-    values,
-    headers,
-    abortSignal,
-    providerOptions
-  }) {
+  async doEmbed({ values, headers, abortSignal, providerOptions }) {
     var _a11, _b11;
     const resolvedHeaders = await resolve(this.config.headers());
     try {
       const {
         responseHeaders,
         value: responseBody,
-        rawValue
+        rawValue,
       } = await postJsonToApi({
         url: this.getUrl(),
         headers: combineHeaders(
           resolvedHeaders,
           headers != null ? headers : {},
           this.getModelConfigHeaders(),
-          await resolve(this.config.o11yHeaders)
+          await resolve(this.config.o11yHeaders),
         ),
         body: {
           values,
-          ...providerOptions ? { providerOptions } : {}
+          ...(providerOptions ? { providerOptions } : {}),
         },
-        successfulResponseHandler: createJsonResponseHandler(
-          gatewayEmbeddingResponseSchema
-        ),
+        successfulResponseHandler: createJsonResponseHandler(gatewayEmbeddingResponseSchema),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        ...abortSignal && { abortSignal },
-        fetch: this.config.fetch
+        ...(abortSignal && { abortSignal }),
+        fetch: this.config.fetch,
       });
       return {
         embeddings: responseBody.embeddings,
         usage: (_a11 = responseBody.usage) != null ? _a11 : void 0,
         providerMetadata: responseBody.providerMetadata,
         response: { headers: responseHeaders, body: rawValue },
-        warnings: (_b11 = responseBody.warnings) != null ? _b11 : []
+        warnings: (_b11 = responseBody.warnings) != null ? _b11 : [],
       };
     } catch (error) {
       throw await asGatewayError(error, await parseAuthMethod(resolvedHeaders));
@@ -957,7 +953,7 @@ var GatewayEmbeddingModel = class {
   getModelConfigHeaders() {
     return {
       "ai-embedding-model-specification-version": "3",
-      "ai-model-id": this.modelId
+      "ai-model-id": this.modelId,
     };
   }
 };
@@ -965,31 +961,31 @@ var gatewayEmbeddingWarningSchema = discriminatedUnion("type", [
   object({
     type: literal("unsupported"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("compatibility"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("other"),
-    message: string()
-  })
+    message: string(),
+  }),
 ]);
-var gatewayEmbeddingResponseSchema = lazySchema(
-  () => zodSchema(
+var gatewayEmbeddingResponseSchema = lazySchema(() =>
+  zodSchema(
     object({
       embeddings: array(array(number())),
       usage: object({ tokens: number() }).nullish(),
       warnings: array(gatewayEmbeddingWarningSchema).optional(),
-      providerMetadata: record(string(), record(string(), unknown())).optional()
-    })
-  )
+      providerMetadata: record(string(), record(string(), unknown())).optional(),
+    }),
+  ),
 );
 function mapGatewayWarnings(warnings) {
-  return (warnings != null ? warnings : []).map(
-    (warning) => warning.type === "deprecated" ? { type: "other", message: warning.message } : warning
+  return (warnings != null ? warnings : []).map((warning) =>
+    warning.type === "deprecated" ? { type: "other", message: warning.message } : warning,
   );
 }
 var GatewayImageModel = class {
@@ -1012,7 +1008,7 @@ var GatewayImageModel = class {
     mask,
     providerOptions,
     headers,
-    abortSignal
+    abortSignal,
   }) {
     var _a11, _b11, _c;
     const resolvedHeaders = await resolve(this.config.headers());
@@ -1020,36 +1016,34 @@ var GatewayImageModel = class {
       const {
         responseHeaders,
         value: responseBody,
-        rawValue
+        rawValue,
       } = await postJsonToApi({
         url: this.getUrl(),
         headers: combineHeaders(
           resolvedHeaders,
           headers != null ? headers : {},
           this.getModelConfigHeaders(),
-          await resolve(this.config.o11yHeaders)
+          await resolve(this.config.o11yHeaders),
         ),
         body: {
           prompt,
           n,
-          ...size && { size },
-          ...aspectRatio && { aspectRatio },
-          ...seed && { seed },
-          ...providerOptions && { providerOptions },
-          ...files && {
-            files: files.map((file) => maybeEncodeImageFile(file))
-          },
-          ...mask && { mask: maybeEncodeImageFile(mask) }
+          ...(size && { size }),
+          ...(aspectRatio && { aspectRatio }),
+          ...(seed && { seed }),
+          ...(providerOptions && { providerOptions }),
+          ...(files && {
+            files: files.map((file) => maybeEncodeImageFile(file)),
+          }),
+          ...(mask && { mask: maybeEncodeImageFile(mask) }),
         },
-        successfulResponseHandler: createJsonResponseHandler(
-          gatewayImageResponseSchema
-        ),
+        successfulResponseHandler: createJsonResponseHandler(gatewayImageResponseSchema),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        ...abortSignal && { abortSignal },
-        fetch: this.config.fetch
+        ...(abortSignal && { abortSignal }),
+        fetch: this.config.fetch,
       });
       return {
         images: responseBody.images,
@@ -1059,15 +1053,15 @@ var GatewayImageModel = class {
         response: {
           timestamp: /* @__PURE__ */ new Date(),
           modelId: this.modelId,
-          headers: responseHeaders
+          headers: responseHeaders,
         },
-        ...responseBody.usage != null && {
+        ...(responseBody.usage != null && {
           usage: {
             inputTokens: (_a11 = responseBody.usage.inputTokens) != null ? _a11 : void 0,
             outputTokens: (_b11 = responseBody.usage.outputTokens) != null ? _b11 : void 0,
-            totalTokens: (_c = responseBody.usage.totalTokens) != null ? _c : void 0
-          }
-        }
+            totalTokens: (_c = responseBody.usage.totalTokens) != null ? _c : void 0,
+          },
+        }),
       };
     } catch (error) {
       throw await asGatewayError(error, await parseAuthMethod(resolvedHeaders));
@@ -1079,7 +1073,7 @@ var GatewayImageModel = class {
   getModelConfigHeaders() {
     return {
       "ai-image-model-specification-version": "3",
-      "ai-model-id": this.modelId
+      "ai-model-id": this.modelId,
     };
   }
 };
@@ -1087,46 +1081,46 @@ function maybeEncodeImageFile(file) {
   if (file.type === "file" && file.data instanceof Uint8Array) {
     return {
       ...file,
-      data: convertUint8ArrayToBase64(file.data)
+      data: convertUint8ArrayToBase64(file.data),
     };
   }
   return file;
 }
 var providerMetadataEntrySchema = object({
-  images: array(unknown()).optional()
+  images: array(unknown()).optional(),
 }).catchall(unknown());
 var gatewayImageWarningSchema = discriminatedUnion("type", [
   object({
     type: literal("unsupported"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("compatibility"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("deprecated"),
     setting: string(),
-    message: string()
+    message: string(),
   }),
   object({
     type: literal("other"),
-    message: string()
-  })
+    message: string(),
+  }),
 ]);
 var gatewayImageUsageSchema = object({
   inputTokens: number().nullish(),
   outputTokens: number().nullish(),
-  totalTokens: number().nullish()
+  totalTokens: number().nullish(),
 });
 var gatewayImageResponseSchema = object({
   images: array(string()),
   // Always base64 strings over the wire
   warnings: array(gatewayImageWarningSchema).optional(),
   providerMetadata: record(string(), providerMetadataEntrySchema).optional(),
-  usage: gatewayImageUsageSchema.optional()
+  usage: gatewayImageUsageSchema.optional(),
 });
 var GatewayVideoModel = class {
   constructor(modelId, config) {
@@ -1152,7 +1146,7 @@ var GatewayVideoModel = class {
     inputReferences,
     providerOptions,
     headers,
-    abortSignal
+    abortSignal,
   }) {
     const resolvedHeaders = await resolve(this.config.headers());
     try {
@@ -1163,47 +1157,41 @@ var GatewayVideoModel = class {
           headers != null ? headers : {},
           this.getModelConfigHeaders(),
           await resolve(this.config.o11yHeaders),
-          { accept: "text/event-stream" }
+          { accept: "text/event-stream" },
         ),
         body: {
           prompt,
           n,
-          ...aspectRatio && { aspectRatio },
-          ...resolution && { resolution },
-          ...duration && { duration },
-          ...fps && { fps },
-          ...seed && { seed },
-          ...generateAudio !== void 0 && { generateAudio },
-          ...providerOptions && { providerOptions },
-          ...image && { image: maybeEncodeVideoFile(image) },
-          ...frameImages && {
+          ...(aspectRatio && { aspectRatio }),
+          ...(resolution && { resolution }),
+          ...(duration && { duration }),
+          ...(fps && { fps }),
+          ...(seed && { seed }),
+          ...(generateAudio !== void 0 && { generateAudio }),
+          ...(providerOptions && { providerOptions }),
+          ...(image && { image: maybeEncodeVideoFile(image) }),
+          ...(frameImages && {
             frameImages: frameImages.map((frame) => ({
               ...frame,
-              image: maybeEncodeVideoFile(frame.image)
-            }))
-          },
-          ...inputReferences && {
-            inputReferences: inputReferences.map(
-              (reference) => maybeEncodeVideoFile(reference)
-            )
-          }
+              image: maybeEncodeVideoFile(frame.image),
+            })),
+          }),
+          ...(inputReferences && {
+            inputReferences: inputReferences.map((reference) => maybeEncodeVideoFile(reference)),
+          }),
         },
-        successfulResponseHandler: async ({
-          response,
-          url,
-          requestBodyValues
-        }) => {
+        successfulResponseHandler: async ({ response, url, requestBodyValues }) => {
           if (response.body == null) {
             throw new APICallError({
               message: "SSE response body is empty",
               url,
               requestBodyValues,
-              statusCode: response.status
+              statusCode: response.status,
             });
           }
           const eventStream = parseJsonEventStream({
             stream: response.body,
-            schema: gatewayVideoEventSchema
+            schema: gatewayVideoEventSchema,
           });
           const reader = eventStream.getReader();
           const { done, value: parseResult } = await reader.read();
@@ -1213,7 +1201,7 @@ var GatewayVideoModel = class {
               message: "SSE stream ended without a data event",
               url,
               requestBodyValues,
-              statusCode: response.status
+              statusCode: response.status,
             });
           }
           if (!parseResult.success) {
@@ -1222,7 +1210,7 @@ var GatewayVideoModel = class {
               cause: parseResult.error,
               url,
               requestBodyValues,
-              statusCode: response.status
+              statusCode: response.status,
             });
           }
           const event = parseResult.value;
@@ -1238,26 +1226,26 @@ var GatewayVideoModel = class {
                 error: {
                   message: event.message,
                   type: event.errorType,
-                  param: event.param
-                }
-              }
+                  param: event.param,
+                },
+              },
             });
           }
           return {
             value: {
               videos: event.videos,
               warnings: event.warnings,
-              providerMetadata: event.providerMetadata
+              providerMetadata: event.providerMetadata,
             },
-            responseHeaders: Object.fromEntries([...response.headers])
+            responseHeaders: Object.fromEntries([...response.headers]),
           };
         },
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        ...abortSignal && { abortSignal },
-        fetch: this.config.fetch
+        ...(abortSignal && { abortSignal }),
+        fetch: this.config.fetch,
       });
       return {
         videos: responseBody.videos,
@@ -1266,8 +1254,8 @@ var GatewayVideoModel = class {
         response: {
           timestamp: /* @__PURE__ */ new Date(),
           modelId: this.modelId,
-          headers: responseHeaders
-        }
+          headers: responseHeaders,
+        },
       };
     } catch (error) {
       throw await asGatewayError(error, await parseAuthMethod(resolvedHeaders));
@@ -1279,7 +1267,7 @@ var GatewayVideoModel = class {
   getModelConfigHeaders() {
     return {
       "ai-video-model-specification-version": "3",
-      "ai-model-id": this.modelId
+      "ai-model-id": this.modelId,
     };
   }
 };
@@ -1287,61 +1275,61 @@ function maybeEncodeVideoFile(file) {
   if (file.type === "file" && file.data instanceof Uint8Array) {
     return {
       ...file,
-      data: convertUint8ArrayToBase64(file.data)
+      data: convertUint8ArrayToBase64(file.data),
     };
   }
   return file;
 }
 var providerMetadataEntrySchema2 = object({
-  videos: array(unknown()).optional()
+  videos: array(unknown()).optional(),
 }).catchall(unknown());
 var gatewayVideoDataSchema = union([
   object({
     type: literal("url"),
     url: string(),
-    mediaType: string()
+    mediaType: string(),
   }),
   object({
     type: literal("base64"),
     data: string(),
-    mediaType: string()
-  })
+    mediaType: string(),
+  }),
 ]);
 var gatewayVideoWarningSchema = discriminatedUnion("type", [
   object({
     type: literal("unsupported"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("compatibility"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("deprecated"),
     setting: string(),
-    message: string()
+    message: string(),
   }),
   object({
     type: literal("other"),
-    message: string()
-  })
+    message: string(),
+  }),
 ]);
 var gatewayVideoEventSchema = discriminatedUnion("type", [
   object({
     type: literal("result"),
     videos: array(gatewayVideoDataSchema),
     warnings: array(gatewayVideoWarningSchema).optional(),
-    providerMetadata: record(string(), providerMetadataEntrySchema2).optional()
+    providerMetadata: record(string(), providerMetadataEntrySchema2).optional(),
   }),
   object({
     type: literal("error"),
     message: string(),
     errorType: string(),
     statusCode: number(),
-    param: unknown().nullable()
-  })
+    param: unknown().nullable(),
+  }),
 ]);
 var GatewayRerankingModel = class {
   constructor(modelId, config) {
@@ -1352,50 +1340,41 @@ var GatewayRerankingModel = class {
   get provider() {
     return this.config.provider;
   }
-  async doRerank({
-    documents,
-    query,
-    topN,
-    headers,
-    abortSignal,
-    providerOptions
-  }) {
+  async doRerank({ documents, query, topN, headers, abortSignal, providerOptions }) {
     var _a11;
     const resolvedHeaders = await resolve(this.config.headers());
     try {
       const {
         responseHeaders,
         value: responseBody,
-        rawValue
+        rawValue,
       } = await postJsonToApi({
         url: this.getUrl(),
         headers: combineHeaders(
           resolvedHeaders,
           headers != null ? headers : {},
           this.getModelConfigHeaders(),
-          await resolve(this.config.o11yHeaders)
+          await resolve(this.config.o11yHeaders),
         ),
         body: {
           documents,
           query,
-          ...topN != null ? { topN } : {},
-          ...providerOptions ? { providerOptions } : {}
+          ...(topN != null ? { topN } : {}),
+          ...(providerOptions ? { providerOptions } : {}),
         },
-        successfulResponseHandler: createJsonResponseHandler(
-          gatewayRerankingResponseSchema
-        ),
+        successfulResponseHandler: createJsonResponseHandler(gatewayRerankingResponseSchema),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        ...abortSignal && { abortSignal },
-        fetch: this.config.fetch
+        ...(abortSignal && { abortSignal }),
+        fetch: this.config.fetch,
       });
       return {
         ranking: responseBody.ranking,
         providerMetadata: responseBody.providerMetadata,
         response: { headers: responseHeaders, body: rawValue },
-        warnings: (_a11 = responseBody.warnings) != null ? _a11 : []
+        warnings: (_a11 = responseBody.warnings) != null ? _a11 : [],
       };
     } catch (error) {
       throw await asGatewayError(error, await parseAuthMethod(resolvedHeaders));
@@ -1407,7 +1386,7 @@ var GatewayRerankingModel = class {
   getModelConfigHeaders() {
     return {
       "ai-reranking-model-specification-version": "3",
-      "ai-model-id": this.modelId
+      "ai-model-id": this.modelId,
     };
   }
 };
@@ -1415,31 +1394,31 @@ var gatewayRerankingWarningSchema = discriminatedUnion("type", [
   object({
     type: literal("unsupported"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("compatibility"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("other"),
-    message: string()
-  })
+    message: string(),
+  }),
 ]);
-var gatewayRerankingResponseSchema = lazySchema(
-  () => zodSchema(
+var gatewayRerankingResponseSchema = lazySchema(() =>
+  zodSchema(
     object({
       ranking: array(
         object({
           index: number(),
-          relevanceScore: number()
-        })
+          relevanceScore: number(),
+        }),
       ),
       warnings: array(gatewayRerankingWarningSchema).optional(),
-      providerMetadata: record(string(), record(string(), unknown())).optional()
-    })
-  )
+      providerMetadata: record(string(), record(string(), unknown())).optional(),
+    }),
+  ),
 );
 var GatewaySpeechModel = class {
   constructor(modelId, config) {
@@ -1459,40 +1438,38 @@ var GatewaySpeechModel = class {
     language,
     providerOptions,
     headers,
-    abortSignal
+    abortSignal,
   }) {
     const resolvedHeaders = await resolve(this.config.headers());
     try {
       const {
         responseHeaders,
         value: responseBody,
-        rawValue
+        rawValue,
       } = await postJsonToApi({
         url: this.getUrl(),
         headers: combineHeaders(
           resolvedHeaders,
           headers != null ? headers : {},
           this.getModelConfigHeaders(),
-          await resolve(this.config.o11yHeaders)
+          await resolve(this.config.o11yHeaders),
         ),
         body: {
           text,
-          ...voice && { voice },
-          ...outputFormat && { outputFormat },
-          ...instructions && { instructions },
-          ...speed != null && { speed },
-          ...language && { language },
-          ...providerOptions && { providerOptions }
+          ...(voice && { voice }),
+          ...(outputFormat && { outputFormat }),
+          ...(instructions && { instructions }),
+          ...(speed != null && { speed }),
+          ...(language && { language }),
+          ...(providerOptions && { providerOptions }),
         },
-        successfulResponseHandler: createJsonResponseHandler(
-          gatewaySpeechResponseSchema
-        ),
+        successfulResponseHandler: createJsonResponseHandler(gatewaySpeechResponseSchema),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        ...abortSignal && { abortSignal },
-        fetch: this.config.fetch
+        ...(abortSignal && { abortSignal }),
+        fetch: this.config.fetch,
       });
       return {
         audio: responseBody.audio,
@@ -1502,13 +1479,13 @@ var GatewaySpeechModel = class {
           timestamp: /* @__PURE__ */ new Date(),
           modelId: this.modelId,
           headers: responseHeaders,
-          body: rawValue
-        }
+          body: rawValue,
+        },
       };
     } catch (error) {
       throw await asGatewayError(
         error,
-        await parseAuthMethod(resolvedHeaders != null ? resolvedHeaders : {})
+        await parseAuthMethod(resolvedHeaders != null ? resolvedHeaders : {}),
       );
     }
   }
@@ -1518,7 +1495,7 @@ var GatewaySpeechModel = class {
   getModelConfigHeaders() {
     return {
       "ai-speech-model-specification-version": "3",
-      "ai-model-id": this.modelId
+      "ai-model-id": this.modelId,
     };
   }
 };
@@ -1527,27 +1504,27 @@ var gatewaySpeechWarningSchema = discriminatedUnion("type", [
   object({
     type: literal("unsupported"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("compatibility"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("deprecated"),
     setting: string(),
-    message: string()
+    message: string(),
   }),
   object({
     type: literal("other"),
-    message: string()
-  })
+    message: string(),
+  }),
 ]);
 var gatewaySpeechResponseSchema = object({
   audio: string(),
   warnings: array(gatewaySpeechWarningSchema).optional(),
-  providerMetadata: record(string(), providerMetadataEntrySchema3).optional()
+  providerMetadata: record(string(), providerMetadataEntrySchema3).optional(),
 });
 var GatewayTranscriptionModel = class {
   constructor(modelId, config) {
@@ -1558,42 +1535,34 @@ var GatewayTranscriptionModel = class {
   get provider() {
     return this.config.provider;
   }
-  async doGenerate({
-    audio,
-    mediaType,
-    providerOptions,
-    headers,
-    abortSignal
-  }) {
+  async doGenerate({ audio, mediaType, providerOptions, headers, abortSignal }) {
     var _a11, _b11, _c;
     const resolvedHeaders = await resolve(this.config.headers());
     try {
       const {
         responseHeaders,
         value: responseBody,
-        rawValue
+        rawValue,
       } = await postJsonToApi({
         url: this.getUrl(),
         headers: combineHeaders(
           resolvedHeaders,
           headers != null ? headers : {},
           this.getModelConfigHeaders(),
-          await resolve(this.config.o11yHeaders)
+          await resolve(this.config.o11yHeaders),
         ),
         body: {
           audio: audio instanceof Uint8Array ? convertUint8ArrayToBase64(audio) : audio,
           mediaType,
-          ...providerOptions && { providerOptions }
+          ...(providerOptions && { providerOptions }),
         },
-        successfulResponseHandler: createJsonResponseHandler(
-          gatewayTranscriptionResponseSchema
-        ),
+        successfulResponseHandler: createJsonResponseHandler(gatewayTranscriptionResponseSchema),
         failedResponseHandler: createJsonErrorResponseHandler({
           errorSchema: any(),
-          errorToMessage: (data) => data
+          errorToMessage: (data) => data,
         }),
-        ...abortSignal && { abortSignal },
-        fetch: this.config.fetch
+        ...(abortSignal && { abortSignal }),
+        fetch: this.config.fetch,
       });
       return {
         text: responseBody.text,
@@ -1606,13 +1575,13 @@ var GatewayTranscriptionModel = class {
           timestamp: /* @__PURE__ */ new Date(),
           modelId: this.modelId,
           headers: responseHeaders,
-          body: rawValue
-        }
+          body: rawValue,
+        },
       };
     } catch (error) {
       throw await asGatewayError(
         error,
-        await parseAuthMethod(resolvedHeaders != null ? resolvedHeaders : {})
+        await parseAuthMethod(resolvedHeaders != null ? resolvedHeaders : {}),
       );
     }
   }
@@ -1622,7 +1591,7 @@ var GatewayTranscriptionModel = class {
   getModelConfigHeaders() {
     return {
       "ai-transcription-model-specification-version": "3",
-      "ai-model-id": this.modelId
+      "ai-model-id": this.modelId,
     };
   }
 };
@@ -1631,22 +1600,22 @@ var gatewayTranscriptionWarningSchema = discriminatedUnion("type", [
   object({
     type: literal("unsupported"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("compatibility"),
     feature: string(),
-    details: string().optional()
+    details: string().optional(),
   }),
   object({
     type: literal("deprecated"),
     setting: string(),
-    message: string()
+    message: string(),
   }),
   object({
     type: literal("other"),
-    message: string()
-  })
+    message: string(),
+  }),
 ]);
 var gatewayTranscriptionResponseSchema = object({
   text: string(),
@@ -1654,35 +1623,47 @@ var gatewayTranscriptionResponseSchema = object({
     object({
       text: string(),
       startSecond: number(),
-      endSecond: number()
-    })
+      endSecond: number(),
+    }),
   ).optional(),
   language: string().nullish(),
   durationInSeconds: number().nullish(),
   warnings: array(gatewayTranscriptionWarningSchema).optional(),
-  providerMetadata: record(string(), providerMetadataEntrySchema4).optional()
+  providerMetadata: record(string(), providerMetadataEntrySchema4).optional(),
 });
-var exaSearchInputSchema = lazySchema(
-  () => zodSchema(
+var exaSearchInputSchema = lazySchema(() =>
+  zodSchema(
     objectType({
       query: stringType().describe("Natural-language web search query. This is required."),
-      type: enumType(["auto", "fast", "instant"]).optional().describe(
-        "Search method. Use auto for the default balance of speed and quality."
-      ),
-      num_results: numberType().optional().describe("Maximum number of results to return (1-100, default: 10)."),
+      type: enumType(["auto", "fast", "instant"])
+        .optional()
+        .describe("Search method. Use auto for the default balance of speed and quality."),
+      num_results: numberType()
+        .optional()
+        .describe("Maximum number of results to return (1-100, default: 10)."),
       category: enumType([
         "company",
         "people",
         "research paper",
         "news",
         "personal site",
-        "financial report"
-      ]).optional().describe("Optional content category to focus results."),
+        "financial report",
+      ])
+        .optional()
+        .describe("Optional content category to focus results."),
       user_location: stringType().optional().describe("Two-letter ISO country code such as 'US'."),
-      include_domains: arrayType(stringType()).optional().describe("Only return results from these domains."),
-      exclude_domains: arrayType(stringType()).optional().describe("Exclude results from these domains."),
-      start_published_date: stringType().optional().describe("Only return links published after this ISO 8601 date."),
-      end_published_date: stringType().optional().describe("Only return links published before this ISO 8601 date."),
+      include_domains: arrayType(stringType())
+        .optional()
+        .describe("Only return results from these domains."),
+      exclude_domains: arrayType(stringType())
+        .optional()
+        .describe("Exclude results from these domains."),
+      start_published_date: stringType()
+        .optional()
+        .describe("Only return links published after this ISO 8601 date."),
+      end_published_date: stringType()
+        .optional()
+        .describe("Only return links published before this ISO 8601 date."),
       contents: objectType({
         text: unionType([
           booleanType(),
@@ -1691,35 +1672,19 @@ var exaSearchInputSchema = lazySchema(
             include_html_tags: booleanType().optional(),
             verbosity: enumType(["compact", "standard", "full"]).optional(),
             include_sections: arrayType(
-              enumType([
-                "header",
-                "navigation",
-                "banner",
-                "body",
-                "sidebar",
-                "footer",
-                "metadata"
-              ])
+              enumType(["header", "navigation", "banner", "body", "sidebar", "footer", "metadata"]),
             ).optional(),
             exclude_sections: arrayType(
-              enumType([
-                "header",
-                "navigation",
-                "banner",
-                "body",
-                "sidebar",
-                "footer",
-                "metadata"
-              ])
-            ).optional()
-          })
+              enumType(["header", "navigation", "banner", "body", "sidebar", "footer", "metadata"]),
+            ).optional(),
+          }),
         ]).optional(),
         highlights: unionType([
           booleanType(),
           objectType({
             query: stringType().optional(),
-            max_characters: numberType().optional()
-          })
+            max_characters: numberType().optional(),
+          }),
         ]).optional(),
         max_age_hours: numberType().optional(),
         livecrawl_timeout: numberType().optional(),
@@ -1727,14 +1692,16 @@ var exaSearchInputSchema = lazySchema(
         subpage_target: unionType([stringType(), arrayType(stringType())]).optional(),
         extras: objectType({
           links: numberType().optional(),
-          image_links: numberType().optional()
-        }).optional()
-      }).optional().describe("Controls extracted page content and freshness.")
-    })
-  )
+          image_links: numberType().optional(),
+        }).optional(),
+      })
+        .optional()
+        .describe("Controls extracted page content and freshness."),
+    }),
+  ),
 );
-var exaSearchOutputSchema = lazySchema(
-  () => zodSchema(
+var exaSearchOutputSchema = lazySchema(() =>
+  zodSchema(
     unionType([
       objectType({
         requestId: stringType(),
@@ -1756,14 +1723,14 @@ var exaSearchOutputSchema = lazySchema(
             subpages: arrayType(anyType()).optional(),
             extras: objectType({
               links: arrayType(stringType()).optional(),
-              imageLinks: arrayType(stringType()).optional()
-            }).optional()
-          })
+              imageLinks: arrayType(stringType()).optional(),
+            }).optional(),
+          }),
         ),
         costDollars: objectType({
           total: numberType().optional(),
-          search: recordType(numberType()).optional()
-        }).optional()
+          search: recordType(numberType()).optional(),
+        }).optional(),
       }),
       objectType({
         error: enumType([
@@ -1773,62 +1740,80 @@ var exaSearchOutputSchema = lazySchema(
           "invalid_input",
           "configuration_error",
           "execution_error",
-          "unknown"
+          "unknown",
         ]),
         statusCode: numberType().optional(),
-        message: stringType()
-      })
-    ])
-  )
+        message: stringType(),
+      }),
+    ]),
+  ),
 );
 var exaSearchToolFactory = createProviderToolFactoryWithOutputSchema({
   id: "gateway.exa_search",
   inputSchema: exaSearchInputSchema,
-  outputSchema: exaSearchOutputSchema
+  outputSchema: exaSearchOutputSchema,
 });
 var exaSearch = (config = {}) => exaSearchToolFactory(config);
-var parallelSearchInputSchema = lazySchema(
-  () => zodSchema(
+var parallelSearchInputSchema = lazySchema(() =>
+  zodSchema(
     objectType({
       objective: stringType().describe(
-        "Natural-language description of the web research goal, including source or freshness guidance and broader context from the task. Maximum 5000 characters."
+        "Natural-language description of the web research goal, including source or freshness guidance and broader context from the task. Maximum 5000 characters.",
       ),
-      search_queries: arrayType(stringType()).optional().describe(
-        "Optional search queries to supplement the objective. Maximum 200 characters per query."
-      ),
-      mode: enumType(["one-shot", "agentic"]).optional().describe(
-        'Mode preset: "one-shot" for comprehensive results with longer excerpts (default), "agentic" for concise, token-efficient results for multi-step workflows.'
-      ),
-      max_results: numberType().optional().describe(
-        "Maximum number of results to return (1-20). Defaults to 10 if not specified."
-      ),
+      search_queries: arrayType(stringType())
+        .optional()
+        .describe(
+          "Optional search queries to supplement the objective. Maximum 200 characters per query.",
+        ),
+      mode: enumType(["one-shot", "agentic"])
+        .optional()
+        .describe(
+          'Mode preset: "one-shot" for comprehensive results with longer excerpts (default), "agentic" for concise, token-efficient results for multi-step workflows.',
+        ),
+      max_results: numberType()
+        .optional()
+        .describe("Maximum number of results to return (1-20). Defaults to 10 if not specified."),
       source_policy: objectType({
-        include_domains: arrayType(stringType()).optional().describe(
-          "Limit results to these domains. Use plain domain names only — e.g. example.com or sub.example.gov, or a bare extension like .edu. Do not include a scheme, path, or port (e.g. not https://example.com/page)."
-        ),
-        exclude_domains: arrayType(stringType()).optional().describe(
-          "Exclude results from these domains. Use plain domain names only — e.g. example.com or sub.example.gov, or a bare extension like .edu. Do not include a scheme, path, or port (e.g. not https://example.com/page)."
-        ),
-        after_date: stringType().optional().describe(
-          "Only include results published after this date. Use an ISO 8601 calendar date formatted YYYY-MM-DD (e.g. 2025-01-01); do not include a time."
-        )
-      }).optional().describe(
-        "Source policy for controlling which domains to include/exclude and freshness."
-      ),
+        include_domains: arrayType(stringType())
+          .optional()
+          .describe(
+            "Limit results to these domains. Use plain domain names only — e.g. example.com or sub.example.gov, or a bare extension like .edu. Do not include a scheme, path, or port (e.g. not https://example.com/page).",
+          ),
+        exclude_domains: arrayType(stringType())
+          .optional()
+          .describe(
+            "Exclude results from these domains. Use plain domain names only — e.g. example.com or sub.example.gov, or a bare extension like .edu. Do not include a scheme, path, or port (e.g. not https://example.com/page).",
+          ),
+        after_date: stringType()
+          .optional()
+          .describe(
+            "Only include results published after this date. Use an ISO 8601 calendar date formatted YYYY-MM-DD (e.g. 2025-01-01); do not include a time.",
+          ),
+      })
+        .optional()
+        .describe("Source policy for controlling which domains to include/exclude and freshness."),
       excerpts: objectType({
         max_chars_per_result: numberType().optional().describe("Maximum characters per result."),
-        max_chars_total: numberType().optional().describe("Maximum total characters across all results.")
-      }).optional().describe("Excerpt configuration for controlling result length."),
+        max_chars_total: numberType()
+          .optional()
+          .describe("Maximum total characters across all results."),
+      })
+        .optional()
+        .describe("Excerpt configuration for controlling result length."),
       fetch_policy: objectType({
-        max_age_seconds: numberType().optional().describe(
-          "Maximum age in seconds for cached content. Set to 0 to always fetch fresh content."
-        )
-      }).optional().describe("Fetch policy for controlling content freshness.")
-    })
-  )
+        max_age_seconds: numberType()
+          .optional()
+          .describe(
+            "Maximum age in seconds for cached content. Set to 0 to always fetch fresh content.",
+          ),
+      })
+        .optional()
+        .describe("Fetch policy for controlling content freshness."),
+    }),
+  ),
 );
-var parallelSearchOutputSchema = lazySchema(
-  () => zodSchema(
+var parallelSearchOutputSchema = lazySchema(() =>
+  zodSchema(
     unionType([
       // Success response
       objectType({
@@ -1839,9 +1824,9 @@ var parallelSearchOutputSchema = lazySchema(
             title: stringType(),
             excerpt: stringType(),
             publishDate: stringType().nullable().optional(),
-            relevanceScore: numberType().optional()
-          })
-        )
+            relevanceScore: numberType().optional(),
+          }),
+        ),
       }),
       // Error response
       objectType({
@@ -1851,64 +1836,82 @@ var parallelSearchOutputSchema = lazySchema(
           "timeout",
           "invalid_input",
           "configuration_error",
-          "unknown"
+          "unknown",
         ]),
         statusCode: numberType().optional(),
-        message: stringType()
-      })
-    ])
-  )
+        message: stringType(),
+      }),
+    ]),
+  ),
 );
 var parallelSearchToolFactory = createProviderToolFactoryWithOutputSchema({
   id: "gateway.parallel_search",
   inputSchema: parallelSearchInputSchema,
-  outputSchema: parallelSearchOutputSchema
+  outputSchema: parallelSearchOutputSchema,
 });
 var parallelSearch = (config = {}) => parallelSearchToolFactory(config);
-var perplexitySearchInputSchema = lazySchema(
-  () => zodSchema(
+var perplexitySearchInputSchema = lazySchema(() =>
+  zodSchema(
     objectType({
       query: unionType([stringType(), arrayType(stringType())]).describe(
-        "Search query (string) or multiple queries (array of up to 5 strings). Multi-query searches return combined results from all queries."
+        "Search query (string) or multiple queries (array of up to 5 strings). Multi-query searches return combined results from all queries.",
       ),
-      max_results: numberType().optional().describe(
-        "Maximum number of search results to return (1-20, default: 10)"
-      ),
-      max_tokens_per_page: numberType().optional().describe(
-        "Maximum number of tokens to extract per search result page (256-2048, default: 2048)"
-      ),
-      max_tokens: numberType().optional().describe(
-        "Maximum total tokens across all search results (default: 25000, max: 1000000)"
-      ),
-      country: stringType().optional().describe(
-        "Two-letter ISO 3166-1 alpha-2 country code for regional search results (e.g., 'US', 'GB', 'FR')"
-      ),
-      search_domain_filter: arrayType(stringType()).optional().describe(
-        "List of domains to include or exclude from search results (max 20). To include: ['nature.com', 'science.org']. To exclude: ['-example.com', '-spam.net']"
-      ),
-      search_language_filter: arrayType(stringType()).optional().describe(
-        "List of ISO 639-1 language codes to filter results (max 10, lowercase). Examples: ['en', 'fr', 'de']"
-      ),
-      search_after_date: stringType().optional().describe(
-        "Include only results published after this date. Format: 'MM/DD/YYYY' (e.g., '3/1/2025'). Cannot be used with search_recency_filter."
-      ),
-      search_before_date: stringType().optional().describe(
-        "Include only results published before this date. Format: 'MM/DD/YYYY' (e.g., '3/15/2025'). Cannot be used with search_recency_filter."
-      ),
-      last_updated_after_filter: stringType().optional().describe(
-        "Include only results last updated after this date. Format: 'MM/DD/YYYY' (e.g., '3/1/2025'). Cannot be used with search_recency_filter."
-      ),
-      last_updated_before_filter: stringType().optional().describe(
-        "Include only results last updated before this date. Format: 'MM/DD/YYYY' (e.g., '3/15/2025'). Cannot be used with search_recency_filter."
-      ),
-      search_recency_filter: enumType(["day", "week", "month", "year"]).optional().describe(
-        "Filter results by relative time period. Cannot be used with search_after_date or search_before_date."
-      )
-    })
-  )
+      max_results: numberType()
+        .optional()
+        .describe("Maximum number of search results to return (1-20, default: 10)"),
+      max_tokens_per_page: numberType()
+        .optional()
+        .describe(
+          "Maximum number of tokens to extract per search result page (256-2048, default: 2048)",
+        ),
+      max_tokens: numberType()
+        .optional()
+        .describe("Maximum total tokens across all search results (default: 25000, max: 1000000)"),
+      country: stringType()
+        .optional()
+        .describe(
+          "Two-letter ISO 3166-1 alpha-2 country code for regional search results (e.g., 'US', 'GB', 'FR')",
+        ),
+      search_domain_filter: arrayType(stringType())
+        .optional()
+        .describe(
+          "List of domains to include or exclude from search results (max 20). To include: ['nature.com', 'science.org']. To exclude: ['-example.com', '-spam.net']",
+        ),
+      search_language_filter: arrayType(stringType())
+        .optional()
+        .describe(
+          "List of ISO 639-1 language codes to filter results (max 10, lowercase). Examples: ['en', 'fr', 'de']",
+        ),
+      search_after_date: stringType()
+        .optional()
+        .describe(
+          "Include only results published after this date. Format: 'MM/DD/YYYY' (e.g., '3/1/2025'). Cannot be used with search_recency_filter.",
+        ),
+      search_before_date: stringType()
+        .optional()
+        .describe(
+          "Include only results published before this date. Format: 'MM/DD/YYYY' (e.g., '3/15/2025'). Cannot be used with search_recency_filter.",
+        ),
+      last_updated_after_filter: stringType()
+        .optional()
+        .describe(
+          "Include only results last updated after this date. Format: 'MM/DD/YYYY' (e.g., '3/1/2025'). Cannot be used with search_recency_filter.",
+        ),
+      last_updated_before_filter: stringType()
+        .optional()
+        .describe(
+          "Include only results last updated before this date. Format: 'MM/DD/YYYY' (e.g., '3/15/2025'). Cannot be used with search_recency_filter.",
+        ),
+      search_recency_filter: enumType(["day", "week", "month", "year"])
+        .optional()
+        .describe(
+          "Filter results by relative time period. Cannot be used with search_after_date or search_before_date.",
+        ),
+    }),
+  ),
 );
-var perplexitySearchOutputSchema = lazySchema(
-  () => zodSchema(
+var perplexitySearchOutputSchema = lazySchema(() =>
+  zodSchema(
     unionType([
       // Success response
       objectType({
@@ -1918,30 +1921,24 @@ var perplexitySearchOutputSchema = lazySchema(
             url: stringType(),
             snippet: stringType(),
             date: stringType().optional(),
-            lastUpdated: stringType().optional()
-          })
+            lastUpdated: stringType().optional(),
+          }),
         ),
-        id: stringType()
+        id: stringType(),
       }),
       // Error response
       objectType({
-        error: enumType([
-          "api_error",
-          "rate_limit",
-          "timeout",
-          "invalid_input",
-          "unknown"
-        ]),
+        error: enumType(["api_error", "rate_limit", "timeout", "invalid_input", "unknown"]),
         statusCode: numberType().optional(),
-        message: stringType()
-      })
-    ])
-  )
+        message: stringType(),
+      }),
+    ]),
+  ),
 );
 var perplexitySearchToolFactory = createProviderToolFactoryWithOutputSchema({
   id: "gateway.perplexity_search",
   inputSchema: perplexitySearchInputSchema,
-  outputSchema: perplexitySearchOutputSchema
+  outputSchema: perplexitySearchOutputSchema,
 });
 var perplexitySearch = (config = {}) => perplexitySearchToolFactory(config);
 var gatewayTools = {
@@ -1969,7 +1966,7 @@ var gatewayTools = {
    * Provides ranked search results with advanced filtering options including
    * domain, language, date range, and recency filters.
    */
-  perplexitySearch
+  perplexitySearch,
 };
 async function getVercelRequestId() {
   var _a11;
@@ -1981,9 +1978,13 @@ function createGatewayProvider(options = {}) {
   var _a11, _b11;
   let pendingMetadata = null;
   let metadataCache = null;
-  const cacheRefreshMillis = (_a11 = options.metadataCacheRefreshMillis) != null ? _a11 : 1e3 * 60 * 5;
+  const cacheRefreshMillis =
+    (_a11 = options.metadataCacheRefreshMillis) != null ? _a11 : 1e3 * 60 * 5;
   let lastFetchTime = 0;
-  const baseURL = (_b11 = withoutTrailingSlash(options.baseURL)) != null ? _b11 : "https://ai-gateway.vercel.sh/v3/ai";
+  const baseURL =
+    (_b11 = withoutTrailingSlash(options.baseURL)) != null
+      ? _b11
+      : "https://ai-gateway.vercel.sh/v3/ai";
   const getHeaders = async () => {
     try {
       const auth = await getGatewayAuthToken(options);
@@ -1992,44 +1993,44 @@ function createGatewayProvider(options = {}) {
           Authorization: `Bearer ${auth.token}`,
           "ai-gateway-protocol-version": AI_GATEWAY_PROTOCOL_VERSION,
           [GATEWAY_AUTH_METHOD_HEADER]: auth.authMethod,
-          ...options.headers
+          ...options.headers,
         },
-        `ai-sdk/gateway/${VERSION}`
+        `ai-sdk/gateway/${VERSION}`,
       );
     } catch (error) {
       throw GatewayAuthenticationError.createContextualError({
         apiKeyProvided: false,
         oidcTokenProvided: false,
         statusCode: 401,
-        cause: error
+        cause: error,
       });
     }
   };
   const createO11yHeaders = () => {
     const deploymentId = loadOptionalSetting({
       settingValue: void 0,
-      environmentVariableName: "VERCEL_DEPLOYMENT_ID"
+      environmentVariableName: "VERCEL_DEPLOYMENT_ID",
     });
     const environment = loadOptionalSetting({
       settingValue: void 0,
-      environmentVariableName: "VERCEL_ENV"
+      environmentVariableName: "VERCEL_ENV",
     });
     const region = loadOptionalSetting({
       settingValue: void 0,
-      environmentVariableName: "VERCEL_REGION"
+      environmentVariableName: "VERCEL_REGION",
     });
     const projectId = loadOptionalSetting({
       settingValue: void 0,
-      environmentVariableName: "VERCEL_PROJECT_ID"
+      environmentVariableName: "VERCEL_PROJECT_ID",
     });
     return async () => {
       const requestId = await getVercelRequestId();
       return {
-        ...deploymentId && { "ai-o11y-deployment-id": deploymentId },
-        ...environment && { "ai-o11y-environment": environment },
-        ...region && { "ai-o11y-region": region },
-        ...requestId && { "ai-o11y-request-id": requestId },
-        ...projectId && { "ai-o11y-project-id": projectId }
+        ...(deploymentId && { "ai-o11y-deployment-id": deploymentId }),
+        ...(environment && { "ai-o11y-environment": environment }),
+        ...(region && { "ai-o11y-region": region }),
+        ...(requestId && { "ai-o11y-request-id": requestId }),
+        ...(projectId && { "ai-o11y-project-id": projectId }),
       };
     };
   };
@@ -2039,27 +2040,33 @@ function createGatewayProvider(options = {}) {
       baseURL,
       headers: getHeaders,
       fetch: options.fetch,
-      o11yHeaders: createO11yHeaders()
+      o11yHeaders: createO11yHeaders(),
     });
   };
   const getAvailableModels = async () => {
     var _a12, _b12, _c;
-    const now = (_c = (_b12 = (_a12 = options._internal) == null ? void 0 : _a12.currentDate) == null ? void 0 : _b12.call(_a12).getTime()) != null ? _c : Date.now();
+    const now =
+      (_c =
+        (_b12 = (_a12 = options._internal) == null ? void 0 : _a12.currentDate) == null
+          ? void 0
+          : _b12.call(_a12).getTime()) != null
+        ? _c
+        : Date.now();
     if (!pendingMetadata || now - lastFetchTime > cacheRefreshMillis) {
       lastFetchTime = now;
       pendingMetadata = new GatewayFetchMetadata({
         baseURL,
         headers: getHeaders,
-        fetch: options.fetch
-      }).getAvailableModels().then((metadata) => {
-        metadataCache = metadata;
-        return metadata;
-      }).catch(async (error) => {
-        throw await asGatewayError(
-          error,
-          await parseAuthMethod(await getHeaders())
-        );
-      });
+        fetch: options.fetch,
+      })
+        .getAvailableModels()
+        .then((metadata) => {
+          metadataCache = metadata;
+          return metadata;
+        })
+        .catch(async (error) => {
+          throw await asGatewayError(error, await parseAuthMethod(await getHeaders()));
+        });
     }
     return metadataCache ? Promise.resolve(metadataCache) : pendingMetadata;
   };
@@ -2067,43 +2074,38 @@ function createGatewayProvider(options = {}) {
     return new GatewayFetchMetadata({
       baseURL,
       headers: getHeaders,
-      fetch: options.fetch
-    }).getCredits().catch(async (error) => {
-      throw await asGatewayError(
-        error,
-        await parseAuthMethod(await getHeaders())
-      );
-    });
+      fetch: options.fetch,
+    })
+      .getCredits()
+      .catch(async (error) => {
+        throw await asGatewayError(error, await parseAuthMethod(await getHeaders()));
+      });
   };
   const getSpendReport = async (params) => {
     return new GatewaySpendReport({
       baseURL,
       headers: getHeaders,
-      fetch: options.fetch
-    }).getSpendReport(params).catch(async (error) => {
-      throw await asGatewayError(
-        error,
-        await parseAuthMethod(await getHeaders())
-      );
-    });
+      fetch: options.fetch,
+    })
+      .getSpendReport(params)
+      .catch(async (error) => {
+        throw await asGatewayError(error, await parseAuthMethod(await getHeaders()));
+      });
   };
   const getGenerationInfo = async (params) => {
     return new GatewayGenerationInfoFetcher({
       baseURL,
       headers: getHeaders,
-      fetch: options.fetch
-    }).getGenerationInfo(params).catch(async (error) => {
-      throw await asGatewayError(
-        error,
-        await parseAuthMethod(await getHeaders())
-      );
-    });
+      fetch: options.fetch,
+    })
+      .getGenerationInfo(params)
+      .catch(async (error) => {
+        throw await asGatewayError(error, await parseAuthMethod(await getHeaders()));
+      });
   };
-  const provider = function(modelId) {
+  const provider = function (modelId) {
     if (new.target) {
-      throw new Error(
-        "The Gateway Provider model function cannot be called with the new keyword."
-      );
+      throw new Error("The Gateway Provider model function cannot be called with the new keyword.");
     }
     return createLanguageModel(modelId);
   };
@@ -2118,7 +2120,7 @@ function createGatewayProvider(options = {}) {
       baseURL,
       headers: getHeaders,
       fetch: options.fetch,
-      o11yHeaders: createO11yHeaders()
+      o11yHeaders: createO11yHeaders(),
     });
   };
   provider.languageModel = createLanguageModel;
@@ -2128,7 +2130,7 @@ function createGatewayProvider(options = {}) {
       baseURL,
       headers: getHeaders,
       fetch: options.fetch,
-      o11yHeaders: createO11yHeaders()
+      o11yHeaders: createO11yHeaders(),
     });
   };
   provider.embeddingModel = createEmbeddingModel;
@@ -2139,7 +2141,7 @@ function createGatewayProvider(options = {}) {
       baseURL,
       headers: getHeaders,
       fetch: options.fetch,
-      o11yHeaders: createO11yHeaders()
+      o11yHeaders: createO11yHeaders(),
     });
   };
   const createRerankingModel = (modelId) => {
@@ -2148,7 +2150,7 @@ function createGatewayProvider(options = {}) {
       baseURL,
       headers: getHeaders,
       fetch: options.fetch,
-      o11yHeaders: createO11yHeaders()
+      o11yHeaders: createO11yHeaders(),
     });
   };
   provider.rerankingModel = createRerankingModel;
@@ -2159,7 +2161,7 @@ function createGatewayProvider(options = {}) {
       baseURL,
       headers: getHeaders,
       fetch: options.fetch,
-      o11yHeaders: createO11yHeaders()
+      o11yHeaders: createO11yHeaders(),
     });
   };
   provider.speechModel = createSpeechModel;
@@ -2170,7 +2172,7 @@ function createGatewayProvider(options = {}) {
       baseURL,
       headers: getHeaders,
       fetch: options.fetch,
-      o11yHeaders: createO11yHeaders()
+      o11yHeaders: createO11yHeaders(),
     });
   };
   provider.transcriptionModel = createTranscriptionModel;
@@ -2186,22 +2188,18 @@ var gateway = createGatewayProvider();
 async function getGatewayAuthToken(options) {
   const apiKey = loadOptionalSetting({
     settingValue: options.apiKey,
-    environmentVariableName: "AI_GATEWAY_API_KEY"
+    environmentVariableName: "AI_GATEWAY_API_KEY",
   });
   if (apiKey) {
     return {
       token: apiKey,
-      authMethod: "api-key"
+      authMethod: "api-key",
     };
   }
   const oidcToken = await distExports.getVercelOidcToken();
   return {
     token: oidcToken,
-    authMethod: "oidc"
+    authMethod: "oidc",
   };
 }
-export {
-  GatewayAuthenticationError as G,
-  GatewayError as a,
-  gateway as g
-};
+export { GatewayAuthenticationError as G, GatewayError as a, gateway as g };

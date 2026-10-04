@@ -58,22 +58,82 @@ import "../_libs/radix-ui__react-dialog.mjs";
 import "../_libs/radix-ui__react-presence.mjs";
 import "../_libs/lucide-react.mjs";
 function AuditLogView() {
-  const formatDate = (d) => new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "overflow-x-auto rounded-lg border border-border", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", { className: "w-full text-sm", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("thead", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("tr", { className: "border-b border-border bg-surface", children: ["Timestamp", "Actor", "Action", "Entity", "IP Address", "Details"].map((h) => /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground", children: h }, h)) }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("tbody", { children: mockAuditLog.map((entry) => /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { className: "border-b border-border transition-colors hover:bg-accent", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap", children: formatDate(entry.timestamp) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 font-mono text-xs text-tactical", children: entry.actor }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "rounded bg-accent px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-accent-foreground", children: entry.action }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 font-mono text-xs text-foreground", children: entry.entityId }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 font-mono text-xs text-muted-foreground", children: entry.ip }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 text-xs text-muted-foreground max-w-[300px] truncate", children: entry.details })
-    ] }, entry.id)) })
-  ] }) });
+  const formatDate = (d) =>
+    new Date(d).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", {
+    className: "overflow-x-auto rounded-lg border border-border",
+    children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", {
+      className: "w-full text-sm",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("thead", {
+          children: /* @__PURE__ */ jsxRuntimeExports.jsx("tr", {
+            className: "border-b border-border bg-surface",
+            children: ["Timestamp", "Actor", "Action", "Entity", "IP Address", "Details"].map((h) =>
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "th",
+                {
+                  className:
+                    "px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground",
+                  children: h,
+                },
+                h,
+              ),
+            ),
+          }),
+        }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("tbody", {
+          children: mockAuditLog.map((entry) =>
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "tr",
+              {
+                className: "border-b border-border transition-colors hover:bg-accent",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                    className:
+                      "px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap",
+                    children: formatDate(entry.timestamp),
+                  }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                    className: "px-4 py-3 font-mono text-xs text-tactical",
+                    children: entry.actor,
+                  }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                    className: "px-4 py-3",
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", {
+                      className:
+                        "rounded bg-accent px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-accent-foreground",
+                      children: entry.action,
+                    }),
+                  }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                    className: "px-4 py-3 font-mono text-xs text-foreground",
+                    children: entry.entityId,
+                  }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                    className: "px-4 py-3 font-mono text-xs text-muted-foreground",
+                    children: entry.ip,
+                  }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                    className: "px-4 py-3 text-xs text-muted-foreground max-w-[300px] truncate",
+                    children: entry.details,
+                  }),
+                ],
+              },
+              entry.id,
+            ),
+          ),
+        }),
+      ],
+    }),
+  });
 }
 function AuditPage() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(AuditLogView, {});
 }
-export {
-  AuditPage as component
-};
+export { AuditPage as component };

@@ -101,7 +101,10 @@ export interface PassiveIntelReport {
   isIp: boolean;
   startedAt: string;
   finishedAt: string;
-  sources: Record<"dns" | "whois" | "http" | "crtsh" | "shodan" | "virustotal", "ok" | "failed" | "skipped" | "no-key" | "no-data">;
+  sources: Record<
+    "dns" | "whois" | "http" | "crtsh" | "shodan" | "virustotal",
+    "ok" | "failed" | "skipped" | "no-key" | "no-data"
+  >;
   dns: Record<string, string[]> | null;
   whois: {
     handle?: string;
@@ -133,7 +136,18 @@ export interface CustodyEntry {
   actor: string;
   role: UserRole;
   entityId: string;
-  action: "VIEW" | "EXPORT" | "EDIT" | "SCAN" | "STATUS_CHANGE" | "DELETE" | "LOCKDOWN" | "QUARANTINE" | "HONEYTOKEN" | "LOGIN" | "LOGOUT";
+  action:
+    | "VIEW"
+    | "EXPORT"
+    | "EDIT"
+    | "SCAN"
+    | "STATUS_CHANGE"
+    | "DELETE"
+    | "LOCKDOWN"
+    | "QUARANTINE"
+    | "HONEYTOKEN"
+    | "LOGIN"
+    | "LOGOUT";
   reason: string;
   timestamp: string;
   ip: string;
@@ -192,7 +206,8 @@ export interface Honeytoken {
 }
 
 // ===== Sessions / Anomaly =====
-export type AnomalyKind = "impossible_travel" | "off_hours" | "new_device" | "tor_exit" | "burst_export";
+export type AnomalyKind =
+  "impossible_travel" | "off_hours" | "new_device" | "tor_exit" | "burst_export";
 export interface SessionEntry {
   id: string;
   user: string;

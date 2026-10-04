@@ -16,12 +16,12 @@ target.
 
 ## Trust model
 
-* **greyLock cloud** issues jobs, stores results, is the source of truth for
+- **greyLock cloud** issues jobs, stores results, is the source of truth for
   what a "case" contains.
-* **Agent** is trusted to execute jobs against targets in its own allow-list;
+- **Agent** is trusted to execute jobs against targets in its own allow-list;
   greyLock does not implicitly trust an agent — every result is verified.
-* **Every wire message is HMAC-signed**. Both directions. Replay-protected.
-* The agent's allow-list is defined **at the agent**, not the cloud. The
+- **Every wire message is HMAC-signed**. Both directions. Replay-protected.
+- The agent's allow-list is defined **at the agent**, not the cloud. The
   cloud can request `scan(foo.example)`; the agent refuses if `foo.example`
   is not in its `--allowlist` file. This is the legal firewall.
 
@@ -85,8 +85,14 @@ Agent posts findings.
   "status": "complete",
   "tool_output_sha256": "…",
   "findings": [
-    { "id": "F-001", "title": "SSH weak host key", "severity": "medium",
-      "cwe": "CWE-326", "evidence": "…", "remediation": "…" }
+    {
+      "id": "F-001",
+      "title": "SSH weak host key",
+      "severity": "medium",
+      "cwe": "CWE-326",
+      "evidence": "…",
+      "remediation": "…"
+    }
   ],
   "raw_url": "s3://.../JOB-01HXYZ.xml.gz",
   "nonce": "5c72…"
@@ -106,21 +112,22 @@ X-Signature: sha256=<hex>
 Where `<hex> = HMAC_SHA256(shared_secret, f"{ts}.{method}.{path}.{sha256(body)}")`.
 
 Server rules:
-* Reject if `|now - ts| > 60s` (replay window).
-* Reject if `(agent_id, nonce)` seen in the last hour (idempotency).
-* Constant-time compare on the signature.
-* Secret rotates via `agent_secrets` table; both old and new keys accepted
+
+- Reject if `|now - ts| > 60s` (replay window).
+- Reject if `(agent_id, nonce)` seen in the last hour (idempotency).
+- Constant-time compare on the signature.
+- Secret rotates via `agent_secrets` table; both old and new keys accepted
   for a 24h overlap window.
 
 ## Job kinds (v1)
 
-| kind      | Tool         | Purpose                                | Destructive? |
-|-----------|--------------|----------------------------------------|--------------|
-| `nmap`    | nmap         | Port + service discovery               | no           |
-| `httpx`   | projectdiscovery/httpx | Web fingerprinting          | no           |
+| kind      | Tool                    | Purpose                          | Destructive?                                                               |
+| --------- | ----------------------- | -------------------------------- | -------------------------------------------------------------------------- |
+| `nmap`    | nmap                    | Port + service discovery         | no                                                                         |
+| `httpx`   | projectdiscovery/httpx  | Web fingerprinting               | no                                                                         |
 | `nuclei`  | projectdiscovery/nuclei | Templated CVE / misconfig checks | no (with `-severity low,medium,high,critical -exclude-tags dos,intrusive`) |
-| `sslscan` | sslscan      | TLS cipher / cert audit                | no           |
-| `dirb`    | ffuf         | Content discovery (opt-in only)        | mild         |
+| `sslscan` | sslscan                 | TLS cipher / cert audit          | no                                                                         |
+| `dirb`    | ffuf                    | Content discovery (opt-in only)  | mild                                                                       |
 
 Adding a kind is: (a) whitelist it on the agent, (b) add a parser that emits
 `VulnFinding[]`, (c) register it in the cloud's `job_kinds` table.

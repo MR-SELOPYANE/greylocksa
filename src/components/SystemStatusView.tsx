@@ -25,18 +25,25 @@ export function SystemStatusView() {
   const navigate = useNavigate();
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    new Date(d).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   const stats = useMemo(() => {
     const byStatus = { black: 0, grey: 0, white: 0 };
-    entities.forEach((e) => { byStatus[e.status] += 1; });
+    entities.forEach((e) => {
+      byStatus[e.status] += 1;
+    });
     const avgRisk = entities.length
       ? Math.round(entities.reduce((a, e) => a + e.riskScore, 0) / entities.length)
       : 0;
     const running = scans.filter((s) => s.status === "running").length;
     const criticalFindings = scans.reduce(
       (a, s) => a + (s.summary?.critical ?? 0) + (s.summary?.high ?? 0),
-      0
+      0,
     );
     const openCases = cases.filter((c) => c.status !== "closed").length;
     const escalated = cases.filter((c) => c.status === "escalated").length;
@@ -56,9 +63,28 @@ export function SystemStatusView() {
 
   const metrics = [
     { label: "Entities Tracked", value: stats.total, icon: Database, tone: "text-tactical" },
-    { label: "Open Cases", value: stats.openCases, sub: `${stats.escalated} escalated`, icon: FolderSearch, tone: "text-tactical" },
-    { label: "Scans Running", value: stats.running, sub: `${scans.length} total`, icon: stats.running > 0 ? Loader2 : Bug, tone: stats.running > 0 ? "text-tactical" : "text-muted-foreground", spin: stats.running > 0 },
-    { label: "Critical / High", value: stats.criticalFindings, sub: `${stats.iocMatches} IOC matches`, icon: ShieldAlert, tone: "text-status-black" },
+    {
+      label: "Open Cases",
+      value: stats.openCases,
+      sub: `${stats.escalated} escalated`,
+      icon: FolderSearch,
+      tone: "text-tactical",
+    },
+    {
+      label: "Scans Running",
+      value: stats.running,
+      sub: `${scans.length} total`,
+      icon: stats.running > 0 ? Loader2 : Bug,
+      tone: stats.running > 0 ? "text-tactical" : "text-muted-foreground",
+      spin: stats.running > 0,
+    },
+    {
+      label: "Critical / High",
+      value: stats.criticalFindings,
+      sub: `${stats.iocMatches} IOC matches`,
+      icon: ShieldAlert,
+      tone: "text-status-black",
+    },
   ];
 
   const statusBars = [
@@ -71,15 +97,33 @@ export function SystemStatusView() {
 
   const priorityBreakdown = useMemo(() => {
     const acc = { critical: 0, high: 0, medium: 0, low: 0 };
-    cases.filter((c) => c.status !== "closed").forEach((c) => { acc[c.priority] += 1; });
+    cases
+      .filter((c) => c.status !== "closed")
+      .forEach((c) => {
+        acc[c.priority] += 1;
+      });
     return acc;
   }, [cases]);
 
   const recentActivity = useMemo(() => custody.slice(0, 8), [custody]);
 
   const quickActions = [
-    { label: "Add Target", icon: Plus, onClick: () => { navigate({ to: "/entities" }); setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:open-add-entity")), 80); } },
-    { label: "Open Case", icon: FolderPlus, onClick: () => { navigate({ to: "/cases" }); setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:new-case")), 80); } },
+    {
+      label: "Add Target",
+      icon: Plus,
+      onClick: () => {
+        navigate({ to: "/entities" });
+        setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:open-add-entity")), 80);
+      },
+    },
+    {
+      label: "Open Case",
+      icon: FolderPlus,
+      onClick: () => {
+        navigate({ to: "/cases" });
+        setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:new-case")), 80);
+      },
+    },
     { label: "Ask Sentinel", icon: MessageSquare, onClick: () => navigate({ to: "/sentinel" }) },
     { label: "Chain of Custody", icon: Fingerprint, onClick: () => navigate({ to: "/custody" }) },
   ];
@@ -99,7 +143,9 @@ export function SystemStatusView() {
       <div>
         <div className="mb-3 flex items-center gap-2">
           <Activity className="h-4 w-4 text-tactical" />
-          <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Operations Overview</h2>
+          <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            Operations Overview
+          </h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {metrics.map((m) => (
@@ -107,8 +153,14 @@ export function SystemStatusView() {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="font-mono text-3xl font-bold text-card-foreground">{m.value}</div>
-                  <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{m.label}</div>
-                  {m.sub && <div className="mt-1 font-mono text-[10px] text-muted-foreground/70">{m.sub}</div>}
+                  <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {m.label}
+                  </div>
+                  {m.sub && (
+                    <div className="mt-1 font-mono text-[10px] text-muted-foreground/70">
+                      {m.sub}
+                    </div>
+                  )}
                 </div>
                 <m.icon className={cn("h-5 w-5", m.tone, m.spin && "animate-spin")} />
               </div>
@@ -120,7 +172,9 @@ export function SystemStatusView() {
       {/* Distribution + risk */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-lg border border-border bg-card p-5 lg:col-span-2">
-          <h3 className="mb-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">Watchlist Status Distribution</h3>
+          <h3 className="mb-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            Watchlist Status Distribution
+          </h3>
           <div className="space-y-3">
             {statusBars.map((b) => {
               const pct = stats.total ? Math.round((b.value / stats.total) * 100) : 0;
@@ -128,10 +182,15 @@ export function SystemStatusView() {
                 <div key={b.key} className="space-y-1.5">
                   <div className="flex items-center justify-between font-mono text-xs">
                     <span className="text-foreground">{b.label}</span>
-                    <span className="text-muted-foreground">{b.value} · {pct}%</span>
+                    <span className="text-muted-foreground">
+                      {b.value} · {pct}%
+                    </span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-background">
-                    <div className={cn("h-full rounded-full transition-all", b.cls)} style={{ width: `${pct}%` }} />
+                    <div
+                      className={cn("h-full rounded-full transition-all", b.cls)}
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                 </div>
               );
@@ -140,12 +199,18 @@ export function SystemStatusView() {
         </div>
 
         <div className="flex flex-col justify-between rounded-lg border border-border bg-card p-5">
-          <h3 className="mb-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">Average Risk</h3>
+          <h3 className="mb-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            Average Risk
+          </h3>
           <div className="flex flex-1 flex-col items-center justify-center">
             <div
               className={cn(
                 "font-mono text-6xl font-bold",
-                stats.avgRisk >= 70 ? "text-status-black" : stats.avgRisk >= 45 ? "text-status-grey" : "text-status-white"
+                stats.avgRisk >= 70
+                  ? "text-status-black"
+                  : stats.avgRisk >= 45
+                    ? "text-status-grey"
+                    : "text-status-white",
               )}
             >
               {stats.avgRisk}
@@ -161,7 +226,9 @@ export function SystemStatusView() {
       {/* Service status */}
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Service Health</h2>
+          <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            Service Health
+          </h2>
           <span className="font-mono text-[10px] text-muted-foreground">
             {operational}/{mockSystemStatus.length} operational
           </span>
@@ -177,7 +244,7 @@ export function SystemStatusView() {
                       "h-2 w-2 rounded-full",
                       s.status === "operational" && "bg-status-white",
                       s.status === "degraded" && "bg-status-grey animate-pulse-glow",
-                      s.status === "down" && "bg-status-black animate-pulse-glow"
+                      s.status === "down" && "bg-status-black animate-pulse-glow",
                     )}
                   />
                   <span
@@ -185,7 +252,7 @@ export function SystemStatusView() {
                       "font-mono text-[10px] uppercase tracking-wider",
                       s.status === "operational" && "text-status-white",
                       s.status === "degraded" && "text-status-grey",
-                      s.status === "down" && "text-status-black"
+                      s.status === "down" && "text-status-black",
                     )}
                   >
                     {s.status}
@@ -206,16 +273,22 @@ export function SystemStatusView() {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-5">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Open Case Priority</h3>
-            <Link to="/cases" className="font-mono text-[10px] text-tactical hover:underline">View all →</Link>
+            <h3 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              Open Case Priority
+            </h3>
+            <Link to="/cases" className="font-mono text-[10px] text-tactical hover:underline">
+              View all →
+            </Link>
           </div>
           <div className="space-y-3">
-            {([
-              { key: "critical", label: "Critical", cls: "bg-status-black" },
-              { key: "high", label: "High", cls: "bg-status-black/70" },
-              { key: "medium", label: "Medium", cls: "bg-status-grey" },
-              { key: "low", label: "Low", cls: "bg-status-white" },
-            ] as const).map((p) => {
+            {(
+              [
+                { key: "critical", label: "Critical", cls: "bg-status-black" },
+                { key: "high", label: "High", cls: "bg-status-black/70" },
+                { key: "medium", label: "Medium", cls: "bg-status-grey" },
+                { key: "low", label: "Low", cls: "bg-status-white" },
+              ] as const
+            ).map((p) => {
               const value = priorityBreakdown[p.key];
               const pct = stats.openCases ? Math.round((value / stats.openCases) * 100) : 0;
               return (
@@ -225,12 +298,17 @@ export function SystemStatusView() {
                     <span className="text-muted-foreground">{value}</span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-background">
-                    <div className={cn("h-full rounded-full transition-all", p.cls)} style={{ width: `${pct}%` }} />
+                    <div
+                      className={cn("h-full rounded-full transition-all", p.cls)}
+                      style={{ width: `${pct}%` }}
+                    />
                   </div>
                 </div>
               );
             })}
-            {stats.openCases === 0 && <p className="font-mono text-[11px] text-muted-foreground/60">No open cases.</p>}
+            {stats.openCases === 0 && (
+              <p className="font-mono text-[11px] text-muted-foreground/60">No open cases.</p>
+            )}
           </div>
         </div>
 
@@ -239,15 +317,26 @@ export function SystemStatusView() {
             <h3 className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-muted-foreground">
               <Clock className="h-3.5 w-3.5" /> Recent Activity
             </h3>
-            <Link to="/custody" className="font-mono text-[10px] text-tactical hover:underline">Full ledger →</Link>
+            <Link to="/custody" className="font-mono text-[10px] text-tactical hover:underline">
+              Full ledger →
+            </Link>
           </div>
           <div className="space-y-2">
-            {recentActivity.length === 0 && <p className="font-mono text-[11px] text-muted-foreground/60">No activity yet.</p>}
+            {recentActivity.length === 0 && (
+              <p className="font-mono text-[11px] text-muted-foreground/60">No activity yet.</p>
+            )}
             {recentActivity.map((c) => (
-              <div key={c.id} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs">
-                <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[9px] uppercase text-muted-foreground">{c.action}</span>
+              <div
+                key={c.id}
+                className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs"
+              >
+                <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[9px] uppercase text-muted-foreground">
+                  {c.action}
+                </span>
                 <span className="font-mono text-tactical">{c.entityId}</span>
-                <span className="ml-auto truncate font-mono text-[10px] text-muted-foreground">{formatDate(c.timestamp)}</span>
+                <span className="ml-auto truncate font-mono text-[10px] text-muted-foreground">
+                  {formatDate(c.timestamp)}
+                </span>
               </div>
             ))}
           </div>

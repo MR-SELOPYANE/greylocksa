@@ -28,7 +28,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "greyLock — Vulnerability Testing Platform" },
       {
         property: "og:description",
-        content: "Scan websites, apps, and platforms. Triage findings. Sign every action into chain-of-custody.",
+        content:
+          "Scan websites, apps, and platforms. Triage findings. Sign every action into chain-of-custody.",
       },
     ],
   }),
@@ -77,8 +78,8 @@ function LandingPage() {
             <span className="text-tactical">engineered for operators.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            greyLock scans websites, applications, and platforms for vulnerabilities, signs every action into
-            chain-of-custody, and gives admins a single switch for emergency lockdown.
+            greyLock scans websites, applications, and platforms for vulnerabilities, signs every
+            action into chain-of-custody, and gives admins a single switch for emergency lockdown.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Link
@@ -184,19 +185,42 @@ function LandingPage() {
               Ingest. Triage. Decide.
             </h2>
             <p className="mt-3 max-w-2xl text-muted-foreground">
-              A linear pipeline from raw signal to attributable decision — with Sentinel watching every step.
+              A linear pipeline from raw signal to attributable decision — with Sentinel watching
+              every step.
             </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-4">
             {[
-              { n: "01", icon: Radar, title: "Ingest", desc: "Feeds, manual entries, and threat intel land in the grey pool." },
-              { n: "02", icon: Eye, title: "Triage", desc: "Analysts score risk, attach evidence, and link related entities." },
-              { n: "03", icon: GitBranch, title: "Promote", desc: "Move to black (block) or white (clear) — every transition logged." },
-              { n: "04", icon: Brain, title: "Correlate", desc: "Sentinel surfaces patterns across cases and historical events." },
+              {
+                n: "01",
+                icon: Radar,
+                title: "Ingest",
+                desc: "Feeds, manual entries, and threat intel land in the grey pool.",
+              },
+              {
+                n: "02",
+                icon: Eye,
+                title: "Triage",
+                desc: "Analysts score risk, attach evidence, and link related entities.",
+              },
+              {
+                n: "03",
+                icon: GitBranch,
+                title: "Promote",
+                desc: "Move to black (block) or white (clear) — every transition logged.",
+              },
+              {
+                n: "04",
+                icon: Brain,
+                title: "Correlate",
+                desc: "Sentinel surfaces patterns across cases and historical events.",
+              },
             ].map((s) => (
               <div key={s.n} className="relative rounded-md border border-border bg-card p-5">
-                <div className="absolute right-4 top-4 font-mono text-[10px] text-muted-foreground">{s.n}</div>
+                <div className="absolute right-4 top-4 font-mono text-[10px] text-muted-foreground">
+                  {s.n}
+                </div>
                 <s.icon className="h-5 w-5 text-tactical" />
                 <h3 className="mt-4 font-mono text-sm font-semibold">{s.title}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
@@ -218,8 +242,8 @@ function LandingPage() {
                 A surface built for keyboards.
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Dense tables, fast filters, and a clearance-aware command bar. No marketing chrome — just the
-                signal you need to make a call.
+                Dense tables, fast filters, and a clearance-aware command bar. No marketing chrome —
+                just the signal you need to make a call.
               </p>
               <Link
                 to="/entities"
@@ -254,16 +278,42 @@ function LandingPage() {
                     <span>Status</span>
                   </div>
                   {[
-                    { id: "kozlov.pavel@signal", t: "person", r: 92, s: "BLACK", c: "text-status-black" },
+                    {
+                      id: "kozlov.pavel@signal",
+                      t: "person",
+                      r: 92,
+                      s: "BLACK",
+                      c: "text-status-black",
+                    },
                     { id: "185.220.101.42", t: "ip", r: 78, s: "GREY", c: "text-status-grey" },
-                    { id: "shellco-holdings.ae", t: "org", r: 64, s: "GREY", c: "text-status-grey" },
-                    { id: "darkpool-exchange.io", t: "domain", r: 88, s: "BLACK", c: "text-status-black" },
+                    {
+                      id: "shellco-holdings.ae",
+                      t: "org",
+                      r: 64,
+                      s: "GREY",
+                      c: "text-status-grey",
+                    },
+                    {
+                      id: "darkpool-exchange.io",
+                      t: "domain",
+                      r: 88,
+                      s: "BLACK",
+                      c: "text-status-black",
+                    },
                     { id: "reuters.com", t: "domain", r: 4, s: "WHITE", c: "text-status-white" },
                   ].map((r) => (
                     <div key={r.id} className="grid grid-cols-[1fr_60px_80px_70px] gap-3 px-3 py-2">
                       <span className="truncate text-foreground">{r.id}</span>
                       <span className="text-muted-foreground">{r.t}</span>
-                      <span className={r.r > 70 ? "text-status-black" : r.r > 40 ? "text-status-grey" : "text-status-white"}>
+                      <span
+                        className={
+                          r.r > 70
+                            ? "text-status-black"
+                            : r.r > 40
+                              ? "text-status-grey"
+                              : "text-status-white"
+                        }
+                      >
                         {r.r}
                       </span>
                       <span className={`text-[10px] uppercase tracking-wider ${r.c}`}>{r.s}</span>
@@ -286,7 +336,6 @@ function LandingPage() {
 
       {/* Trust */}
       <section className="border-b border-border/60">
-
         <div className="mx-auto max-w-6xl px-6 py-24">
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
@@ -297,8 +346,8 @@ function LandingPage() {
                 Built like a SCIF.
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Defense-in-depth from the data layer up. Every action is attributable, every record is
-                immutable, every query is clearance-gated.
+                Defense-in-depth from the data layer up. Every action is attributable, every record
+                is immutable, every query is clearance-gated.
               </p>
             </div>
             <ul className="space-y-3">
@@ -309,7 +358,10 @@ function LandingPage() {
                 "Zero hardcoded secrets; env-only configuration",
                 "Rate-limited authentication endpoints",
               ].map((b) => (
-                <li key={b} className="flex items-start gap-3 rounded-md border border-border bg-card p-4">
+                <li
+                  key={b}
+                  className="flex items-start gap-3 rounded-md border border-border bg-card p-4"
+                >
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-status-white" />
                   <span className="text-sm">{b}</span>
                 </li>
@@ -353,10 +405,15 @@ function LandingPage() {
                 a: "Authentication endpoints are rate-limited at the edge. Bulk mutation endpoints enforce per-operator quotas with audit-event escalation on overage.",
               },
             ].map((f) => (
-              <details key={f.q} className="group px-5 py-4 [&_summary::-webkit-details-marker]:hidden">
+              <details
+                key={f.q}
+                className="group px-5 py-4 [&_summary::-webkit-details-marker]:hidden"
+              >
                 <summary className="flex cursor-pointer items-center justify-between gap-4 font-mono text-sm text-foreground">
                   {f.q}
-                  <span className="font-mono text-tactical transition-transform group-open:rotate-45">+</span>
+                  <span className="font-mono text-tactical transition-transform group-open:rotate-45">
+                    +
+                  </span>
                 </summary>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{f.a}</p>
               </details>
@@ -372,7 +429,8 @@ function LandingPage() {
             Get inside the console.
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Provision an operator account and gain visibility into your watchlist in under 60 seconds.
+            Provision an operator account and gain visibility into your watchlist in under 60
+            seconds.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link

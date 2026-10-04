@@ -109,25 +109,51 @@ export function CommandPalette() {
         <CommandSeparator />
 
         <CommandGroup heading="Actions">
-          <CommandItem onSelect={() => run(() => { window.dispatchEvent(new CustomEvent("greylock:open-add-entity")); navigate({ to: "/entities" }); })}>
+          <CommandItem
+            onSelect={() =>
+              run(() => {
+                window.dispatchEvent(new CustomEvent("greylock:open-add-entity"));
+                navigate({ to: "/entities" });
+              })
+            }
+          >
             <Shield /> <span>Add new target</span>
           </CommandItem>
-          <CommandItem onSelect={() => run(() => { navigate({ to: "/cases" }); setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:new-case")), 80); })}>
+          <CommandItem
+            onSelect={() =>
+              run(() => {
+                navigate({ to: "/cases" });
+                setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:new-case")), 80);
+              })
+            }
+          >
             <FolderPlus /> <span>Open new case</span>
           </CommandItem>
-          <CommandItem onSelect={() => run(() => { window.dispatchEvent(new CustomEvent("greylock:export-entities")); navigate({ to: "/entities" }); })}>
+          <CommandItem
+            onSelect={() =>
+              run(() => {
+                window.dispatchEvent(new CustomEvent("greylock:export-entities"));
+                navigate({ to: "/entities" });
+              })
+            }
+          >
             <Download /> <span>Export targets to CSV</span>
           </CommandItem>
           {role === "admin" && (
             <CommandItem
-              onSelect={() => run(() => {
-                const reason = prompt(lockdown ? "Reason for lifting lockdown:" : "Reason for emergency lockdown:");
-                if (reason === null) return;
-                setLockdown(!lockdown, reason || undefined);
-                toast.warning(lockdown ? "Lockdown lifted" : "EMERGENCY LOCKDOWN ENGAGED");
-              })}
+              onSelect={() =>
+                run(() => {
+                  const reason = prompt(
+                    lockdown ? "Reason for lifting lockdown:" : "Reason for emergency lockdown:",
+                  );
+                  if (reason === null) return;
+                  setLockdown(!lockdown, reason || undefined);
+                  toast.warning(lockdown ? "Lockdown lifted" : "EMERGENCY LOCKDOWN ENGAGED");
+                })
+              }
             >
-              <AlertOctagon /> <span>{lockdown ? "Lift emergency lockdown" : "Engage emergency lockdown"}</span>
+              <AlertOctagon />{" "}
+              <span>{lockdown ? "Lift emergency lockdown" : "Engage emergency lockdown"}</span>
             </CommandItem>
           )}
         </CommandGroup>
@@ -140,14 +166,25 @@ export function CommandPalette() {
             return (
               <CommandItem
                 key={r}
-                onSelect={() => run(() => {
-                  if (blocked) { toast.error("Privilege escalation blocked", { description: "Only an admin can grant the admin role." }); return; }
-                  setRole(r);
-                  toast.success(`Role switched to ${r}`);
-                })}
+                onSelect={() =>
+                  run(() => {
+                    if (blocked) {
+                      toast.error("Privilege escalation blocked", {
+                        description: "Only an admin can grant the admin role.",
+                      });
+                      return;
+                    }
+                    setRole(r);
+                    toast.success(`Role switched to ${r}`);
+                  })
+                }
                 disabled={role === r}
               >
-                <Shield /> <span className="capitalize">Switch role · {r}{blocked ? " (admin only)" : ""}</span>
+                <Shield />{" "}
+                <span className="capitalize">
+                  Switch role · {r}
+                  {blocked ? " (admin only)" : ""}
+                </span>
               </CommandItem>
             );
           })}
@@ -165,7 +202,9 @@ export function CommandPalette() {
               <Eye />
               <span className="font-mono text-xs text-tactical">{e.id}</span>
               <span className="ml-2 truncate">{e.identifier}</span>
-              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">{e.type}</span>
+              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">
+                {e.type}
+              </span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -177,15 +216,25 @@ export function CommandPalette() {
             <CommandItem
               key={c.id}
               value={`${c.id} ${c.title} ${c.status} ${c.description} ${c.assignedAnalyst} ${c.priority}`}
-              onSelect={() => run(() => {
-                navigate({ to: "/cases" });
-                setTimeout(() => window.dispatchEvent(new CustomEvent("greylock:open-case", { detail: { id: c.id } })), 80);
-              })}
+              onSelect={() =>
+                run(() => {
+                  navigate({ to: "/cases" });
+                  setTimeout(
+                    () =>
+                      window.dispatchEvent(
+                        new CustomEvent("greylock:open-case", { detail: { id: c.id } }),
+                      ),
+                    80,
+                  );
+                })
+              }
             >
               <FolderSearch />
               <span className="font-mono text-xs text-tactical">{c.id}</span>
               <span className="ml-2 truncate">{c.title}</span>
-              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">{c.status}</span>
+              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">
+                {c.status}
+              </span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -202,7 +251,9 @@ export function CommandPalette() {
               <Archive />
               <span className="font-mono text-xs text-tactical">{ev.id}</span>
               <span className="ml-2 truncate">{ev.filename}</span>
-              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">{ev.category}</span>
+              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">
+                {ev.category}
+              </span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -219,7 +270,11 @@ export function CommandPalette() {
               <Radio />
               <span className="font-mono text-xs text-tactical">{t.id}</span>
               <span className="ml-2 truncate">{t.label}</span>
-              {t.triggered && <span className="ml-auto font-mono text-[10px] uppercase text-destructive">triggered</span>}
+              {t.triggered && (
+                <span className="ml-auto font-mono text-[10px] uppercase text-destructive">
+                  triggered
+                </span>
+              )}
             </CommandItem>
           ))}
         </CommandGroup>
@@ -236,7 +291,9 @@ export function CommandPalette() {
               <Bug />
               <span className="font-mono text-xs text-tactical">{s.id}</span>
               <span className="ml-2 truncate">{s.targetLabel}</span>
-              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">{s.status}</span>
+              <span className="ml-auto font-mono text-[10px] uppercase text-muted-foreground">
+                {s.status}
+              </span>
             </CommandItem>
           ))}
         </CommandGroup>

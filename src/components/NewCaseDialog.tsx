@@ -58,7 +58,7 @@ export function NewCaseDialog({
     const q = entityFilter.trim().toLowerCase();
     if (!q) return entities;
     return entities.filter(
-      (e) => e.identifier.toLowerCase().includes(q) || e.id.toLowerCase().includes(q)
+      (e) => e.identifier.toLowerCase().includes(q) || e.id.toLowerCase().includes(q),
     );
   }, [entities, entityFilter]);
 
@@ -81,7 +81,13 @@ export function NewCaseDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) reset();
+        onOpenChange(v);
+      }}
+    >
       <DialogContent className="bg-card sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-mono">Open Case</DialogTitle>
@@ -92,7 +98,9 @@ export function NewCaseDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Title</label>
+            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Title
+            </label>
             <Input
               required
               value={title}
@@ -103,7 +111,9 @@ export function NewCaseDialog({
           </div>
 
           <div className="space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Description</label>
+            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Description
+            </label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -114,9 +124,13 @@ export function NewCaseDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Priority</label>
+              <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Priority
+              </label>
               <Select value={priority} onValueChange={(v) => setPriority(v as Case["priority"])}>
-                <SelectTrigger className="bg-secondary"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-secondary">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="critical">Critical</SelectItem>
                   <SelectItem value="high">High</SelectItem>
@@ -126,9 +140,13 @@ export function NewCaseDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Status</label>
+              <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Status
+              </label>
               <Select value={status} onValueChange={(v) => setStatus(v as CaseStatus)}>
-                <SelectTrigger className="bg-secondary"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-secondary">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="open">Open</SelectItem>
                   <SelectItem value="in_progress">In Progress</SelectItem>
@@ -139,7 +157,9 @@ export function NewCaseDialog({
           </div>
 
           <div className="space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Assigned Analyst</label>
+            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Assigned Analyst
+            </label>
             <Input
               value={analyst}
               onChange={(e) => setAnalyst(e.target.value)}
@@ -165,7 +185,9 @@ export function NewCaseDialog({
             <ScrollArea className="h-36 rounded-md border border-border bg-secondary/40">
               <div className="p-1.5">
                 {filteredEntities.length === 0 && (
-                  <p className="px-2 py-3 text-center font-mono text-[11px] text-muted-foreground">No targets match.</p>
+                  <p className="px-2 py-3 text-center font-mono text-[11px] text-muted-foreground">
+                    No targets match.
+                  </p>
                 )}
                 {filteredEntities.map((ent) => {
                   const isOn = linked.includes(ent.id);
@@ -176,17 +198,21 @@ export function NewCaseDialog({
                       onClick={() => toggleEntity(ent.id)}
                       className={cn(
                         "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left font-mono text-xs transition-colors",
-                        isOn ? "bg-tactical/15 text-tactical" : "text-foreground hover:bg-accent"
+                        isOn ? "bg-tactical/15 text-tactical" : "text-foreground hover:bg-accent",
                       )}
                     >
-                      <span className={cn(
-                        "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-sm border",
-                        isOn ? "border-tactical bg-tactical text-background" : "border-border"
-                      )}>
+                      <span
+                        className={cn(
+                          "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-sm border",
+                          isOn ? "border-tactical bg-tactical text-background" : "border-border",
+                        )}
+                      >
                         {isOn && <Check className="h-2.5 w-2.5" />}
                       </span>
                       <span className="truncate">{ent.identifier}</span>
-                      <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">{ent.type}</span>
+                      <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
+                        {ent.type}
+                      </span>
                     </button>
                   );
                 })}
@@ -207,7 +233,9 @@ export function NewCaseDialog({
           </div>
 
           <DialogFooter className="gap-2">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit">Open Case</Button>
           </DialogFooter>
         </form>

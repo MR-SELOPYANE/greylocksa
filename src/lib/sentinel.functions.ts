@@ -57,7 +57,9 @@ export const askSentinel = createServerFn({ method: "POST" })
       });
       return { text };
     } catch (err) {
-      const status = (err as { statusCode?: number; status?: number })?.statusCode ?? (err as { status?: number })?.status;
+      const status =
+        (err as { statusCode?: number; status?: number })?.statusCode ??
+        (err as { status?: number })?.status;
       if (status === 429) throw new Error("RATE_LIMIT");
       if (status === 402) throw new Error("CREDITS_EXHAUSTED");
       throw new Error("Sentinel encountered an upstream error. Try again.");

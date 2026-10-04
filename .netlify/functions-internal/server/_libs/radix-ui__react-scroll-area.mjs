@@ -17,130 +17,141 @@ function useStateMachine(initialState, machine) {
 var SCROLL_AREA_NAME = "ScrollArea";
 var [createScrollAreaContext] = createContextScope(SCROLL_AREA_NAME);
 var [ScrollAreaProvider, useScrollAreaContext] = createScrollAreaContext(SCROLL_AREA_NAME);
-var ScrollArea = reactExports.forwardRef(
-  (props, forwardedRef) => {
-    const {
-      __scopeScrollArea,
-      type = "hover",
-      dir,
-      scrollHideDelay = 600,
-      ...scrollAreaProps
-    } = props;
-    const [scrollArea, setScrollArea] = reactExports.useState(null);
-    const [viewport, setViewport] = reactExports.useState(null);
-    const [content, setContent] = reactExports.useState(null);
-    const [scrollbarX, setScrollbarX] = reactExports.useState(null);
-    const [scrollbarY, setScrollbarY] = reactExports.useState(null);
-    const [cornerWidth, setCornerWidth] = reactExports.useState(0);
-    const [cornerHeight, setCornerHeight] = reactExports.useState(0);
-    const [scrollbarXEnabled, setScrollbarXEnabled] = reactExports.useState(false);
-    const [scrollbarYEnabled, setScrollbarYEnabled] = reactExports.useState(false);
-    const composedRefs = useComposedRefs(forwardedRef, (node) => setScrollArea(node));
-    const direction = useDirection(dir);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      ScrollAreaProvider,
-      {
-        scope: __scopeScrollArea,
-        type,
-        dir: direction,
-        scrollHideDelay,
-        scrollArea,
-        viewport,
-        onViewportChange: setViewport,
-        content,
-        onContentChange: setContent,
-        scrollbarX,
-        onScrollbarXChange: setScrollbarX,
-        scrollbarXEnabled,
-        onScrollbarXEnabledChange: setScrollbarXEnabled,
-        scrollbarY,
-        onScrollbarYChange: setScrollbarY,
-        scrollbarYEnabled,
-        onScrollbarYEnabledChange: setScrollbarYEnabled,
-        onCornerWidthChange: setCornerWidth,
-        onCornerHeightChange: setCornerHeight,
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Primitive.div,
-          {
-            dir: direction,
-            ...scrollAreaProps,
-            ref: composedRefs,
-            style: {
-              position: "relative",
-              // Pass corner sizes as CSS vars to reduce re-renders of context consumers
-              ["--radix-scroll-area-corner-width"]: cornerWidth + "px",
-              ["--radix-scroll-area-corner-height"]: cornerHeight + "px",
-              ...props.style
-            }
-          }
-        )
-      }
-    );
-  }
-);
+var ScrollArea = reactExports.forwardRef((props, forwardedRef) => {
+  const {
+    __scopeScrollArea,
+    type = "hover",
+    dir,
+    scrollHideDelay = 600,
+    ...scrollAreaProps
+  } = props;
+  const [scrollArea, setScrollArea] = reactExports.useState(null);
+  const [viewport, setViewport] = reactExports.useState(null);
+  const [content, setContent] = reactExports.useState(null);
+  const [scrollbarX, setScrollbarX] = reactExports.useState(null);
+  const [scrollbarY, setScrollbarY] = reactExports.useState(null);
+  const [cornerWidth, setCornerWidth] = reactExports.useState(0);
+  const [cornerHeight, setCornerHeight] = reactExports.useState(0);
+  const [scrollbarXEnabled, setScrollbarXEnabled] = reactExports.useState(false);
+  const [scrollbarYEnabled, setScrollbarYEnabled] = reactExports.useState(false);
+  const composedRefs = useComposedRefs(forwardedRef, (node) => setScrollArea(node));
+  const direction = useDirection(dir);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaProvider, {
+    scope: __scopeScrollArea,
+    type,
+    dir: direction,
+    scrollHideDelay,
+    scrollArea,
+    viewport,
+    onViewportChange: setViewport,
+    content,
+    onContentChange: setContent,
+    scrollbarX,
+    onScrollbarXChange: setScrollbarX,
+    scrollbarXEnabled,
+    onScrollbarXEnabledChange: setScrollbarXEnabled,
+    scrollbarY,
+    onScrollbarYChange: setScrollbarY,
+    scrollbarYEnabled,
+    onScrollbarYEnabledChange: setScrollbarYEnabled,
+    onCornerWidthChange: setCornerWidth,
+    onCornerHeightChange: setCornerHeight,
+    children: /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, {
+      dir: direction,
+      ...scrollAreaProps,
+      ref: composedRefs,
+      style: {
+        position: "relative",
+        // Pass corner sizes as CSS vars to reduce re-renders of context consumers
+        ["--radix-scroll-area-corner-width"]: cornerWidth + "px",
+        ["--radix-scroll-area-corner-height"]: cornerHeight + "px",
+        ...props.style,
+      },
+    }),
+  });
+});
 ScrollArea.displayName = SCROLL_AREA_NAME;
 var VIEWPORT_NAME = "ScrollAreaViewport";
-var ScrollAreaViewport = reactExports.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeScrollArea, children, nonce, ...viewportProps } = props;
-    const context = useScrollAreaContext(VIEWPORT_NAME, __scopeScrollArea);
-    const ref = reactExports.useRef(null);
-    const composedRefs = useComposedRefs(forwardedRef, ref, context.onViewportChange);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "style",
-        {
-          dangerouslySetInnerHTML: {
-            __html: `[data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}`
-          },
-          nonce
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Primitive.div,
-        {
-          "data-radix-scroll-area-viewport": "",
-          ...viewportProps,
-          ref: composedRefs,
-          style: {
-            /**
-             * We don't support `visible` because the intention is to have at least one scrollbar
-             * if this component is used and `visible` will behave like `auto` in that case
-             * https://developer.mozilla.org/en-US/docs/Web/CSS/overflow#description
-             *
-             * We don't handle `auto` because the intention is for the native implementation
-             * to be hidden if using this component. We just want to ensure the node is scrollable
-             * so could have used either `scroll` or `auto` here. We picked `scroll` to prevent
-             * the browser from having to work out whether to render native scrollbars or not,
-             * we tell it to with the intention of hiding them in CSS.
-             */
-            overflowX: context.scrollbarXEnabled ? "scroll" : "hidden",
-            overflowY: context.scrollbarYEnabled ? "scroll" : "hidden",
-            ...props.style
-          },
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: context.onContentChange, style: { minWidth: "100%", display: "table" }, children })
-        }
-      )
-    ] });
-  }
-);
+var ScrollAreaViewport = reactExports.forwardRef((props, forwardedRef) => {
+  const { __scopeScrollArea, children, nonce, ...viewportProps } = props;
+  const context = useScrollAreaContext(VIEWPORT_NAME, __scopeScrollArea);
+  const ref = reactExports.useRef(null);
+  const composedRefs = useComposedRefs(forwardedRef, ref, context.onViewportChange);
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, {
+    children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("style", {
+        dangerouslySetInnerHTML: {
+          __html: `[data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}`,
+        },
+        nonce,
+      }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, {
+        "data-radix-scroll-area-viewport": "",
+        ...viewportProps,
+        ref: composedRefs,
+        style: {
+          /**
+           * We don't support `visible` because the intention is to have at least one scrollbar
+           * if this component is used and `visible` will behave like `auto` in that case
+           * https://developer.mozilla.org/en-US/docs/Web/CSS/overflow#description
+           *
+           * We don't handle `auto` because the intention is for the native implementation
+           * to be hidden if using this component. We just want to ensure the node is scrollable
+           * so could have used either `scroll` or `auto` here. We picked `scroll` to prevent
+           * the browser from having to work out whether to render native scrollbars or not,
+           * we tell it to with the intention of hiding them in CSS.
+           */
+          overflowX: context.scrollbarXEnabled ? "scroll" : "hidden",
+          overflowY: context.scrollbarYEnabled ? "scroll" : "hidden",
+          ...props.style,
+        },
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", {
+          ref: context.onContentChange,
+          style: { minWidth: "100%", display: "table" },
+          children,
+        }),
+      }),
+    ],
+  });
+});
 ScrollAreaViewport.displayName = VIEWPORT_NAME;
 var SCROLLBAR_NAME = "ScrollAreaScrollbar";
-var ScrollAreaScrollbar = reactExports.forwardRef(
-  (props, forwardedRef) => {
-    const { forceMount, ...scrollbarProps } = props;
-    const context = useScrollAreaContext(SCROLLBAR_NAME, props.__scopeScrollArea);
-    const { onScrollbarXEnabledChange, onScrollbarYEnabledChange } = context;
-    const isHorizontal = props.orientation === "horizontal";
-    reactExports.useEffect(() => {
-      isHorizontal ? onScrollbarXEnabledChange(true) : onScrollbarYEnabledChange(true);
-      return () => {
-        isHorizontal ? onScrollbarXEnabledChange(false) : onScrollbarYEnabledChange(false);
-      };
-    }, [isHorizontal, onScrollbarXEnabledChange, onScrollbarYEnabledChange]);
-    return context.type === "hover" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarHover, { ...scrollbarProps, ref: forwardedRef, forceMount }) : context.type === "scroll" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarScroll, { ...scrollbarProps, ref: forwardedRef, forceMount }) : context.type === "auto" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarAuto, { ...scrollbarProps, ref: forwardedRef, forceMount }) : context.type === "always" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarVisible, { ...scrollbarProps, ref: forwardedRef }) : null;
-  }
-);
+var ScrollAreaScrollbar = reactExports.forwardRef((props, forwardedRef) => {
+  const { forceMount, ...scrollbarProps } = props;
+  const context = useScrollAreaContext(SCROLLBAR_NAME, props.__scopeScrollArea);
+  const { onScrollbarXEnabledChange, onScrollbarYEnabledChange } = context;
+  const isHorizontal = props.orientation === "horizontal";
+  reactExports.useEffect(() => {
+    isHorizontal ? onScrollbarXEnabledChange(true) : onScrollbarYEnabledChange(true);
+    return () => {
+      isHorizontal ? onScrollbarXEnabledChange(false) : onScrollbarYEnabledChange(false);
+    };
+  }, [isHorizontal, onScrollbarXEnabledChange, onScrollbarYEnabledChange]);
+  return context.type === "hover"
+    ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarHover, {
+        ...scrollbarProps,
+        ref: forwardedRef,
+        forceMount,
+      })
+    : context.type === "scroll"
+      ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarScroll, {
+          ...scrollbarProps,
+          ref: forwardedRef,
+          forceMount,
+        })
+      : context.type === "auto"
+        ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarAuto, {
+            ...scrollbarProps,
+            ref: forwardedRef,
+            forceMount,
+          })
+        : context.type === "always"
+          ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarVisible, {
+              ...scrollbarProps,
+              ref: forwardedRef,
+            })
+          : null;
+});
 ScrollAreaScrollbar.displayName = SCROLLBAR_NAME;
 var ScrollAreaScrollbarHover = reactExports.forwardRef((props, forwardedRef) => {
   const { forceMount, ...scrollbarProps } = props;
@@ -166,14 +177,14 @@ var ScrollAreaScrollbarHover = reactExports.forwardRef((props, forwardedRef) => 
       };
     }
   }, [context.scrollArea, context.scrollHideDelay]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, { present: forceMount || visible, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-    ScrollAreaScrollbarAuto,
-    {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, {
+    present: forceMount || visible,
+    children: /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarAuto, {
       "data-state": visible ? "visible" : "hidden",
       ...scrollbarProps,
-      ref: forwardedRef
-    }
-  ) });
+      ref: forwardedRef,
+    }),
+  });
 });
 var ScrollAreaScrollbarScroll = reactExports.forwardRef((props, forwardedRef) => {
   const { forceMount, ...scrollbarProps } = props;
@@ -182,21 +193,21 @@ var ScrollAreaScrollbarScroll = reactExports.forwardRef((props, forwardedRef) =>
   const debounceScrollEnd = useDebounceCallback(() => send("SCROLL_END"), 100);
   const [state, send] = useStateMachine("hidden", {
     hidden: {
-      SCROLL: "scrolling"
+      SCROLL: "scrolling",
     },
     scrolling: {
       SCROLL_END: "idle",
-      POINTER_ENTER: "interacting"
+      POINTER_ENTER: "interacting",
     },
     interacting: {
       SCROLL: "interacting",
-      POINTER_LEAVE: "idle"
+      POINTER_LEAVE: "idle",
     },
     idle: {
       HIDE: "hidden",
       SCROLL: "scrolling",
-      POINTER_ENTER: "interacting"
-    }
+      POINTER_ENTER: "interacting",
+    },
   });
   reactExports.useEffect(() => {
     if (state === "idle") {
@@ -222,16 +233,16 @@ var ScrollAreaScrollbarScroll = reactExports.forwardRef((props, forwardedRef) =>
       return () => viewport.removeEventListener("scroll", handleScroll);
     }
   }, [context.viewport, isHorizontal, send, debounceScrollEnd]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, { present: forceMount || state !== "hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-    ScrollAreaScrollbarVisible,
-    {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, {
+    present: forceMount || state !== "hidden",
+    children: /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarVisible, {
       "data-state": state === "hidden" ? "hidden" : "visible",
       ...scrollbarProps,
       ref: forwardedRef,
       onPointerEnter: composeEventHandlers(props.onPointerEnter, () => send("POINTER_ENTER")),
-      onPointerLeave: composeEventHandlers(props.onPointerLeave, () => send("POINTER_LEAVE"))
-    }
-  ) });
+      onPointerLeave: composeEventHandlers(props.onPointerLeave, () => send("POINTER_LEAVE")),
+    }),
+  });
 });
 var ScrollAreaScrollbarAuto = reactExports.forwardRef((props, forwardedRef) => {
   const context = useScrollAreaContext(SCROLLBAR_NAME, props.__scopeScrollArea);
@@ -247,14 +258,14 @@ var ScrollAreaScrollbarAuto = reactExports.forwardRef((props, forwardedRef) => {
   }, 10);
   useResizeObserver(context.viewport, handleResize);
   useResizeObserver(context.content, handleResize);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, { present: forceMount || visible, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-    ScrollAreaScrollbarVisible,
-    {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, {
+    present: forceMount || visible,
+    children: /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarVisible, {
       "data-state": visible ? "visible" : "hidden",
       ...scrollbarProps,
-      ref: forwardedRef
-    }
-  ) });
+      ref: forwardedRef,
+    }),
+  });
 });
 var ScrollAreaScrollbarVisible = reactExports.forwardRef((props, forwardedRef) => {
   const { orientation = "vertical", ...scrollbarProps } = props;
@@ -264,7 +275,7 @@ var ScrollAreaScrollbarVisible = reactExports.forwardRef((props, forwardedRef) =
   const [sizes, setSizes] = reactExports.useState({
     content: 0,
     viewport: 0,
-    scrollbar: { size: 0, paddingStart: 0, paddingEnd: 0 }
+    scrollbar: { size: 0, paddingStart: 0, paddingEnd: 0 },
   });
   const thumbRatio = getThumbRatio(sizes.viewport, sizes.content);
   const commonProps = {
@@ -272,58 +283,52 @@ var ScrollAreaScrollbarVisible = reactExports.forwardRef((props, forwardedRef) =
     sizes,
     onSizesChange: setSizes,
     hasThumb: Boolean(thumbRatio > 0 && thumbRatio < 1),
-    onThumbChange: (thumb) => thumbRef.current = thumb,
-    onThumbPointerUp: () => pointerOffsetRef.current = 0,
-    onThumbPointerDown: (pointerPos) => pointerOffsetRef.current = pointerPos
+    onThumbChange: (thumb) => (thumbRef.current = thumb),
+    onThumbPointerUp: () => (pointerOffsetRef.current = 0),
+    onThumbPointerDown: (pointerPos) => (pointerOffsetRef.current = pointerPos),
   };
   function getScrollPosition(pointerPos, dir) {
     return getScrollPositionFromPointer(pointerPos, pointerOffsetRef.current, sizes, dir);
   }
   if (orientation === "horizontal") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      ScrollAreaScrollbarX,
-      {
-        ...commonProps,
-        ref: forwardedRef,
-        onThumbPositionChange: () => {
-          if (context.viewport && thumbRef.current) {
-            const scrollPos = context.viewport.scrollLeft;
-            const offset = getThumbOffsetFromScroll(scrollPos, sizes, context.dir);
-            thumbRef.current.style.transform = `translate3d(${offset}px, 0, 0)`;
-          }
-        },
-        onWheelScroll: (scrollPos) => {
-          if (context.viewport) context.viewport.scrollLeft = scrollPos;
-        },
-        onDragScroll: (pointerPos) => {
-          if (context.viewport) {
-            context.viewport.scrollLeft = getScrollPosition(pointerPos, context.dir);
-          }
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarX, {
+      ...commonProps,
+      ref: forwardedRef,
+      onThumbPositionChange: () => {
+        if (context.viewport && thumbRef.current) {
+          const scrollPos = context.viewport.scrollLeft;
+          const offset = getThumbOffsetFromScroll(scrollPos, sizes, context.dir);
+          thumbRef.current.style.transform = `translate3d(${offset}px, 0, 0)`;
         }
-      }
-    );
+      },
+      onWheelScroll: (scrollPos) => {
+        if (context.viewport) context.viewport.scrollLeft = scrollPos;
+      },
+      onDragScroll: (pointerPos) => {
+        if (context.viewport) {
+          context.viewport.scrollLeft = getScrollPosition(pointerPos, context.dir);
+        }
+      },
+    });
   }
   if (orientation === "vertical") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      ScrollAreaScrollbarY,
-      {
-        ...commonProps,
-        ref: forwardedRef,
-        onThumbPositionChange: () => {
-          if (context.viewport && thumbRef.current) {
-            const scrollPos = context.viewport.scrollTop;
-            const offset = getThumbOffsetFromScroll(scrollPos, sizes);
-            thumbRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
-          }
-        },
-        onWheelScroll: (scrollPos) => {
-          if (context.viewport) context.viewport.scrollTop = scrollPos;
-        },
-        onDragScroll: (pointerPos) => {
-          if (context.viewport) context.viewport.scrollTop = getScrollPosition(pointerPos);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarY, {
+      ...commonProps,
+      ref: forwardedRef,
+      onThumbPositionChange: () => {
+        if (context.viewport && thumbRef.current) {
+          const scrollPos = context.viewport.scrollTop;
+          const offset = getThumbOffsetFromScroll(scrollPos, sizes);
+          thumbRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
         }
-      }
-    );
+      },
+      onWheelScroll: (scrollPos) => {
+        if (context.viewport) context.viewport.scrollTop = scrollPos;
+      },
+      onDragScroll: (pointerPos) => {
+        if (context.viewport) context.viewport.scrollTop = getScrollPosition(pointerPos);
+      },
+    });
   }
   return null;
 });
@@ -336,46 +341,43 @@ var ScrollAreaScrollbarX = reactExports.forwardRef((props, forwardedRef) => {
   reactExports.useEffect(() => {
     if (ref.current) setComputedStyle(getComputedStyle(ref.current));
   }, [ref]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    ScrollAreaScrollbarImpl,
-    {
-      "data-orientation": "horizontal",
-      ...scrollbarProps,
-      ref: composeRefs,
-      sizes,
-      style: {
-        bottom: 0,
-        left: context.dir === "rtl" ? "var(--radix-scroll-area-corner-width)" : 0,
-        right: context.dir === "ltr" ? "var(--radix-scroll-area-corner-width)" : 0,
-        ["--radix-scroll-area-thumb-width"]: getThumbSize(sizes) + "px",
-        ...props.style
-      },
-      onThumbPointerDown: (pointerPos) => props.onThumbPointerDown(pointerPos.x),
-      onDragScroll: (pointerPos) => props.onDragScroll(pointerPos.x),
-      onWheelScroll: (event, maxScrollPos) => {
-        if (context.viewport) {
-          const scrollPos = context.viewport.scrollLeft + event.deltaX;
-          props.onWheelScroll(scrollPos);
-          if (isScrollingWithinScrollbarBounds(scrollPos, maxScrollPos)) {
-            event.preventDefault();
-          }
-        }
-      },
-      onResize: () => {
-        if (ref.current && context.viewport && computedStyle) {
-          onSizesChange({
-            content: context.viewport.scrollWidth,
-            viewport: context.viewport.offsetWidth,
-            scrollbar: {
-              size: ref.current.clientWidth,
-              paddingStart: toInt(computedStyle.paddingLeft),
-              paddingEnd: toInt(computedStyle.paddingRight)
-            }
-          });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarImpl, {
+    "data-orientation": "horizontal",
+    ...scrollbarProps,
+    ref: composeRefs,
+    sizes,
+    style: {
+      bottom: 0,
+      left: context.dir === "rtl" ? "var(--radix-scroll-area-corner-width)" : 0,
+      right: context.dir === "ltr" ? "var(--radix-scroll-area-corner-width)" : 0,
+      ["--radix-scroll-area-thumb-width"]: getThumbSize(sizes) + "px",
+      ...props.style,
+    },
+    onThumbPointerDown: (pointerPos) => props.onThumbPointerDown(pointerPos.x),
+    onDragScroll: (pointerPos) => props.onDragScroll(pointerPos.x),
+    onWheelScroll: (event, maxScrollPos) => {
+      if (context.viewport) {
+        const scrollPos = context.viewport.scrollLeft + event.deltaX;
+        props.onWheelScroll(scrollPos);
+        if (isScrollingWithinScrollbarBounds(scrollPos, maxScrollPos)) {
+          event.preventDefault();
         }
       }
-    }
-  );
+    },
+    onResize: () => {
+      if (ref.current && context.viewport && computedStyle) {
+        onSizesChange({
+          content: context.viewport.scrollWidth,
+          viewport: context.viewport.offsetWidth,
+          scrollbar: {
+            size: ref.current.clientWidth,
+            paddingStart: toInt(computedStyle.paddingLeft),
+            paddingEnd: toInt(computedStyle.paddingRight),
+          },
+        });
+      }
+    },
+  });
 });
 var ScrollAreaScrollbarY = reactExports.forwardRef((props, forwardedRef) => {
   const { sizes, onSizesChange, ...scrollbarProps } = props;
@@ -386,47 +388,44 @@ var ScrollAreaScrollbarY = reactExports.forwardRef((props, forwardedRef) => {
   reactExports.useEffect(() => {
     if (ref.current) setComputedStyle(getComputedStyle(ref.current));
   }, [ref]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    ScrollAreaScrollbarImpl,
-    {
-      "data-orientation": "vertical",
-      ...scrollbarProps,
-      ref: composeRefs,
-      sizes,
-      style: {
-        top: 0,
-        right: context.dir === "ltr" ? 0 : void 0,
-        left: context.dir === "rtl" ? 0 : void 0,
-        bottom: "var(--radix-scroll-area-corner-height)",
-        ["--radix-scroll-area-thumb-height"]: getThumbSize(sizes) + "px",
-        ...props.style
-      },
-      onThumbPointerDown: (pointerPos) => props.onThumbPointerDown(pointerPos.y),
-      onDragScroll: (pointerPos) => props.onDragScroll(pointerPos.y),
-      onWheelScroll: (event, maxScrollPos) => {
-        if (context.viewport) {
-          const scrollPos = context.viewport.scrollTop + event.deltaY;
-          props.onWheelScroll(scrollPos);
-          if (isScrollingWithinScrollbarBounds(scrollPos, maxScrollPos)) {
-            event.preventDefault();
-          }
-        }
-      },
-      onResize: () => {
-        if (ref.current && context.viewport && computedStyle) {
-          onSizesChange({
-            content: context.viewport.scrollHeight,
-            viewport: context.viewport.offsetHeight,
-            scrollbar: {
-              size: ref.current.clientHeight,
-              paddingStart: toInt(computedStyle.paddingTop),
-              paddingEnd: toInt(computedStyle.paddingBottom)
-            }
-          });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaScrollbarImpl, {
+    "data-orientation": "vertical",
+    ...scrollbarProps,
+    ref: composeRefs,
+    sizes,
+    style: {
+      top: 0,
+      right: context.dir === "ltr" ? 0 : void 0,
+      left: context.dir === "rtl" ? 0 : void 0,
+      bottom: "var(--radix-scroll-area-corner-height)",
+      ["--radix-scroll-area-thumb-height"]: getThumbSize(sizes) + "px",
+      ...props.style,
+    },
+    onThumbPointerDown: (pointerPos) => props.onThumbPointerDown(pointerPos.y),
+    onDragScroll: (pointerPos) => props.onDragScroll(pointerPos.y),
+    onWheelScroll: (event, maxScrollPos) => {
+      if (context.viewport) {
+        const scrollPos = context.viewport.scrollTop + event.deltaY;
+        props.onWheelScroll(scrollPos);
+        if (isScrollingWithinScrollbarBounds(scrollPos, maxScrollPos)) {
+          event.preventDefault();
         }
       }
-    }
-  );
+    },
+    onResize: () => {
+      if (ref.current && context.viewport && computedStyle) {
+        onSizesChange({
+          content: context.viewport.scrollHeight,
+          viewport: context.viewport.offsetHeight,
+          scrollbar: {
+            size: ref.current.clientHeight,
+            paddingStart: toInt(computedStyle.paddingTop),
+            paddingEnd: toInt(computedStyle.paddingBottom),
+          },
+        });
+      }
+    },
+  });
 });
 var [ScrollbarProvider, useScrollbarContext] = createScrollAreaContext(SCROLLBAR_NAME);
 var ScrollAreaScrollbarImpl = reactExports.forwardRef((props, forwardedRef) => {
@@ -472,123 +471,113 @@ var ScrollAreaScrollbarImpl = reactExports.forwardRef((props, forwardedRef) => {
   reactExports.useEffect(handleThumbPositionChange, [sizes, handleThumbPositionChange]);
   useResizeObserver(scrollbar, handleResize);
   useResizeObserver(context.content, handleResize);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    ScrollbarProvider,
-    {
-      scope: __scopeScrollArea,
-      scrollbar,
-      hasThumb,
-      onThumbChange: useCallbackRef(onThumbChange),
-      onThumbPointerUp: useCallbackRef(onThumbPointerUp),
-      onThumbPositionChange: handleThumbPositionChange,
-      onThumbPointerDown: useCallbackRef(onThumbPointerDown),
-      children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Primitive.div,
-        {
-          ...scrollbarProps,
-          ref: composeRefs,
-          style: { position: "absolute", ...scrollbarProps.style },
-          onPointerDown: composeEventHandlers(props.onPointerDown, (event) => {
-            const mainPointer = 0;
-            if (event.button === mainPointer) {
-              const element = event.target;
-              element.setPointerCapture(event.pointerId);
-              rectRef.current = scrollbar.getBoundingClientRect();
-              prevWebkitUserSelectRef.current = document.body.style.webkitUserSelect;
-              document.body.style.webkitUserSelect = "none";
-              if (context.viewport) context.viewport.style.scrollBehavior = "auto";
-              handleDragScroll(event);
-            }
-          }),
-          onPointerMove: composeEventHandlers(props.onPointerMove, handleDragScroll),
-          onPointerUp: composeEventHandlers(props.onPointerUp, (event) => {
-            const element = event.target;
-            if (element.hasPointerCapture(event.pointerId)) {
-              element.releasePointerCapture(event.pointerId);
-            }
-            document.body.style.webkitUserSelect = prevWebkitUserSelectRef.current;
-            if (context.viewport) context.viewport.style.scrollBehavior = "";
-            rectRef.current = null;
-          })
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollbarProvider, {
+    scope: __scopeScrollArea,
+    scrollbar,
+    hasThumb,
+    onThumbChange: useCallbackRef(onThumbChange),
+    onThumbPointerUp: useCallbackRef(onThumbPointerUp),
+    onThumbPositionChange: handleThumbPositionChange,
+    onThumbPointerDown: useCallbackRef(onThumbPointerDown),
+    children: /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, {
+      ...scrollbarProps,
+      ref: composeRefs,
+      style: { position: "absolute", ...scrollbarProps.style },
+      onPointerDown: composeEventHandlers(props.onPointerDown, (event) => {
+        const mainPointer = 0;
+        if (event.button === mainPointer) {
+          const element = event.target;
+          element.setPointerCapture(event.pointerId);
+          rectRef.current = scrollbar.getBoundingClientRect();
+          prevWebkitUserSelectRef.current = document.body.style.webkitUserSelect;
+          document.body.style.webkitUserSelect = "none";
+          if (context.viewport) context.viewport.style.scrollBehavior = "auto";
+          handleDragScroll(event);
         }
-      )
-    }
-  );
+      }),
+      onPointerMove: composeEventHandlers(props.onPointerMove, handleDragScroll),
+      onPointerUp: composeEventHandlers(props.onPointerUp, (event) => {
+        const element = event.target;
+        if (element.hasPointerCapture(event.pointerId)) {
+          element.releasePointerCapture(event.pointerId);
+        }
+        document.body.style.webkitUserSelect = prevWebkitUserSelectRef.current;
+        if (context.viewport) context.viewport.style.scrollBehavior = "";
+        rectRef.current = null;
+      }),
+    }),
+  });
 });
 var THUMB_NAME = "ScrollAreaThumb";
-var ScrollAreaThumb = reactExports.forwardRef(
-  (props, forwardedRef) => {
-    const { forceMount, ...thumbProps } = props;
-    const scrollbarContext = useScrollbarContext(THUMB_NAME, props.__scopeScrollArea);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, { present: forceMount || scrollbarContext.hasThumb, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaThumbImpl, { ref: forwardedRef, ...thumbProps }) });
-  }
-);
-var ScrollAreaThumbImpl = reactExports.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeScrollArea, style, ...thumbProps } = props;
-    const scrollAreaContext = useScrollAreaContext(THUMB_NAME, __scopeScrollArea);
-    const scrollbarContext = useScrollbarContext(THUMB_NAME, __scopeScrollArea);
-    const { onThumbPositionChange } = scrollbarContext;
-    const composedRef = useComposedRefs(
-      forwardedRef,
-      (node) => scrollbarContext.onThumbChange(node)
-    );
-    const removeUnlinkedScrollListenerRef = reactExports.useRef(void 0);
-    const debounceScrollEnd = useDebounceCallback(() => {
-      if (removeUnlinkedScrollListenerRef.current) {
-        removeUnlinkedScrollListenerRef.current();
-        removeUnlinkedScrollListenerRef.current = void 0;
-      }
-    }, 100);
-    reactExports.useEffect(() => {
-      const viewport = scrollAreaContext.viewport;
-      if (viewport) {
-        const handleScroll = () => {
-          debounceScrollEnd();
-          if (!removeUnlinkedScrollListenerRef.current) {
-            const listener = addUnlinkedScrollListener(viewport, onThumbPositionChange);
-            removeUnlinkedScrollListenerRef.current = listener;
-            onThumbPositionChange();
-          }
-        };
-        onThumbPositionChange();
-        viewport.addEventListener("scroll", handleScroll);
-        return () => viewport.removeEventListener("scroll", handleScroll);
-      }
-    }, [scrollAreaContext.viewport, debounceScrollEnd, onThumbPositionChange]);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Primitive.div,
-      {
-        "data-state": scrollbarContext.hasThumb ? "visible" : "hidden",
-        ...thumbProps,
-        ref: composedRef,
-        style: {
-          width: "var(--radix-scroll-area-thumb-width)",
-          height: "var(--radix-scroll-area-thumb-height)",
-          ...style
-        },
-        onPointerDownCapture: composeEventHandlers(props.onPointerDownCapture, (event) => {
-          const thumb = event.target;
-          const thumbRect = thumb.getBoundingClientRect();
-          const x = event.clientX - thumbRect.left;
-          const y = event.clientY - thumbRect.top;
-          scrollbarContext.onThumbPointerDown({ x, y });
-        }),
-        onPointerUp: composeEventHandlers(props.onPointerUp, scrollbarContext.onThumbPointerUp)
-      }
-    );
-  }
-);
+var ScrollAreaThumb = reactExports.forwardRef((props, forwardedRef) => {
+  const { forceMount, ...thumbProps } = props;
+  const scrollbarContext = useScrollbarContext(THUMB_NAME, props.__scopeScrollArea);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Presence, {
+    present: forceMount || scrollbarContext.hasThumb,
+    children: /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaThumbImpl, {
+      ref: forwardedRef,
+      ...thumbProps,
+    }),
+  });
+});
+var ScrollAreaThumbImpl = reactExports.forwardRef((props, forwardedRef) => {
+  const { __scopeScrollArea, style, ...thumbProps } = props;
+  const scrollAreaContext = useScrollAreaContext(THUMB_NAME, __scopeScrollArea);
+  const scrollbarContext = useScrollbarContext(THUMB_NAME, __scopeScrollArea);
+  const { onThumbPositionChange } = scrollbarContext;
+  const composedRef = useComposedRefs(forwardedRef, (node) => scrollbarContext.onThumbChange(node));
+  const removeUnlinkedScrollListenerRef = reactExports.useRef(void 0);
+  const debounceScrollEnd = useDebounceCallback(() => {
+    if (removeUnlinkedScrollListenerRef.current) {
+      removeUnlinkedScrollListenerRef.current();
+      removeUnlinkedScrollListenerRef.current = void 0;
+    }
+  }, 100);
+  reactExports.useEffect(() => {
+    const viewport = scrollAreaContext.viewport;
+    if (viewport) {
+      const handleScroll = () => {
+        debounceScrollEnd();
+        if (!removeUnlinkedScrollListenerRef.current) {
+          const listener = addUnlinkedScrollListener(viewport, onThumbPositionChange);
+          removeUnlinkedScrollListenerRef.current = listener;
+          onThumbPositionChange();
+        }
+      };
+      onThumbPositionChange();
+      viewport.addEventListener("scroll", handleScroll);
+      return () => viewport.removeEventListener("scroll", handleScroll);
+    }
+  }, [scrollAreaContext.viewport, debounceScrollEnd, onThumbPositionChange]);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, {
+    "data-state": scrollbarContext.hasThumb ? "visible" : "hidden",
+    ...thumbProps,
+    ref: composedRef,
+    style: {
+      width: "var(--radix-scroll-area-thumb-width)",
+      height: "var(--radix-scroll-area-thumb-height)",
+      ...style,
+    },
+    onPointerDownCapture: composeEventHandlers(props.onPointerDownCapture, (event) => {
+      const thumb = event.target;
+      const thumbRect = thumb.getBoundingClientRect();
+      const x = event.clientX - thumbRect.left;
+      const y = event.clientY - thumbRect.top;
+      scrollbarContext.onThumbPointerDown({ x, y });
+    }),
+    onPointerUp: composeEventHandlers(props.onPointerUp, scrollbarContext.onThumbPointerUp),
+  });
+});
 ScrollAreaThumb.displayName = THUMB_NAME;
 var CORNER_NAME = "ScrollAreaCorner";
-var ScrollAreaCorner = reactExports.forwardRef(
-  (props, forwardedRef) => {
-    const context = useScrollAreaContext(CORNER_NAME, props.__scopeScrollArea);
-    const hasBothScrollbarsVisible = Boolean(context.scrollbarX && context.scrollbarY);
-    const hasCorner = context.type !== "scroll" && hasBothScrollbarsVisible;
-    return hasCorner ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaCornerImpl, { ...props, ref: forwardedRef }) : null;
-  }
-);
+var ScrollAreaCorner = reactExports.forwardRef((props, forwardedRef) => {
+  const context = useScrollAreaContext(CORNER_NAME, props.__scopeScrollArea);
+  const hasBothScrollbarsVisible = Boolean(context.scrollbarX && context.scrollbarY);
+  const hasCorner = context.type !== "scroll" && hasBothScrollbarsVisible;
+  return hasCorner
+    ? /* @__PURE__ */ jsxRuntimeExports.jsx(ScrollAreaCornerImpl, { ...props, ref: forwardedRef })
+    : null;
+});
 ScrollAreaCorner.displayName = CORNER_NAME;
 var ScrollAreaCornerImpl = reactExports.forwardRef((props, forwardedRef) => {
   const { __scopeScrollArea, ...cornerProps } = props;
@@ -606,22 +595,21 @@ var ScrollAreaCornerImpl = reactExports.forwardRef((props, forwardedRef) => {
     context.onCornerWidthChange(width2);
     setWidth(width2);
   });
-  return hasSize ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Primitive.div,
-    {
-      ...cornerProps,
-      ref: forwardedRef,
-      style: {
-        width,
-        height,
-        position: "absolute",
-        right: context.dir === "ltr" ? 0 : void 0,
-        left: context.dir === "rtl" ? 0 : void 0,
-        bottom: 0,
-        ...props.style
-      }
-    }
-  ) : null;
+  return hasSize
+    ? /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, {
+        ...cornerProps,
+        ref: forwardedRef,
+        style: {
+          width,
+          height,
+          position: "absolute",
+          right: context.dir === "ltr" ? 0 : void 0,
+          left: context.dir === "rtl" ? 0 : void 0,
+          bottom: 0,
+          ...props.style,
+        },
+      })
+    : null;
 });
 function toInt(value) {
   return value ? parseInt(value, 10) : 0;
@@ -669,8 +657,7 @@ function linearScale(input, output) {
 function isScrollingWithinScrollbarBounds(scrollPos, maxScrollPos) {
   return scrollPos > 0 && scrollPos < maxScrollPos;
 }
-var addUnlinkedScrollListener = (node, handler = () => {
-}) => {
+var addUnlinkedScrollListener = (node, handler = () => {}) => {
   let prevPosition = { left: node.scrollLeft, top: node.scrollTop };
   let rAF = 0;
   (function loop() {
@@ -712,10 +699,4 @@ function useResizeObserver(element, onResize) {
 var Root = ScrollArea;
 var Viewport = ScrollAreaViewport;
 var Corner = ScrollAreaCorner;
-export {
-  Corner as C,
-  Root as R,
-  ScrollAreaScrollbar as S,
-  Viewport as V,
-  ScrollAreaThumb as a
-};
+export { Corner as C, Root as R, ScrollAreaScrollbar as S, Viewport as V, ScrollAreaThumb as a };

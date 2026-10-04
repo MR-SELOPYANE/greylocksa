@@ -35,7 +35,7 @@ var createServerRpc = (serverFnMeta, splitImportFn) => {
   return Object.assign(splitImportFn, {
     url,
     serverFnMeta,
-    [TSS_SERVER_FUNCTION]: true
+    [TSS_SERVER_FUNCTION]: true,
   });
 };
 function createLovableAiGatewayProvider(lovableApiKey) {
@@ -44,8 +44,8 @@ function createLovableAiGatewayProvider(lovableApiKey) {
     baseURL: "https://ai.gateway.lovable.dev/v1",
     headers: {
       "Lovable-API-Key": lovableApiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk"
-    }
+      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+    },
   });
 }
 const SYSTEM_PROMPT = `You are SENTINEL, the AI intelligence assistant embedded in greyLock — a watchlist & threat-intelligence platform.
@@ -67,50 +67,51 @@ Behavior:
 - Keep answers focused and actionable. End sensitive briefings by noting interactions are logged when relevant.`;
 const sentinelTurnSchema = objectType({
   role: enumType(["user", "assistant"]),
-  content: stringType().trim().min(1).max(8e3)
+  content: stringType().trim().min(1).max(8e3),
 });
 const sentinelInputSchema = objectType({
   messages: arrayType(sentinelTurnSchema).min(1).max(20),
-  clearance: enumType(["UNCLASSIFIED", "CONFIDENTIAL", "SECRET"]).optional()
+  clearance: enumType(["UNCLASSIFIED", "CONFIDENTIAL", "SECRET"]).optional(),
 });
-const askSentinel_createServerFn_handler = createServerRpc({
-  id: "46976752a79ad20314a277635f85391ade236fe1dbd4dc85013e5e1867526df8",
-  name: "askSentinel",
-  filename: "src/lib/sentinel.functions.ts"
-}, (opts) => askSentinel.__executeServer(opts));
+const askSentinel_createServerFn_handler = createServerRpc(
+  {
+    id: "46976752a79ad20314a277635f85391ade236fe1dbd4dc85013e5e1867526df8",
+    name: "askSentinel",
+    filename: "src/lib/sentinel.functions.ts",
+  },
+  (opts) => askSentinel.__executeServer(opts),
+);
 const askSentinel = createServerFn({
-  method: "POST"
-}).inputValidator((input) => sentinelInputSchema.parse(input)).handler(askSentinel_createServerFn_handler, async ({
-  data
-}) => {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Sentinel AI is not configured (missing API key).");
-  const gateway = createLovableAiGatewayProvider(key);
-  const system = data.clearance ? `${SYSTEM_PROMPT}
+  method: "POST",
+})
+  .inputValidator((input) => sentinelInputSchema.parse(input))
+  .handler(askSentinel_createServerFn_handler, async ({ data }) => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("Sentinel AI is not configured (missing API key).");
+    const gateway = createLovableAiGatewayProvider(key);
+    const system = data.clearance
+      ? `${SYSTEM_PROMPT}
 
-Operator clearance level: ${data.clearance}.` : SYSTEM_PROMPT;
-  const modelMessages = data.messages.map((m) => ({
-    role: m.role,
-    content: m.content
-  }));
-  try {
-    const {
-      text
-    } = await generateText({
-      model: gateway("google/gemini-3-flash-preview"),
-      system,
-      messages: modelMessages
-    });
-    return {
-      text
-    };
-  } catch (err) {
-    const status = err?.statusCode ?? err?.status;
-    if (status === 429) throw new Error("RATE_LIMIT");
-    if (status === 402) throw new Error("CREDITS_EXHAUSTED");
-    throw new Error("Sentinel encountered an upstream error. Try again.");
-  }
-});
-export {
-  askSentinel_createServerFn_handler
-};
+Operator clearance level: ${data.clearance}.`
+      : SYSTEM_PROMPT;
+    const modelMessages = data.messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+    try {
+      const { text } = await generateText({
+        model: gateway("google/gemini-3-flash-preview"),
+        system,
+        messages: modelMessages,
+      });
+      return {
+        text,
+      };
+    } catch (err) {
+      const status = err?.statusCode ?? err?.status;
+      if (status === 429) throw new Error("RATE_LIMIT");
+      if (status === 402) throw new Error("CREDITS_EXHAUSTED");
+      throw new Error("Sentinel encountered an upstream error. Try again.");
+    }
+  });
+export { askSentinel_createServerFn_handler };

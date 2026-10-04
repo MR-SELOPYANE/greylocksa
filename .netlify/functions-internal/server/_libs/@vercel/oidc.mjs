@@ -10,12 +10,18 @@ function _mergeNamespaces(n, m) {
         if (k !== "default" && !(k in n)) {
           const d = Object.getOwnPropertyDescriptor(e, k);
           if (d) {
-            Object.defineProperty(n, k, d.get ? d : {
-              enumerable: true,
-              get: function() {
-                return e[k];
-              }
-            });
+            Object.defineProperty(
+              n,
+              k,
+              d.get
+                ? d
+                : {
+                    enumerable: true,
+                    get: function () {
+                      return e[k];
+                    },
+                  },
+            );
           }
         }
       }
@@ -33,14 +39,16 @@ function requireGetContext() {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
@@ -48,7 +56,7 @@ function requireGetContext() {
   var get_context_exports = {};
   __export(get_context_exports, {
     SYMBOL_FOR_REQ_CONTEXT: () => SYMBOL_FOR_REQ_CONTEXT,
-    getContext: () => getContext
+    getContext: () => getContext,
   });
   getContext_1 = __toCommonJS(get_context_exports);
   const SYMBOL_FOR_REQ_CONTEXT = /* @__PURE__ */ Symbol.for("@vercel/request-context");
@@ -68,21 +76,23 @@ function requireTokenError() {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
   var token_error_exports = {};
   __export(token_error_exports, {
-    VercelOidcTokenError: () => VercelOidcTokenError
+    VercelOidcTokenError: () => VercelOidcTokenError,
   });
   tokenError = __toCommonJS(token_error_exports);
   class VercelOidcTokenError extends Error {
@@ -110,14 +120,16 @@ function requireGetVercelOidcToken() {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
@@ -125,7 +137,7 @@ function requireGetVercelOidcToken() {
   var get_vercel_oidc_token_exports = {};
   __export(get_vercel_oidc_token_exports, {
     getVercelOidcToken: () => getVercelOidcToken,
-    getVercelOidcTokenSync: () => getVercelOidcTokenSync
+    getVercelOidcTokenSync: () => getVercelOidcTokenSync,
   });
   getVercelOidcToken_1 = __toCommonJS(get_vercel_oidc_token_exports);
   var import_get_context = requireGetContext();
@@ -140,12 +152,12 @@ function requireGetVercelOidcToken() {
     }
     try {
       const [{ getTokenPayload, isExpired }, { refreshToken }] = await Promise.all([
-        await Promise.resolve().then(function() {
+        await Promise.resolve().then(function () {
           return tokenUtil$1;
         }),
-        await Promise.resolve().then(function() {
+        await Promise.resolve().then(function () {
           return token$1;
-        })
+        }),
       ]);
       if (!token2 || isExpired(getTokenPayload(token2), options?.expirationBufferMs)) {
         await refreshToken(options);
@@ -165,10 +177,12 @@ ${error.message}`;
     return token2;
   }
   function getVercelOidcTokenSync() {
-    const token2 = (0, import_get_context.getContext)().headers?.["x-vercel-oidc-token"] ?? process.env.VERCEL_OIDC_TOKEN;
+    const token2 =
+      (0, import_get_context.getContext)().headers?.["x-vercel-oidc-token"] ??
+      process.env.VERCEL_OIDC_TOKEN;
     if (!token2) {
       throw new Error(
-        `The 'x-vercel-oidc-token' header is missing from the request. Do you have the OIDC option enabled in the Vercel project settings?`
+        `The 'x-vercel-oidc-token' header is missing from the request. Do you have the OIDC option enabled in the Vercel project settings?`,
       );
     }
     return token2;
@@ -185,14 +199,16 @@ function requireAuthErrors() {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
@@ -200,14 +216,12 @@ function requireAuthErrors() {
   var auth_errors_exports = {};
   __export(auth_errors_exports, {
     AccessTokenMissingError: () => AccessTokenMissingError,
-    RefreshAccessTokenFailedError: () => RefreshAccessTokenFailedError
+    RefreshAccessTokenFailedError: () => RefreshAccessTokenFailedError,
   });
   authErrors = __toCommonJS(auth_errors_exports);
   class AccessTokenMissingError extends Error {
     constructor() {
-      super(
-        "No authentication found. Please log in with the Vercel CLI (vercel login)."
-      );
+      super("No authentication found. Please log in with the Vercel CLI (vercel login).");
       this.name = "AccessTokenMissingError";
     }
   }
@@ -231,30 +245,37 @@ function requireTokenIo() {
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
-  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-    // If the importer is in node compatibility mode or this is not an ESM
-    // file that has been converted to a CommonJS file using a Babel-
-    // compatible transform (i.e. "__esModule" has not been set), then set
-    // "default" to the CommonJS "module.exports" for node compatibility.
-    !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-    mod
-  ));
+  var __toESM = (mod, isNodeMode, target) => (
+    (target = mod != null ? __create(__getProtoOf(mod)) : {}),
+    __copyProps(
+      // If the importer is in node compatibility mode or this is not an ESM
+      // file that has been converted to a CommonJS file using a Babel-
+      // compatible transform (i.e. "__esModule" has not been set), then set
+      // "default" to the CommonJS "module.exports" for node compatibility.
+      !mod || !mod.__esModule
+        ? __defProp(target, "default", { value: mod, enumerable: true })
+        : target,
+      mod,
+    )
+  );
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
   var token_io_exports = {};
   __export(token_io_exports, {
     findRootDir: () => findRootDir,
-    getUserDataDir: () => getUserDataDir
+    getUserDataDir: () => getUserDataDir,
   });
   tokenIo = __toCommonJS(token_io_exports);
   var import_path2 = __toESM(require$$0);
@@ -273,7 +294,7 @@ function requireTokenIo() {
       }
     } catch (e) {
       throw new import_token_error.VercelOidcTokenError(
-        "Token refresh only supported in node server environments"
+        "Token refresh only supported in node server environments",
       );
     }
     return null;
@@ -284,7 +305,10 @@ function requireTokenIo() {
     }
     switch (import_os2.default.platform()) {
       case "darwin":
-        return import_path2.default.join(import_os2.default.homedir(), "Library/Application Support");
+        return import_path2.default.join(
+          import_os2.default.homedir(),
+          "Library/Application Support",
+        );
       case "linux":
         return import_path2.default.join(import_os2.default.homedir(), ".local/share");
       case "win32":
@@ -310,31 +334,38 @@ function requireAuthConfig() {
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
-  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-    // If the importer is in node compatibility mode or this is not an ESM
-    // file that has been converted to a CommonJS file using a Babel-
-    // compatible transform (i.e. "__esModule" has not been set), then set
-    // "default" to the CommonJS "module.exports" for node compatibility.
-    !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-    mod
-  ));
+  var __toESM = (mod, isNodeMode, target) => (
+    (target = mod != null ? __create(__getProtoOf(mod)) : {}),
+    __copyProps(
+      // If the importer is in node compatibility mode or this is not an ESM
+      // file that has been converted to a CommonJS file using a Babel-
+      // compatible transform (i.e. "__esModule" has not been set), then set
+      // "default" to the CommonJS "module.exports" for node compatibility.
+      !mod || !mod.__esModule
+        ? __defProp(target, "default", { value: mod, enumerable: true })
+        : target,
+      mod,
+    )
+  );
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
   var auth_config_exports = {};
   __export(auth_config_exports, {
     isValidAccessToken: () => isValidAccessToken,
     readAuthConfig: () => readAuthConfig,
-    writeAuthConfig: () => writeAuthConfig
+    writeAuthConfig: () => writeAuthConfig,
   });
   authConfig = __toCommonJS(auth_config_exports);
   var fs = __toESM(require$$1);
@@ -344,7 +375,7 @@ function requireAuthConfig() {
     const dataDir = (0, import_token_util.getVercelDataDir)();
     if (!dataDir) {
       throw new Error(
-        `Unable to find Vercel CLI data directory. Your platform: ${process.platform}. Supported: darwin, linux, win32.`
+        `Unable to find Vercel CLI data directory. Your platform: ${process.platform}. Supported: darwin, linux, win32.`,
       );
     }
     return path.join(dataDir, "auth.json");
@@ -373,10 +404,8 @@ function requireAuthConfig() {
     fs.writeFileSync(authPath, JSON.stringify(config, null, 2), { mode: 384 });
   }
   function isValidAccessToken(authConfig2, expirationBufferMs = 0) {
-    if (!authConfig2.token)
-      return false;
-    if (typeof authConfig2.expiresAt !== "number")
-      return true;
+    if (!authConfig2.token) return false;
+    if (typeof authConfig2.expiresAt !== "number") return true;
     const nowInSeconds = Math.floor(Date.now() / 1e3);
     const bufferInSeconds = expirationBufferMs / 1e3;
     return authConfig2.expiresAt >= nowInSeconds + bufferInSeconds;
@@ -393,14 +422,16 @@ function requireOauth() {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
@@ -408,7 +439,7 @@ function requireOauth() {
   var oauth_exports = {};
   __export(oauth_exports, {
     processTokenResponse: () => processTokenResponse,
-    refreshTokenRequest: () => refreshTokenRequest
+    refreshTokenRequest: () => refreshTokenRequest,
   });
   oauth = __toCommonJS(oauth_exports);
   var import_os2 = require$$2;
@@ -422,7 +453,7 @@ function requireOauth() {
     }
     const discoveryUrl = `${VERCEL_ISSUER}/.well-known/openid-configuration`;
     const response = await fetch(discoveryUrl, {
-      headers: { "user-agent": userAgent }
+      headers: { "user-agent": userAgent },
     });
     if (!response.ok) {
       throw new Error("Failed to discover OAuth endpoints");
@@ -441,19 +472,22 @@ function requireOauth() {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "user-agent": userAgent
+        "user-agent": userAgent,
       },
       body: new URLSearchParams({
         client_id: VERCEL_CLI_CLIENT_ID,
         grant_type: "refresh_token",
-        ...options
-      })
+        ...options,
+      }),
     });
   }
   async function processTokenResponse(response) {
     const json = await response.json();
     if (!response.ok) {
-      const errorMsg = typeof json === "object" && json && "error" in json ? String(json.error) : "Token refresh failed";
+      const errorMsg =
+        typeof json === "object" && json && "error" in json
+          ? String(json.error)
+          : "Token refresh failed";
       return [new Error(errorMsg)];
     }
     if (typeof json !== "object" || json === null) {
@@ -484,25 +518,32 @@ function requireTokenUtil() {
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
-  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-    // If the importer is in node compatibility mode or this is not an ESM
-    // file that has been converted to a CommonJS file using a Babel-
-    // compatible transform (i.e. "__esModule" has not been set), then set
-    // "default" to the CommonJS "module.exports" for node compatibility.
-    !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-    mod
-  ));
+  var __toESM = (mod, isNodeMode, target) => (
+    (target = mod != null ? __create(__getProtoOf(mod)) : {}),
+    __copyProps(
+      // If the importer is in node compatibility mode or this is not an ESM
+      // file that has been converted to a CommonJS file using a Babel-
+      // compatible transform (i.e. "__esModule" has not been set), then set
+      // "default" to the CommonJS "module.exports" for node compatibility.
+      !mod || !mod.__esModule
+        ? __defProp(target, "default", { value: mod, enumerable: true })
+        : target,
+      mod,
+    )
+  );
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
   var token_util_exports = {};
   __export(token_util_exports, {
@@ -514,7 +555,7 @@ function requireTokenUtil() {
     getVercelToken: () => getVercelToken,
     isExpired: () => isExpired,
     loadToken: () => loadToken,
-    saveToken: () => saveToken
+    saveToken: () => saveToken,
   });
   tokenUtil$2 = __toCommonJS(token_util_exports);
   var path = __toESM(require$$0);
@@ -546,7 +587,7 @@ function requireTokenUtil() {
     }
     try {
       const tokenResponse = await (0, import_oauth.refreshTokenRequest)({
-        refresh_token: authConfig2.refreshToken
+        refresh_token: authConfig2.refreshToken,
       });
       const [tokensError, tokens] = await (0, import_oauth.processTokenResponse)(tokenResponse);
       if (tokensError || !tokens) {
@@ -555,7 +596,7 @@ function requireTokenUtil() {
       }
       const updatedConfig = {
         token: tokens.access_token,
-        expiresAt: Math.floor(Date.now() / 1e3) + tokens.expires_in
+        expiresAt: Math.floor(Date.now() / 1e3) + tokens.expires_in,
       };
       if (tokens.refresh_token) {
         updatedConfig.refreshToken = tokens.refresh_token;
@@ -564,7 +605,10 @@ function requireTokenUtil() {
       return updatedConfig.token;
     } catch (error) {
       (0, import_auth_config.writeAuthConfig)({});
-      if (error instanceof import_auth_errors.AccessTokenMissingError || error instanceof import_auth_errors.RefreshAccessTokenFailedError) {
+      if (
+        error instanceof import_auth_errors.AccessTokenMissingError ||
+        error instanceof import_auth_errors.RefreshAccessTokenFailedError
+      ) {
         throw error;
       }
       throw new import_auth_errors.RefreshAccessTokenFailedError(error);
@@ -575,12 +619,12 @@ function requireTokenUtil() {
     const res = await fetch(url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${authToken}`
-      }
+        Authorization: `Bearer ${authToken}`,
+      },
     });
     if (!res.ok) {
       throw new import_token_error.VercelOidcTokenError(
-        `Failed to refresh OIDC token: ${res.statusText}`
+        `Failed to refresh OIDC token: ${res.statusText}`,
       );
     }
     const tokenRes = await res.json();
@@ -590,12 +634,12 @@ function requireTokenUtil() {
   function assertVercelOidcTokenResponse(res) {
     if (!res || typeof res !== "object") {
       throw new TypeError(
-        "Vercel OIDC token is malformed. Expected an object. Please run `vc env pull` and try again"
+        "Vercel OIDC token is malformed. Expected an object. Please run `vc env pull` and try again",
       );
     }
     if (!("token" in res) || typeof res.token !== "string") {
       throw new TypeError(
-        "Vercel OIDC token is malformed. Expected a string-valued token property. Please run `vc env pull` and try again"
+        "Vercel OIDC token is malformed. Expected a string-valued token property. Please run `vc env pull` and try again",
       );
     }
   }
@@ -603,19 +647,19 @@ function requireTokenUtil() {
     const dir = (0, import_token_io.findRootDir)();
     if (!dir) {
       throw new import_token_error.VercelOidcTokenError(
-        "Unable to find project root directory. Have you linked your project with `vc link?`"
+        "Unable to find project root directory. Have you linked your project with `vc link?`",
       );
     }
     const prjPath = path.join(dir, ".vercel", "project.json");
     if (!fs.existsSync(prjPath)) {
       throw new import_token_error.VercelOidcTokenError(
-        "project.json not found, have you linked your project with `vc link?`"
+        "project.json not found, have you linked your project with `vc link?`",
       );
     }
     const prj = JSON.parse(fs.readFileSync(prjPath, "utf8"));
     if (typeof prj.projectId !== "string" && typeof prj.orgId !== "string") {
       throw new TypeError(
-        "Expected a string-valued projectId property. Try running `vc link` to re-link your project."
+        "Expected a string-valued projectId property. Try running `vc link` to re-link your project.",
       );
     }
     return { projectId: prj.projectId, teamId: prj.orgId };
@@ -624,7 +668,7 @@ function requireTokenUtil() {
     const dir = (0, import_token_io.getUserDataDir)();
     if (!dir) {
       throw new import_token_error.VercelOidcTokenError(
-        "Unable to find user data directory. Please reach out to Vercel support."
+        "Unable to find user data directory. Please reach out to Vercel support.",
       );
     }
     const tokenPath = path.join(dir, "com.vercel.token", `${projectId}.json`);
@@ -638,7 +682,7 @@ function requireTokenUtil() {
     const dir = (0, import_token_io.getUserDataDir)();
     if (!dir) {
       throw new import_token_error.VercelOidcTokenError(
-        "Unable to find user data directory. Please reach out to Vercel support."
+        "Unable to find user data directory. Please reach out to Vercel support.",
       );
     }
     const tokenPath = path.join(dir, "com.vercel.token", `${projectId}.json`);
@@ -653,14 +697,11 @@ function requireTokenUtil() {
     const tokenParts = token2.split(".");
     if (tokenParts.length !== 3) {
       throw new import_token_error.VercelOidcTokenError(
-        "Invalid token. Please run `vc env pull` and try again"
+        "Invalid token. Please run `vc env pull` and try again",
       );
     }
     const base64 = tokenParts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(
-      base64.length + (4 - base64.length % 4) % 4,
-      "="
-    );
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
     return JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
   }
   function isExpired(token2, bufferMs = 0) {
@@ -678,14 +719,16 @@ function requireDist() {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
@@ -697,7 +740,7 @@ function requireDist() {
     getContext: () => import_get_context.getContext,
     getVercelOidcToken: () => import_get_vercel_oidc_token.getVercelOidcToken,
     getVercelOidcTokenSync: () => import_get_vercel_oidc_token.getVercelOidcTokenSync,
-    getVercelToken: () => import_token_util.getVercelToken
+    getVercelToken: () => import_token_util.getVercelToken,
   });
   dist = __toCommonJS(src_exports);
   var import_get_vercel_oidc_token = requireGetVercelOidcToken();
@@ -709,10 +752,13 @@ function requireDist() {
 var distExports = requireDist();
 var tokenUtilExports = requireTokenUtil();
 const tokenUtil = /* @__PURE__ */ getDefaultExportFromCjs(tokenUtilExports);
-const tokenUtil$1 = /* @__PURE__ */ _mergeNamespaces({
-  __proto__: null,
-  default: tokenUtil
-}, [tokenUtilExports]);
+const tokenUtil$1 = /* @__PURE__ */ _mergeNamespaces(
+  {
+    __proto__: null,
+    default: tokenUtil,
+  },
+  [tokenUtilExports],
+);
 var token$2;
 var hasRequiredToken;
 function requireToken() {
@@ -723,21 +769,23 @@ function requireToken() {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
   };
   var __copyProps = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
+    if ((from && typeof from === "object") || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
         if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
     }
     return to;
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
   var token_exports = {};
   __export(token_exports, {
-    refreshToken: () => refreshToken
+    refreshToken: () => refreshToken,
   });
   token$2 = __toCommonJS(token_exports);
   var import_token_error = requireTokenError();
@@ -756,13 +804,19 @@ function requireToken() {
     }
     if (!projectId) {
       throw new import_token_error.VercelOidcTokenError(
-        "Failed to refresh OIDC token: No project specified. Try re-linking your project with `vc link`"
+        "Failed to refresh OIDC token: No project specified. Try re-linking your project with `vc link`",
       );
     }
     let maybeToken = (0, import_token_util.loadToken)(projectId);
-    if (!maybeToken || (0, import_token_util.isExpired)((0, import_token_util.getTokenPayload)(maybeToken.token), options?.expirationBufferMs)) {
+    if (
+      !maybeToken ||
+      (0, import_token_util.isExpired)(
+        (0, import_token_util.getTokenPayload)(maybeToken.token),
+        options?.expirationBufferMs,
+      )
+    ) {
       const authToken = await (0, import_token_util.getVercelToken)({
-        expirationBufferMs: options?.expirationBufferMs
+        expirationBufferMs: options?.expirationBufferMs,
       });
       maybeToken = await (0, import_token_util.getVercelOidcToken)(authToken, projectId, teamId);
       if (!maybeToken) {
@@ -777,10 +831,11 @@ function requireToken() {
 }
 var tokenExports = requireToken();
 const token = /* @__PURE__ */ getDefaultExportFromCjs(tokenExports);
-const token$1 = /* @__PURE__ */ _mergeNamespaces({
-  __proto__: null,
-  default: token
-}, [tokenExports]);
-export {
-  distExports as d
-};
+const token$1 = /* @__PURE__ */ _mergeNamespaces(
+  {
+    __proto__: null,
+    default: token,
+  },
+  [tokenExports],
+);
+export { distExports as d };

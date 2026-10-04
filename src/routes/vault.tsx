@@ -6,7 +6,10 @@ export const Route = createFileRoute("/vault")({
   head: () => ({
     meta: [
       { title: "Evidence Vault — greyLock" },
-      { name: "description", content: "Sealed evidence with SHA-256 integrity and honeytoken alerts." },
+      {
+        name: "description",
+        content: "Sealed evidence with SHA-256 integrity and honeytoken alerts.",
+      },
     ],
   }),
 });

@@ -9,7 +9,7 @@ export function StatusBadge({ status }: { status: EntityStatus }) {
         "font-mono text-[10px] uppercase tracking-wider border-0",
         status === "grey" && "bg-status-grey text-status-grey-foreground",
         status === "black" && "bg-status-black text-status-black-foreground",
-        status === "white" && "bg-status-white text-status-white-foreground"
+        status === "white" && "bg-status-white text-status-white-foreground",
       )}
     >
       {status}
@@ -27,16 +27,8 @@ export function TypeBadge({ type }: { type: EntityType }) {
 
 export function RiskScore({ score }: { score: number }) {
   const color =
-    score >= 80
-      ? "text-status-black"
-      : score >= 50
-        ? "text-status-grey"
-        : "text-status-white";
-  return (
-    <span className={cn("font-mono text-sm font-bold", color)}>
-      {score}
-    </span>
-  );
+    score >= 80 ? "text-status-black" : score >= 50 ? "text-status-grey" : "text-status-white";
+  return <span className={cn("font-mono text-sm font-bold", color)}>{score}</span>;
 }
 
 export function PriorityBadge({ priority }: { priority: string }) {
@@ -47,7 +39,7 @@ export function PriorityBadge({ priority }: { priority: string }) {
         priority === "critical" && "bg-status-black text-status-black-foreground",
         priority === "high" && "bg-status-grey text-status-grey-foreground",
         priority === "medium" && "bg-primary text-primary-foreground",
-        priority === "low" && "bg-secondary text-secondary-foreground"
+        priority === "low" && "bg-secondary text-secondary-foreground",
       )}
     >
       {priority}
@@ -64,7 +56,7 @@ export function CaseStatusBadge({ status }: { status: string }) {
         status === "escalated" && "border-status-black text-status-black",
         status === "in_progress" && "border-tactical text-tactical",
         status === "open" && "border-status-grey text-status-grey",
-        status === "closed" && "border-status-white text-status-white"
+        status === "closed" && "border-status-white text-status-white",
       )}
     >
       {status.replace("_", " ")}
