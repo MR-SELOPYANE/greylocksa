@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useAppState } from "@/lib/store";
+import { formatDateTime as formatTime } from "@/lib/time";
 import { Badge } from "@/components/ui/badge";
 import { Fingerprint, Bug, ArrowRightLeft, FolderSearch } from "lucide-react";
 

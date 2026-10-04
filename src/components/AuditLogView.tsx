@@ -1,14 +1,7 @@
 import { mockAuditLog } from "@/lib/mock-data";
+import { formatDateTimeSeconds as formatDate } from "@/lib/time";
 
 export function AuditLogView() {
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border">

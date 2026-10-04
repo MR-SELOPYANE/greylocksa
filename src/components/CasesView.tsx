@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { formatDate } from "@/lib/time";
 import { useAppState } from "@/lib/store";
 import type { CaseStatus } from "@/lib/types";
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
@@ -103,8 +104,6 @@ export function CasesView() {
     };
   }, []);
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
   const counts = useMemo(() => {
     const acc: Record<string, number> = {

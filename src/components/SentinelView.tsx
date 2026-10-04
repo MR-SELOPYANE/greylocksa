@@ -4,6 +4,7 @@ import { askSentinel } from "@/lib/sentinel.functions";
 import { useAppState } from "@/lib/store";
 import { toast } from "sonner";
 import type { ChatMessage } from "@/lib/types";
+import { Timestamp } from "@/components/Timestamp";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -278,7 +279,7 @@ export function SentinelView() {
                         {m.role}
                       </Badge>
                       <span className="font-mono text-[10px] text-muted-foreground">
-                        {new Date(m.timestamp).toLocaleTimeString()}
+                        <Timestamp iso={m.timestamp} format="clock" />
                       </span>
                     </div>
                     <p className="mt-1.5 text-muted-foreground line-clamp-2">
@@ -351,7 +352,7 @@ export function SentinelView() {
                     </button>
                   )}
                   <span className="font-mono text-[9px] opacity-50">
-                    {new Date(msg.timestamp).toLocaleTimeString()}
+                    <Timestamp iso={msg.timestamp} format="clock" />
                   </span>
                 </div>
               </div>

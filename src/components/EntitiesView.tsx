@@ -166,13 +166,8 @@ export function EntitiesView() {
     clearSelection();
   };
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const formatDate = (d: string) => formatDateTimeImpl(d);
+
 
   const canMutate = role === "analyst" || role === "admin";
   const canDelete = role === "admin";

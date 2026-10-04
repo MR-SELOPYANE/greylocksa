@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { formatDateTime as formatDate } from "@/lib/time";
 import {
   Dialog,
   DialogContent,
@@ -73,13 +74,8 @@ export function CaseDetailDialog({
     [activeCase, custody],
   );
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const formatDate = (d: string) => formatDateTimeImpl(d);
+
 
   if (!activeCase) return null;
 

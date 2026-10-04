@@ -4,6 +4,7 @@ import { mockSystemStatus } from "@/lib/mock-data";
 import { mockThreats } from "@/lib/security-mock";
 import { useAppState } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { formatDateTime as formatDate } from "@/lib/time";
 import { Button } from "@/components/ui/button";
 import {
   Database,
@@ -24,13 +25,8 @@ export function SystemStatusView() {
   const { entities, cases, scans, custody } = useAppState();
   const navigate = useNavigate();
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const formatDate = (d: string) => formatDateTimeImpl(d);
+
 
   const stats = useMemo(() => {
     const byStatus = { black: 0, grey: 0, white: 0 };
