@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import type { EvidenceItem, Honeytoken } from "@/lib/types";
 import { sha256File } from "@/lib/derive";
+import { formatDate, formatDateTime } from "@/lib/time";
 import { useAppState } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -289,7 +290,7 @@ export function EvidenceVaultView() {
                     <td className="px-3 py-3 font-mono text-[11px]">
                       <div className="text-tactical">{e.uploadedBy}</div>
                       <div className="text-[10px] text-muted-foreground">
-                        {new Date(e.uploadedAt).toLocaleDateString()}
+                        {formatDate(e.uploadedAt)}
                       </div>
                     </td>
                     <td className="px-3 py-3 font-mono text-[11px]">
@@ -297,7 +298,7 @@ export function EvidenceVaultView() {
                         <>
                           <div className="text-foreground">{e.lastEditedBy}</div>
                           <div className="text-[10px] text-muted-foreground">
-                            {new Date(e.lastEditedAt!).toLocaleString()}
+                            {formatDateTime(e.lastEditedAt!)}
                           </div>
                         </>
                       ) : (
@@ -474,7 +475,7 @@ export function EvidenceVaultView() {
                 <ul className="space-y-1 border-t border-border pt-2 text-[11px] font-mono text-muted-foreground">
                   {t.triggers.slice(-3).map((trg, i) => (
                     <li key={i}>
-                      · {new Date(trg.timestamp).toLocaleString()} — {trg.ip} ({trg.ua})
+                      · {formatDateTime(trg.timestamp)} — {trg.ip} ({trg.ua})
                     </li>
                   ))}
                 </ul>
@@ -562,7 +563,7 @@ export function EvidenceVaultView() {
                       <div className="flex items-center justify-between font-mono">
                         <span className="text-tactical">{ed.by}</span>
                         <span className="text-muted-foreground">
-                          {new Date(ed.at).toLocaleString()}
+                          {formatDateTime(ed.at)}
                         </span>
                       </div>
                       <div className="mt-1 font-mono text-[11px]">

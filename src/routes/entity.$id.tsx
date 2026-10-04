@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
 import type { EntityStatus } from "@/lib/types";
+import { formatDateTime } from "@/lib/time";
 import { StatusBadge, TypeBadge, RiskScore, CaseStatusBadge } from "@/components/StatusBadges";
 import { EditEntityDialog } from "@/components/EditEntityDialog";
 import { Button } from "@/components/ui/button";
@@ -123,7 +124,7 @@ function EntityDetailPage() {
             <StatusBadge status={entity.status} />
           </div>
           <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-            {entity.id} · updated {new Date(entity.lastUpdated).toLocaleString()}
+            {entity.id} · updated {formatDateTime(entity.lastUpdated)}
           </p>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
@@ -202,7 +203,7 @@ function EntityDetailPage() {
               .slice(0, 6)
               .map((h, i) => (
                 <li key={i}>
-                  · {new Date(h.timestamp).toLocaleString()} — {h.from} → {h.to} by {h.changedBy} (
+                  · {formatDateTime(h.timestamp)} — {h.from} → {h.to} by {h.changedBy} (
                   {h.reason})
                 </li>
               ))}
@@ -259,7 +260,7 @@ function EntityDetailPage() {
                   {s.status}
                 </span>
                 <span className="text-muted-foreground">
-                  {new Date(s.startedAt).toLocaleString()}
+                  {formatDateTime(s.startedAt)}
                 </span>
                 {s.status === "complete" && (
                   <span className="ml-auto font-mono text-[10px] text-muted-foreground">

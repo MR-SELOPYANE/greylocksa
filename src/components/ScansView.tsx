@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
+import { formatDateTime } from "@/lib/time";
 import type { Scan, ScanSeverity, PassiveIntelReport } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -210,7 +211,7 @@ export function ScansView() {
                     </Badge>
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                    {new Date(s.startedAt).toLocaleString()}
+                    {formatDateTime(s.startedAt)}
                   </td>
                   <td className="px-4 py-3">
                     {s.status === "running" ? (
@@ -288,7 +289,7 @@ export function ScansView() {
                 </DialogTitle>
                 <DialogDescription>
                   {openScan.profile.toUpperCase()} profile · started{" "}
-                  {new Date(openScan.startedAt).toLocaleString()} by {openScan.startedBy}
+                  {formatDateTime(openScan.startedAt)} by {openScan.startedBy}
                   {openScan.intel && " · live OSINT"}
                 </DialogDescription>
               </DialogHeader>
@@ -402,7 +403,7 @@ function IntelPanel({ report }: { report: PassiveIntelReport }) {
 
       <Section icon={Globe} title={`Target — ${report.target}`}>
         <Row label="Kind" value={report.isIp ? "IP address" : "Domain"} />
-        <Row label="Swept" value={new Date(report.finishedAt).toLocaleString()} />
+        <Row label="Swept" value={formatDateTime(report.finishedAt)} />
       </Section>
 
       {report.whois && (
@@ -463,7 +464,7 @@ function IntelPanel({ report }: { report: PassiveIntelReport }) {
           <Row label="Country" value={vt.country} />
           <Row
             label="Last analysis"
-            value={vt.lastAnalysisDate ? new Date(vt.lastAnalysisDate).toLocaleString() : null}
+            value={vt.lastAnalysisDate ? formatDateTime(vt.lastAnalysisDate) : null}
           />
           <Row
             label="Categories"

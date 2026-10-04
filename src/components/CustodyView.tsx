@@ -1,6 +1,7 @@
 import { useAppState } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { formatDateTime } from "@/lib/time";
 import { Fingerprint } from "lucide-react";
 
 export function CustodyView() {
@@ -42,7 +43,7 @@ export function CustodyView() {
             {custody.map((c) => (
               <tr key={c.id} className="border-b border-border hover:bg-accent">
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap">
-                  {new Date(c.timestamp).toLocaleString()}
+                  {formatDateTime(c.timestamp)}
                 </td>
                 <td className="px-4 py-3 font-mono text-xs text-tactical">{c.actor}</td>
                 <td className="px-4 py-3">

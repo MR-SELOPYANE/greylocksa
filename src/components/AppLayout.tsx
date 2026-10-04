@@ -27,6 +27,7 @@ import {
   Terminal as TerminalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatDateTime } from "@/lib/time";
 import { useAppState } from "@/lib/store";
 import { deriveIocsFromScans } from "@/lib/derive";
 import type { UserRole } from "@/lib/types";
@@ -437,7 +438,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                                 </p>
                               )}
                               <p className="mt-0.5 font-mono text-[9px] text-muted-foreground">
-                                {new Date(n.timestamp).toLocaleString()}
+                                {formatDateTime(n.timestamp)}
                               </p>
                             </div>
                           </div>

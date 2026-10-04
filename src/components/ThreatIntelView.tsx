@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/time";
 import { Radio, Search, Target, Shield, Info, ArrowRight, X } from "lucide-react";
 
 const sevColor: Record<ScanSeverity, string> = {
@@ -368,7 +369,7 @@ export function ThreatIntelView() {
                 <div>
                   <span className="text-muted-foreground">First seen</span>
                   <div className="text-foreground">
-                    {new Date(selected.firstSeen).toLocaleDateString()}
+                    {formatDate(selected.firstSeen)}
                   </div>
                 </div>
               </div>

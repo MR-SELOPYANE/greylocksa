@@ -6,6 +6,7 @@ import type { AnomalyKind } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { formatDateTime } from "@/lib/time";
 import { Activity, Plane, Moon, Smartphone, Globe, Zap, ShieldOff } from "lucide-react";
 import { useAppState } from "@/lib/store";
 
@@ -140,10 +141,10 @@ export function SessionsView() {
                 <td className="px-4 py-3 font-mono text-xs">{s.country}</td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">{s.device}</td>
                 <td className="px-4 py-3 font-mono text-[10px] text-muted-foreground whitespace-nowrap">
-                  {new Date(s.startedAt).toLocaleString()}
+                  {formatDateTime(s.startedAt)}
                 </td>
                 <td className="px-4 py-3 font-mono text-[10px] text-muted-foreground whitespace-nowrap">
-                  {new Date(s.lastActivity).toLocaleString()}
+                  {formatDateTime(s.lastActivity)}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-1">
