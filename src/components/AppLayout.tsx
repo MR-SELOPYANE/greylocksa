@@ -27,6 +27,7 @@ import {
   Terminal as TerminalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatDateTime } from "@/lib/time";
 import { useAppState } from "@/lib/store";
 import { deriveIocsFromScans } from "@/lib/derive";
 import type { UserRole } from "@/lib/types";
@@ -43,11 +44,31 @@ const baseNav = [
   { to: "/entities", icon: Database, label: "Targets", roles: ["analyst", "admin"] as UserRole[] },
   { to: "/scans", icon: Bug, label: "Scans", roles: ["analyst", "admin"] as UserRole[] },
   { to: "/threats", icon: Radio, label: "Threat Intel", roles: ["analyst", "admin"] as UserRole[] },
-  { to: "/vault", icon: Archive, label: "Evidence Vault", roles: ["analyst", "admin"] as UserRole[] },
+  {
+    to: "/vault",
+    icon: Archive,
+    label: "Evidence Vault",
+    roles: ["analyst", "admin"] as UserRole[],
+  },
   { to: "/cases", icon: FolderSearch, label: "Cases", roles: ["analyst", "admin"] as UserRole[] },
-  { to: "/sentinel", icon: MessageSquare, label: "Sentinel AI", roles: ["analyst", "admin"] as UserRole[] },
-  { to: "/terminal", icon: TerminalIcon, label: "Terminal", roles: ["analyst", "admin"] as UserRole[] },
-  { to: "/custody", icon: Fingerprint, label: "Chain of Custody", roles: ["analyst", "admin"] as UserRole[] },
+  {
+    to: "/sentinel",
+    icon: MessageSquare,
+    label: "Sentinel AI",
+    roles: ["analyst", "admin"] as UserRole[],
+  },
+  {
+    to: "/terminal",
+    icon: TerminalIcon,
+    label: "Terminal",
+    roles: ["analyst", "admin"] as UserRole[],
+  },
+  {
+    to: "/custody",
+    icon: Fingerprint,
+    label: "Chain of Custody",
+    roles: ["analyst", "admin"] as UserRole[],
+  },
   { to: "/activity", icon: Activity, label: "Activity", roles: ["analyst", "admin"] as UserRole[] },
   { to: "/sessions", icon: Users, label: "Sessions", roles: ["admin"] as UserRole[] },
   { to: "/audit", icon: FileText, label: "Audit Log", roles: ["admin"] as UserRole[] },
@@ -59,8 +80,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { role, setRole, operator, clearance, lockdown, setLockdown, scans, logout,
-    notifications, markNotificationsRead, clearNotifications } = useAppState();
+  const {
+    role,
+    setRole,
+    operator,
+    clearance,
+    lockdown,
+    setLockdown,
+    scans,
+    logout,
+    notifications,
+    markNotificationsRead,
+    clearNotifications,
+  } = useAppState();
   const [bellOpen, setBellOpen] = useState(false);
 
   const navItems = baseNav.filter((n) => n.roles.includes(role));
@@ -75,7 +107,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const running = scans.filter((s) => s.status === "running").length;
   const criticalFindings = useMemo(
     () => scans.reduce((acc, s) => acc + (s.summary?.critical ?? 0) + (s.summary?.high ?? 0), 0),
-    [scans]
+    [scans],
   );
   const liveIocMatches = useMemo(() => {
     const set = new Set<string>();
@@ -88,7 +120,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const onDenied = () => {
       toast.error("Privilege escalation blocked", {
-        description: "Only an admin can grant the admin role. Ask an existing admin to promote you.",
+        description:
+          "Only an admin can grant the admin role. Ask an existing admin to promote you.",
       });
     };
     window.addEventListener("greylock:role-denied", onDenied);
@@ -96,12 +129,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleLockdown = () => {
-    const reason = prompt(lockdown ? "Reason for lifting lockdown:" : "Reason for emergency lockdown:");
+    const reason = prompt(
+      lockdown ? "Reason for lifting lockdown:" : "Reason for emergency lockdown:",
+    );
     if (reason === null) return;
     setLockdown(!lockdown, reason || undefined);
-    toast.warning(lockdown ? "Lockdown lifted — operations resumed" : "EMERGENCY LOCKDOWN ENGAGED", {
-      description: "Event written to chain-of-custody.",
-    });
+    toast.warning(
+      lockdown ? "Lockdown lifted — operations resumed" : "EMERGENCY LOCKDOWN ENGAGED",
+      {
+        description: "Event written to chain-of-custody.",
+      },
+    );
   };
 
   const handleRoleChange = (v: string) => {
@@ -113,7 +151,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     }
     setRole(v as UserRole);
     if (role === "admin" && v === "analyst") {
-      toast.success("Demoted to analyst", { description: "Admin tools hidden until promoted again." });
+      toast.success("Demoted to analyst", {
+        description: "Admin tools hidden until promoted again.",
+      });
     }
   };
 
@@ -128,12 +168,21 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+          <div
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
           <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-border bg-sidebar shadow-2xl">
             <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
               <Shield className="h-6 w-6 shrink-0 text-tactical" />
-              <span className="font-mono text-sm font-bold tracking-wider text-sidebar-foreground">greyLock</span>
-              <button className="ml-auto text-muted-foreground hover:text-sidebar-foreground" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+              <span className="font-mono text-sm font-bold tracking-wider text-sidebar-foreground">
+                greyLock
+              </span>
+              <button
+                className="ml-auto text-muted-foreground hover:text-sidebar-foreground"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -146,7 +195,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     to={item.to}
                     className={cn(
                       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                      isActive ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-primary"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     )}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
@@ -158,7 +209,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="space-y-2 border-t border-sidebar-border p-3">
               <div className="flex items-center gap-2">
                 <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{clearance}</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {clearance}
+                </span>
               </div>
               <div className="font-mono text-[10px] text-muted-foreground truncate">
                 {operator} · <span className="uppercase text-tactical">{role}</span>
@@ -168,10 +221,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <aside className={cn("hidden flex-col border-r border-border bg-sidebar transition-all duration-300 md:flex", collapsed ? "w-16" : "w-60")}>
+      <aside
+        className={cn(
+          "hidden flex-col border-r border-border bg-sidebar transition-all duration-300 md:flex",
+          collapsed ? "w-16" : "w-60",
+        )}
+      >
         <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
           <Shield className="h-6 w-6 shrink-0 text-tactical" />
-          {!collapsed && <span className="font-mono text-sm font-bold tracking-wider text-sidebar-foreground">greyLock</span>}
+          {!collapsed && (
+            <span className="font-mono text-sm font-bold tracking-wider text-sidebar-foreground">
+              greyLock
+            </span>
+          )}
         </div>
 
         <nav className="flex-1 space-y-1 p-2">
@@ -183,7 +245,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 to={item.to}
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  isActive ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-primary"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 )}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
@@ -197,7 +261,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="space-y-2 border-t border-sidebar-border p-3">
             <div className="flex items-center gap-2">
               <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{clearance}</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                {clearance}
+              </span>
             </div>
             <div className="font-mono text-[10px] text-muted-foreground truncate">
               {operator} · <span className="uppercase text-tactical">{role}</span>
@@ -218,7 +284,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2 border-b border-status-black bg-status-black/20 px-6 py-2 text-xs text-status-black">
             <AlertOctagon className="h-3.5 w-3.5" />
             <span className="font-mono uppercase tracking-widest">Emergency Lockdown Active</span>
-            <span className="text-muted-foreground">— mutations and scans disabled until lifted by admin.</span>
+            <span className="text-muted-foreground">
+              — mutations and scans disabled until lifted by admin.
+            </span>
           </div>
         )}
         <header className="flex h-14 items-center justify-between gap-2 border-b border-border bg-card px-4 md:px-6">
@@ -245,13 +313,21 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               title="Live operational status — click to jump to the hottest queue"
             >
               <span className="flex items-center gap-1">
-                {running > 0 ? <Loader2 className="h-3 w-3 animate-spin text-tactical" /> : <Zap className="h-3 w-3 text-muted-foreground" />}
-                <span className={running > 0 ? "text-tactical" : ""}>{running} scan{running === 1 ? "" : "s"}</span>
+                {running > 0 ? (
+                  <Loader2 className="h-3 w-3 animate-spin text-tactical" />
+                ) : (
+                  <Zap className="h-3 w-3 text-muted-foreground" />
+                )}
+                <span className={running > 0 ? "text-tactical" : ""}>
+                  {running} scan{running === 1 ? "" : "s"}
+                </span>
               </span>
               <span className="h-3 w-px bg-border" />
               <span className={cn("flex items-center gap-1", alertCount > 0 && "text-destructive")}>
                 <ShieldAlert className="h-3 w-3" />
-                <span>{alertCount} alert{alertCount === 1 ? "" : "s"}</span>
+                <span>
+                  {alertCount} alert{alertCount === 1 ? "" : "s"}
+                </span>
               </span>
             </button>
 
@@ -270,11 +346,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2">
               <span className="hidden text-xs text-muted-foreground sm:inline">Role:</span>
               <Select value={role} onValueChange={handleRoleChange}>
-                <SelectTrigger className="h-7 w-28 bg-secondary text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 w-28 bg-secondary text-xs">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="analyst">Analyst</SelectItem>
                   <SelectItem value="admin" disabled={role === "analyst"}>
-                    Admin {role === "analyst" && <span className="ml-1 text-[10px] text-muted-foreground">(admin-grant only)</span>}
+                    Admin{" "}
+                    {role === "analyst" && (
+                      <span className="ml-1 text-[10px] text-muted-foreground">
+                        (admin-grant only)
+                      </span>
+                    )}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -286,7 +369,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 size="sm"
                 className="h-7 w-8 p-0"
                 title="Alerts"
-                onClick={() => { setBellOpen((v) => !v); if (!bellOpen) markNotificationsRead(); }}
+                onClick={() => {
+                  setBellOpen((v) => !v);
+                  if (!bellOpen) markNotificationsRead();
+                }}
               >
                 <Bell className="h-3.5 w-3.5" />
                 {unread > 0 && (
@@ -300,26 +386,60 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <div className="fixed inset-0 z-40" onClick={() => setBellOpen(false)} />
                   <div className="absolute right-0 top-9 z-50 w-80 rounded-md border border-border bg-card shadow-xl">
                     <div className="flex items-center justify-between border-b border-border px-3 py-2">
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Alerts</span>
-                      <button className="text-[10px] text-tactical hover:underline" onClick={() => { clearNotifications(); setBellOpen(false); }}>Clear all</button>
+                      <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                        Alerts
+                      </span>
+                      <button
+                        className="text-[10px] text-tactical hover:underline"
+                        onClick={() => {
+                          clearNotifications();
+                          setBellOpen(false);
+                        }}
+                      >
+                        Clear all
+                      </button>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
                       {notifications.length === 0 && (
-                        <p className="px-3 py-8 text-center text-xs text-muted-foreground">Nothing to report. Alerts appear here when a sweep finishes, a case is escalated, or a decoy is touched.</p>
+                        <p className="px-3 py-8 text-center text-xs text-muted-foreground">
+                          Nothing to report. Alerts appear here when a sweep finishes, a case is
+                          escalated, or a decoy is touched.
+                        </p>
                       )}
                       {notifications.slice(0, 30).map((n) => (
                         <button
                           key={n.id}
-                          onClick={() => { setBellOpen(false); if (n.link) navigate({ to: n.link }); }}
+                          onClick={() => {
+                            setBellOpen(false);
+                            if (n.link) navigate({ to: n.link });
+                          }}
                           className="block w-full border-b border-border px-3 py-2 text-left last:border-0 hover:bg-accent"
                         >
                           <div className="flex items-start gap-2">
-                            <span className={cn("mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
-                              n.kind === "critical" ? "bg-destructive" : n.kind === "warning" ? "bg-status-grey" : n.kind === "success" ? "bg-status-white" : "bg-tactical")} />
+                            <span
+                              className={cn(
+                                "mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
+                                n.kind === "critical"
+                                  ? "bg-destructive"
+                                  : n.kind === "warning"
+                                    ? "bg-status-grey"
+                                    : n.kind === "success"
+                                      ? "bg-status-white"
+                                      : "bg-tactical",
+                              )}
+                            />
                             <div className="min-w-0">
-                              <p className="truncate font-mono text-[11px] text-foreground">{n.title}</p>
-                              {n.description && <p className="mt-0.5 line-clamp-2 text-[10px] text-muted-foreground">{n.description}</p>}
-                              <p className="mt-0.5 font-mono text-[9px] text-muted-foreground">{new Date(n.timestamp).toLocaleString()}</p>
+                              <p className="truncate font-mono text-[11px] text-foreground">
+                                {n.title}
+                              </p>
+                              {n.description && (
+                                <p className="mt-0.5 line-clamp-2 text-[10px] text-muted-foreground">
+                                  {n.description}
+                                </p>
+                              )}
+                              <p className="mt-0.5 font-mono text-[9px] text-muted-foreground">
+                                {formatDateTime(n.timestamp)}
+                              </p>
                             </div>
                           </div>
                         </button>
@@ -336,8 +456,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </Button>
 
             <div className="hidden items-center gap-1.5 sm:flex">
-              <div className={cn("h-2 w-2 rounded-full animate-pulse-glow", lockdown ? "bg-status-black" : "bg-status-white")} />
-              <span className="font-mono text-[10px] uppercase text-muted-foreground">{lockdown ? "Locked" : "Secure"}</span>
+              <div
+                className={cn(
+                  "h-2 w-2 rounded-full animate-pulse-glow",
+                  lockdown ? "bg-status-black" : "bg-status-white",
+                )}
+              />
+              <span className="font-mono text-[10px] uppercase text-muted-foreground">
+                {lockdown ? "Locked" : "Secure"}
+              </span>
             </div>
           </div>
         </header>

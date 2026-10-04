@@ -6,7 +6,10 @@ export const Route = createFileRoute("/terminal")({
   head: () => ({
     meta: [
       { title: "Terminal — greyLock" },
-      { name: "description", content: "Operator terminal for live OSINT sweeps and pen-test tooling." },
+      {
+        name: "description",
+        content: "Operator terminal for live OSINT sweeps and pen-test tooling.",
+      },
     ],
   }),
 });

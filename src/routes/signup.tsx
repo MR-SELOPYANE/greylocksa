@@ -12,7 +12,10 @@ export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
       { title: "Onboarding — greyLock" },
-      { name: "description", content: "Provision an operator account on the greyLock vulnerability testing platform." },
+      {
+        name: "description",
+        content: "Provision an operator account on the greyLock vulnerability testing platform.",
+      },
     ],
   }),
 });
@@ -30,7 +33,7 @@ function SignupPage() {
     login(
       name.trim() || (role === "admin" ? "admin.you" : "analyst.you"),
       role,
-      role === "admin" ? "SECRET" : "CONFIDENTIAL"
+      role === "admin" ? "SECRET" : "CONFIDENTIAL",
     );
     setTimeout(() => navigate({ to: role === "admin" ? "/system" : "/entities" }), 600);
   };
@@ -39,14 +42,28 @@ function SignupPage() {
     <AuthShell title="Onboarding" subtitle="Provision a new operator account.">
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Full Name / Callsign">
-          <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="J. Doe" className="bg-secondary font-mono text-sm" />
+          <Input
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="J. Doe"
+            className="bg-secondary font-mono text-sm"
+          />
         </Field>
         <Field label="Work Email">
-          <Input type="email" required placeholder="you@org.io" autoComplete="username" className="bg-secondary font-mono text-sm" />
+          <Input
+            type="email"
+            required
+            placeholder="you@org.io"
+            autoComplete="username"
+            className="bg-secondary font-mono text-sm"
+          />
         </Field>
 
         <div>
-          <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Role</span>
+          <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            Role
+          </span>
           <div className="grid grid-cols-2 gap-2">
             <RoleCard
               active={role === "analyst"}
@@ -66,14 +83,27 @@ function SignupPage() {
         </div>
 
         <Field label="Passphrase">
-          <Input type="password" required placeholder="min. 12 characters" autoComplete="new-password" className="bg-secondary font-mono text-sm" />
+          <Input
+            type="password"
+            required
+            placeholder="min. 12 characters"
+            autoComplete="new-password"
+            className="bg-secondary font-mono text-sm"
+          />
         </Field>
 
         <label className="flex items-start gap-2 pt-1 text-xs text-muted-foreground">
-          <input type="checkbox" required className="mt-0.5 h-3 w-3 rounded border-border bg-secondary" />
+          <input
+            type="checkbox"
+            required
+            className="mt-0.5 h-3 w-3 rounded border-border bg-secondary"
+          />
           <span>
             I acknowledge that every action is signed into the chain-of-custody ledger per the{" "}
-            <a href="#" className="text-tactical hover:underline">Operator Use Policy</a>.
+            <a href="#" className="text-tactical hover:underline">
+              Operator Use Policy
+            </a>
+            .
           </span>
         </label>
 
@@ -89,7 +119,9 @@ function SignupPage() {
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Already onboarded?{" "}
-        <Link to="/login" className="text-tactical hover:underline">Sign in</Link>
+        <Link to="/login" className="text-tactical hover:underline">
+          Sign in
+        </Link>
       </p>
     </AuthShell>
   );
@@ -98,20 +130,36 @@ function SignupPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </span>
       {children}
     </label>
   );
 }
 
-function RoleCard({ active, onClick, icon, title, desc }: { active: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: string }) {
+function RoleCard({
+  active,
+  onClick,
+  icon,
+  title,
+  desc,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
         "rounded-md border p-3 text-left transition-colors",
-        active ? "border-tactical bg-tactical/10" : "border-border bg-secondary hover:border-tactical/50"
+        active
+          ? "border-tactical bg-tactical/10"
+          : "border-border bg-secondary hover:border-tactical/50",
       )}
     >
       <div className="flex items-center gap-2 text-tactical">

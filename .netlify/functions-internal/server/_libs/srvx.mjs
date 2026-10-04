@@ -1,32 +1,40 @@
 import { Readable, PassThrough } from "node:stream";
 function lazyInherit(target, source, sourceKey) {
-  for (const key of [...Object.getOwnPropertyNames(source), ...Object.getOwnPropertySymbols(source)]) {
+  for (const key of [
+    ...Object.getOwnPropertyNames(source),
+    ...Object.getOwnPropertySymbols(source),
+  ]) {
     if (key === "constructor") continue;
     const targetDesc = Object.getOwnPropertyDescriptor(target, key);
     const desc = Object.getOwnPropertyDescriptor(source, key);
     let modified = false;
     if (desc.get) {
       modified = true;
-      desc.get = targetDesc?.get || function() {
-        return this[sourceKey][key];
-      };
+      desc.get =
+        targetDesc?.get ||
+        function () {
+          return this[sourceKey][key];
+        };
     }
     if (desc.set) {
       modified = true;
-      desc.set = targetDesc?.set || function(value) {
-        this[sourceKey][key] = value;
-      };
+      desc.set =
+        targetDesc?.set ||
+        function (value) {
+          this[sourceKey][key] = value;
+        };
     }
     if (!targetDesc?.value && typeof desc.value === "function") {
       modified = true;
-      desc.value = function(...args) {
+      desc.value = function (...args) {
         return this[sourceKey][key](...args);
       };
     }
     if (modified) Object.defineProperty(target, key, desc);
   }
 }
-const _needsNormRE = /(?:(?:^|\/)(?:\.|\.\.|%2e|%2e\.|\.%2e|%2e%2e)(?:\/|$))|[\\^#"<>{}`\x80-\uffff]/i;
+const _needsNormRE =
+  /(?:(?:^|\/)(?:\.|\.\.|%2e|%2e\.|\.%2e|%2e%2e)(?:\/|$))|[\\^#"<>{}`\x80-\uffff]/i;
 const _searchNeedsNormRE = /[#"'<>]/;
 const FastURL = /* @__PURE__ */ (() => {
   const NativeURL = globalThis.URL;
@@ -44,7 +52,13 @@ const FastURL = /* @__PURE__ */ (() => {
         const isOriginForm = url[0] === "/";
         if (isOriginForm && !_searchNeedsNormRE.test(url)) this.#href = url;
         else this.#url = new NativeURL(isOriginForm ? `http://localhost${url}` : url);
-      } else if (_needsNormRE.test(url.pathname) || url.search && _searchNeedsNormRE.test(url.search)) this.#url = new NativeURL(`${url.protocol || "http:"}//${url.host || "localhost"}${url.pathname}${url.search || ""}`);
+      } else if (
+        _needsNormRE.test(url.pathname) ||
+        (url.search && _searchNeedsNormRE.test(url.search))
+      )
+        this.#url = new NativeURL(
+          `${url.protocol || "http:"}//${url.host || "localhost"}${url.pathname}${url.search || ""}`,
+        );
       else {
         this.#protocol = url.protocol;
         this.#host = url.host;
@@ -69,7 +83,8 @@ const FastURL = /* @__PURE__ */ (() => {
     }
     get href() {
       if (this.#url) return this.#url.href;
-      if (!this.#href) this.#href = `${this.#protocol || "http:"}//${this.#host || "localhost"}${this.#pathname || "/"}${this.#search || ""}`;
+      if (!this.#href)
+        this.#href = `${this.#protocol || "http:"}//${this.#host || "localhost"}${this.#pathname || "/"}${this.#search || ""}`;
       return this.#href;
     }
     #getPos() {
@@ -78,11 +93,7 @@ const FastURL = /* @__PURE__ */ (() => {
         const protoIndex = url.indexOf("://");
         const pathnameIndex = protoIndex === -1 ? -1 : url.indexOf("/", protoIndex + 4);
         const qIndex = pathnameIndex === -1 ? -1 : url.indexOf("?", pathnameIndex);
-        this.#pos = [
-          protoIndex,
-          pathnameIndex,
-          qIndex
-        ];
+        this.#pos = [protoIndex, pathnameIndex, qIndex];
       }
       return this.#pos;
     }
@@ -101,7 +112,8 @@ const FastURL = /* @__PURE__ */ (() => {
         const [, pathnameIndex, queryIndex] = this.#getPos();
         if (pathnameIndex === -1) return this._url.search;
         const url = this.href;
-        this.#search = queryIndex === -1 || queryIndex === url.length - 1 ? "" : url.slice(queryIndex);
+        this.#search =
+          queryIndex === -1 || queryIndex === url.length - 1 ? "" : url.slice(queryIndex);
       }
       return this.#search;
     }
@@ -151,13 +163,16 @@ const NodeResponse = /* @__PURE__ */ (() => {
       return this.#response?.status || this.#init?.status || 200;
     }
     get statusText() {
-      return this.#response?.statusText || this.#init?.statusText || STATUS_CODES[this.status] || "";
+      return (
+        this.#response?.statusText || this.#init?.statusText || STATUS_CODES[this.status] || ""
+      );
     }
     get headers() {
       if (this.#response) return this.#response.headers;
       if (this.#headers) return this.#headers;
       const initHeaders = this.#init?.headers;
-      return this.#headers = initHeaders instanceof Headers ? initHeaders : new Headers(initHeaders);
+      return (this.#headers =
+        initHeaders instanceof Headers ? initHeaders : new Headers(initHeaders));
     }
     get ok() {
       if (this.#response) return this.#response.ok;
@@ -174,10 +189,15 @@ const NodeResponse = /* @__PURE__ */ (() => {
         if (abort) stream.once("close", () => abort());
         body = stream;
       }
-      this.#response = new NativeResponse(body, this.#headers ? {
-        ...this.#init,
-        headers: this.#headers
-      } : this.#init);
+      this.#response = new NativeResponse(
+        body,
+        this.#headers
+          ? {
+              ...this.#init,
+              headers: this.#headers,
+            }
+          : this.#init,
+      );
       this.#init = void 0;
       this.#headers = void 0;
       this.#body = void 0;
@@ -190,38 +210,49 @@ const NodeResponse = /* @__PURE__ */ (() => {
       let contentType;
       let contentLength;
       if (this.#response) body = this.#response.body;
-      else if (this.#body) if (this.#body instanceof ReadableStream) body = this.#body;
-      else if (typeof this.#body === "string") {
-        body = this.#body;
-        contentType = "text/plain; charset=UTF-8";
-        contentLength = Buffer.byteLength(this.#body);
-      } else if (this.#body instanceof ArrayBuffer) {
-        body = Buffer.from(this.#body);
-        contentLength = this.#body.byteLength;
-      } else if (this.#body instanceof Uint8Array) {
-        body = this.#body;
-        contentLength = this.#body.byteLength;
-      } else if (this.#body instanceof DataView) {
-        body = Buffer.from(this.#body.buffer);
-        contentLength = this.#body.byteLength;
-      } else if (this.#body instanceof Blob) {
-        body = this.#body.stream();
-        contentType = this.#body.type;
-        contentLength = this.#body.size;
-      } else if (typeof this.#body.pipe === "function") body = this.#body;
-      else body = this._response.body;
+      else if (this.#body)
+        if (this.#body instanceof ReadableStream) body = this.#body;
+        else if (typeof this.#body === "string") {
+          body = this.#body;
+          contentType = "text/plain; charset=UTF-8";
+          contentLength = Buffer.byteLength(this.#body);
+        } else if (this.#body instanceof ArrayBuffer) {
+          body = Buffer.from(this.#body);
+          contentLength = this.#body.byteLength;
+        } else if (this.#body instanceof Uint8Array) {
+          body = this.#body;
+          contentLength = this.#body.byteLength;
+        } else if (this.#body instanceof DataView) {
+          body = Buffer.from(this.#body.buffer);
+          contentLength = this.#body.byteLength;
+        } else if (this.#body instanceof Blob) {
+          body = this.#body.stream();
+          contentType = this.#body.type;
+          contentLength = this.#body.size;
+        } else if (typeof this.#body.pipe === "function") body = this.#body;
+        else body = this._response.body;
       const headers = [];
       const initHeaders = this.#init?.headers;
-      const headerEntries = this.#response?.headers || this.#headers || (initHeaders ? Array.isArray(initHeaders) ? initHeaders : initHeaders?.entries ? initHeaders.entries() : Object.entries(initHeaders) : void 0);
+      const headerEntries =
+        this.#response?.headers ||
+        this.#headers ||
+        (initHeaders
+          ? Array.isArray(initHeaders)
+            ? initHeaders
+            : initHeaders?.entries
+              ? initHeaders.entries()
+              : Object.entries(initHeaders)
+          : void 0);
       let hasContentTypeHeader;
       let hasContentLength;
-      if (headerEntries) for (const [key, value] of headerEntries) {
-        const lowerKey = typeof key === "string" ? key.toLowerCase() : String(key);
-        if (Array.isArray(value)) for (const v of value) headers.push(lowerKey, v);
-        else headers.push(lowerKey, value);
-        if (lowerKey === "content-type") hasContentTypeHeader = true;
-        else if (lowerKey === "content-length") hasContentLength = true;
-      }
+      if (headerEntries)
+        for (const [key, value] of headerEntries) {
+          const lowerKey = typeof key === "string" ? key.toLowerCase() : String(key);
+          if (Array.isArray(value)) for (const v of value) headers.push(lowerKey, v);
+          else headers.push(lowerKey, value);
+          if (lowerKey === "content-type") hasContentTypeHeader = true;
+          else if (lowerKey === "content-length") hasContentLength = true;
+        }
       if (contentType && !hasContentTypeHeader) headers.push("content-type", contentType);
       if (contentLength && !hasContentLength) headers.push("content-length", String(contentLength));
       this.#init = void 0;
@@ -232,7 +263,7 @@ const NodeResponse = /* @__PURE__ */ (() => {
         status,
         statusText,
         headers,
-        body
+        body,
       };
     }
   }
@@ -241,7 +272,4 @@ const NodeResponse = /* @__PURE__ */ (() => {
   Object.setPrototypeOf(NodeResponse2.prototype, NativeResponse.prototype);
   return NodeResponse2;
 })();
-export {
-  FastURL as F,
-  NodeResponse as N
-};
+export { FastURL as F, NodeResponse as N };

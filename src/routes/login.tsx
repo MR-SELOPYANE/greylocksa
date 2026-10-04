@@ -30,16 +30,13 @@ function LoginPage() {
     login(
       normalizedEmail || (role === "admin" ? "admin.you" : "analyst.you"),
       role,
-      role === "admin" ? "SECRET" : "CONFIDENTIAL"
+      role === "admin" ? "SECRET" : "CONFIDENTIAL",
     );
     setTimeout(() => navigate({ to: "/system" }), 600);
   };
 
   return (
-    <AuthShell
-      title="Operator Sign-In"
-      subtitle="Authenticate to access the console."
-    >
+    <AuthShell title="Operator Sign-In" subtitle="Authenticate to access the console.">
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Operator ID / Email">
           <Input
@@ -126,14 +123,28 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function RoleCard({ active, onClick, icon, title, desc }: { active: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: string }) {
+function RoleCard({
+  active,
+  onClick,
+  icon,
+  title,
+  desc,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
         "rounded-md border p-3 text-left transition-colors",
-        active ? "border-tactical bg-tactical/10" : "border-border bg-secondary hover:border-tactical/50"
+        active
+          ? "border-tactical bg-tactical/10"
+          : "border-border bg-secondary hover:border-tactical/50",
       )}
     >
       <div className="flex items-center gap-2 text-tactical">

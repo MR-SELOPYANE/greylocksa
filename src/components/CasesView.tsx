@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { formatDate } from "@/lib/time";
 import { useAppState } from "@/lib/store";
 import type { CaseStatus } from "@/lib/types";
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
@@ -17,9 +18,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { FolderSearch, Minus, Plus, Maximize2, Search, Download, Printer, Bookmark, X, Star } from "lucide-react";
+import {
+  FolderSearch,
+  Minus,
+  Plus,
+  Maximize2,
+  Search,
+  Download,
+  Printer,
+  Bookmark,
+  X,
+  Star,
+} from "lucide-react";
 
-interface SavedView { id: string; name: string; filter: string; query: string; }
+interface SavedView {
+  id: string;
+  name: string;
+  filter: string;
+  query: string;
+}
 const VIEWS_KEY = "greylock:case-views";
 
 const STATUS_OPTIONS: { value: CaseStatus; label: string }[] = [
@@ -42,22 +59,34 @@ export function CasesView() {
     try {
       const raw = localStorage.getItem(VIEWS_KEY);
       if (raw) setViews(JSON.parse(raw));
-    } catch { /* ignore corrupt storage */ }
+    } catch {
+      /* ignore corrupt storage */
+    }
   }, []);
 
   const persistViews = (next: SavedView[]) => {
     setViews(next);
-    try { localStorage.setItem(VIEWS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(VIEWS_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
   };
 
   const saveCurrentView = () => {
     const name = prompt("Name this view (e.g. My critical open cases):");
     if (!name?.trim()) return;
-    persistViews([...views, { id: `view-${Date.now().toString(36)}`, name: name.trim(), filter, query }]);
+    persistViews([
+      ...views,
+      { id: `view-${Date.now().toString(36)}`, name: name.trim(), filter, query },
+    ]);
     toast.success(`Saved view "${name.trim()}"`);
   };
 
-  const applyView = (v: SavedView) => { setFilter(v.filter); setQuery(v.query); };
+  const applyView = (v: SavedView) => {
+    setFilter(v.filter);
+    setQuery(v.query);
+  };
   const removeView = (id: string) => persistViews(views.filter((v) => v.id !== id));
 
   // Bridge for command palette: open new-case dialog or jump to a case
@@ -75,12 +104,18 @@ export function CasesView() {
     };
   }, []);
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
   const counts = useMemo(() => {
-    const acc: Record<string, number> = { all: cases.length, open: 0, in_progress: 0, escalated: 0, closed: 0 };
-    cases.forEach((c) => { acc[c.status] += 1; });
+    const acc: Record<string, number> = {
+      all: cases.length,
+      open: 0,
+      in_progress: 0,
+      escalated: 0,
+      closed: 0,
+    };
+    cases.forEach((c) => {
+      acc[c.status] += 1;
+    });
     return acc;
   }, [cases]);
 
@@ -92,7 +127,7 @@ export function CasesView() {
       [c.id, c.title, c.description, c.assignedAnalyst, ...c.linkedEntityIds]
         .join(" ")
         .toLowerCase()
-        .includes(q)
+        .includes(q),
     );
   }, [cases, filter, query]);
 
@@ -108,12 +143,32 @@ export function CasesView() {
   };
 
   const exportCsv = () => {
-    const cols = ["ID", "Title", "Status", "Priority", "Analyst", "Progress", "Linked Entities", "Created", "Updated"];
+    const cols = [
+      "ID",
+      "Title",
+      "Status",
+      "Priority",
+      "Analyst",
+      "Progress",
+      "Linked Entities",
+      "Created",
+      "Updated",
+    ];
     const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
     const rows = filtered.map((c) =>
-      [c.id, c.title, c.status, c.priority, c.assignedAnalyst, `${c.progress}%`, c.linkedEntityIds.join(" "), c.createdAt, c.updatedAt]
+      [
+        c.id,
+        c.title,
+        c.status,
+        c.priority,
+        c.assignedAnalyst,
+        `${c.progress}%`,
+        c.linkedEntityIds.join(" "),
+        c.createdAt,
+        c.updatedAt,
+      ]
         .map((v) => esc(String(v)))
-        .join(",")
+        .join(","),
     );
     const blob = new Blob([[cols.join(","), ...rows].join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -131,11 +186,14 @@ export function CasesView() {
         (c) => `<tr>
           <td>${c.id}</td><td>${c.title}</td><td>${c.status.replace("_", " ")}</td>
           <td>${c.priority}</td><td>${c.assignedAnalyst}</td><td>${c.progress}%</td>
-          <td>${c.linkedEntityIds.join(", ") || "—"}</td></tr>`
+          <td>${c.linkedEntityIds.join(", ") || "—"}</td></tr>`,
       )
       .join("");
     const w = window.open("", "_blank", "width=900,height=700");
-    if (!w) { toast.error("Popup blocked — allow popups to print."); return; }
+    if (!w) {
+      toast.error("Popup blocked — allow popups to print.");
+      return;
+    }
     w.document.write(`<!doctype html><html><head><title>greyLock — Case Briefing</title>
       <style>
         body{font-family:ui-monospace,Menlo,monospace;padding:32px;color:#111}
@@ -209,11 +267,19 @@ export function CasesView() {
             <span
               key={v.id}
               className={`group flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
-                active ? "border-tactical bg-tactical/10 text-tactical" : "border-border bg-surface text-muted-foreground hover:text-foreground"
+                active
+                  ? "border-tactical bg-tactical/10 text-tactical"
+                  : "border-border bg-surface text-muted-foreground hover:text-foreground"
               }`}
             >
-              <button onClick={() => applyView(v)} className="max-w-[160px] truncate">{v.name}</button>
-              <button onClick={() => removeView(v.id)} className="opacity-40 transition-opacity hover:opacity-100" aria-label={`Delete view ${v.name}`}>
+              <button onClick={() => applyView(v)} className="max-w-[160px] truncate">
+                {v.name}
+              </button>
+              <button
+                onClick={() => removeView(v.id)}
+                className="opacity-40 transition-opacity hover:opacity-100"
+                aria-label={`Delete view ${v.name}`}
+              >
                 <X className="h-3 w-3" />
               </button>
             </span>
@@ -226,12 +292,6 @@ export function CasesView() {
           <Bookmark className="h-3 w-3" /> Save current
         </button>
       </div>
-
-
-
-
-
-
 
       {filtered.map((c) => (
         <div key={c.id} className="rounded-lg border border-border bg-card p-5">
@@ -253,14 +313,20 @@ export function CasesView() {
             </div>
             <div className="flex flex-col items-end gap-2">
               <div className="text-right">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Analyst</span>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                  Analyst
+                </span>
                 <p className="font-mono text-xs text-tactical">{c.assignedAnalyst}</p>
               </div>
               <Select value={c.status} onValueChange={(v) => handleStatus(c.id, v as CaseStatus)}>
-                <SelectTrigger className="h-7 w-36 bg-secondary text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 w-36 bg-secondary text-xs">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {STATUS_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -269,7 +335,9 @@ export function CasesView() {
 
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Progress</span>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                Progress
+              </span>
               <div className="flex items-center gap-1.5">
                 <Button
                   variant="ghost"
@@ -280,7 +348,9 @@ export function CasesView() {
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
-                <span className="w-10 text-center font-mono text-xs text-muted-foreground">{c.progress}%</span>
+                <span className="w-10 text-center font-mono text-xs text-muted-foreground">
+                  {c.progress}%
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -297,14 +367,20 @@ export function CasesView() {
 
           <div className="mt-3 flex flex-wrap gap-1.5">
             {c.linkedEntityIds.length === 0 && (
-              <span className="font-mono text-[10px] text-muted-foreground/60">No linked entities</span>
+              <span className="font-mono text-[10px] text-muted-foreground/60">
+                No linked entities
+              </span>
             )}
             {c.linkedEntityIds.map((eid) => {
               const entity = entities.find((e) => e.id === eid);
               return (
                 <Link key={eid} to="/entities">
-                  <Badge variant="outline" className="cursor-pointer font-mono text-[10px] transition-colors hover:border-tactical hover:text-tactical">
-                    {eid}{entity ? `: ${entity.identifier.slice(0, 20)}` : ""}
+                  <Badge
+                    variant="outline"
+                    className="cursor-pointer font-mono text-[10px] transition-colors hover:border-tactical hover:text-tactical"
+                  >
+                    {eid}
+                    {entity ? `: ${entity.identifier.slice(0, 20)}` : ""}
                   </Badge>
                 </Link>
               );
@@ -321,13 +397,21 @@ export function CasesView() {
       {filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border py-16 text-center">
           <FolderSearch className="h-8 w-8 text-muted-foreground/50" />
-          <p className="font-mono text-sm text-foreground">{query.trim() ? "No matching cases" : "No cases in this status"}</p>
-          <p className="text-xs text-muted-foreground">{query.trim() ? "Adjust your search or filters." : "Switch filters to see other cases."}</p>
+          <p className="font-mono text-sm text-foreground">
+            {query.trim() ? "No matching cases" : "No cases in this status"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {query.trim() ? "Adjust your search or filters." : "Switch filters to see other cases."}
+          </p>
         </div>
       )}
 
       <NewCaseDialog open={newOpen} onOpenChange={setNewOpen} />
-      <CaseDetailDialog caseId={detailId} open={!!detailId} onOpenChange={(v) => !v && setDetailId(null)} />
+      <CaseDetailDialog
+        caseId={detailId}
+        open={!!detailId}
+        onOpenChange={(v) => !v && setDetailId(null)}
+      />
     </div>
   );
 }

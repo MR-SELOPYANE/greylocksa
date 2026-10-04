@@ -6,7 +6,10 @@ export const Route = createFileRoute("/activity")({
   head: () => ({
     meta: [
       { title: "Activity Timeline — greyLock" },
-      { name: "description", content: "Unified feed of custody events, scans, and status changes across the platform." },
+      {
+        name: "description",
+        content: "Unified feed of custody events, scans, and status changes across the platform.",
+      },
     ],
   }),
 });

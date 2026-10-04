@@ -10,7 +10,11 @@ const inputSchema = z.object({
 function normalizeTarget(raw: string): { host: string; isIp: boolean } | null {
   const t = raw.trim();
   // strip protocol / path
-  let host = t.replace(/^[a-z]+:\/\//i, "").split("/")[0].split(":")[0].trim();
+  let host = t
+    .replace(/^[a-z]+:\/\//i, "")
+    .split("/")[0]
+    .split(":")[0]
+    .trim();
   // drop leading www.
   host = host.replace(/^www\./i, "").toLowerCase();
   const ipv4 = /^(?:\d{1,3}\.){3}\d{1,3}$/;
@@ -29,7 +33,11 @@ async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   ]);
 }
 
-async function safeFetchJson(url: string, init?: RequestInit, timeoutMs = 8000): Promise<any | null> {
+async function safeFetchJson(
+  url: string,
+  init?: RequestInit,
+  timeoutMs = 8000,
+): Promise<any | null> {
   try {
     const res = await withTimeout(fetch(url, init), timeoutMs);
     if (!res.ok) return null;
@@ -60,7 +68,11 @@ async function dnsLookup(host: string) {
 
 async function rdapLookup(host: string) {
   // rdap.org redirects to authoritative RDAP endpoint
-  const j = await safeFetchJson(`https://rdap.org/domain/${encodeURIComponent(host)}`, undefined, 8000);
+  const j = await safeFetchJson(
+    `https://rdap.org/domain/${encodeURIComponent(host)}`,
+    undefined,
+    8000,
+  );
   if (!j) return null;
   const events = (j.events ?? []) as Array<{ eventAction: string; eventDate: string }>;
   const created = events.find((e) => e.eventAction === "registration")?.eventDate;
@@ -88,15 +100,23 @@ async function httpHeaders(host: string) {
         6000,
       );
       const headers: Record<string, string> = {};
-      res.headers.forEach((v, k) => { headers[k.toLowerCase()] = v; });
+      res.headers.forEach((v, k) => {
+        headers[k.toLowerCase()] = v;
+      });
       return { scheme, status: res.status, headers };
-    } catch { /* try next scheme */ }
+    } catch {
+      /* try next scheme */
+    }
   }
   return null;
 }
 
 async function crtShSubdomains(host: string) {
-  const j = await safeFetchJson(`https://crt.sh/?q=%25.${encodeURIComponent(host)}&output=json`, undefined, 10000);
+  const j = await safeFetchJson(
+    `https://crt.sh/?q=%25.${encodeURIComponent(host)}&output=json`,
+    undefined,
+    10000,
+  );
   if (!Array.isArray(j)) return null;
   const set = new Set<string>();
   for (const row of j as Array<{ name_value?: string }>) {
@@ -112,7 +132,11 @@ async function shodanLookup(host: string, isIp: boolean) {
   const key = process.env.SHODAN_API_KEY;
   if (!key) return null;
   if (isIp) {
-    const j = await safeFetchJson(`https://api.shodan.io/shodan/host/${encodeURIComponent(host)}?key=${key}&minify=true`, undefined, 8000);
+    const j = await safeFetchJson(
+      `https://api.shodan.io/shodan/host/${encodeURIComponent(host)}?key=${key}&minify=true`,
+      undefined,
+      8000,
+    );
     if (!j || j.error) return null;
     return {
       ip: j.ip_str,
@@ -127,7 +151,11 @@ async function shodanLookup(host: string, isIp: boolean) {
       last_update: j.last_update,
     };
   }
-  const j = await safeFetchJson(`https://api.shodan.io/dns/domain/${encodeURIComponent(host)}?key=${key}`, undefined, 8000);
+  const j = await safeFetchJson(
+    `https://api.shodan.io/dns/domain/${encodeURIComponent(host)}?key=${key}`,
+    undefined,
+    8000,
+  );
   if (!j || j.error) return null;
   return {
     domain: j.domain,
@@ -140,8 +168,14 @@ async function shodanLookup(host: string, isIp: boolean) {
 async function virusTotalLookup(host: string, isIp: boolean) {
   const key = process.env.VIRUSTOTAL_API_KEY;
   if (!key) return null;
-  const path = isIp ? `ip_addresses/${encodeURIComponent(host)}` : `domains/${encodeURIComponent(host)}`;
-  const j = await safeFetchJson(`https://www.virustotal.com/api/v3/${path}`, { headers: { "x-apikey": key } }, 8000);
+  const path = isIp
+    ? `ip_addresses/${encodeURIComponent(host)}`
+    : `domains/${encodeURIComponent(host)}`;
+  const j = await safeFetchJson(
+    `https://www.virustotal.com/api/v3/${path}`,
+    { headers: { "x-apikey": key } },
+    8000,
+  );
   const attrs = j?.data?.attributes;
   if (!attrs) return null;
   const stats = attrs.last_analysis_stats ?? {};
@@ -164,8 +198,14 @@ async function virusTotalLookup(host: string, isIp: boolean) {
 
 function deriveFindings(r: PassiveIntelReport): VulnFinding[] {
   const out: VulnFinding[] = [];
-  const push = (id: string, title: string, severity: ScanSeverity, evidence: string, remediation: string, cwe?: string) =>
-    out.push({ id, title, severity, evidence, remediation, cwe });
+  const push = (
+    id: string,
+    title: string,
+    severity: ScanSeverity,
+    evidence: string,
+    remediation: string,
+    cwe?: string,
+  ) => out.push({ id, title, severity, evidence, remediation, cwe });
 
   // HTTP header hygiene
   if (r.http) {
@@ -175,22 +215,38 @@ function deriveFindings(r: PassiveIntelReport): VulnFinding[] {
     if (!h["content-security-policy"]) missing.push("Content-Security-Policy");
     if (!h["x-content-type-options"]) missing.push("X-Content-Type-Options");
     if (!h["referrer-policy"]) missing.push("Referrer-Policy");
-    if (!h["x-frame-options"] && !h["content-security-policy"]?.includes("frame-ancestors")) missing.push("X-Frame-Options");
+    if (!h["x-frame-options"] && !h["content-security-policy"]?.includes("frame-ancestors"))
+      missing.push("X-Frame-Options");
     if (missing.length) {
-      push("PI-HDR", `Missing security headers (${missing.length})`, missing.length >= 3 ? "medium" : "low",
+      push(
+        "PI-HDR",
+        `Missing security headers (${missing.length})`,
+        missing.length >= 3 ? "medium" : "low",
         `Absent: ${missing.join(", ")} on ${r.http.scheme}://${r.target}`,
-        "Add missing headers via reverse proxy or app middleware.", "CWE-693");
+        "Add missing headers via reverse proxy or app middleware.",
+        "CWE-693",
+      );
     }
     const banner = h["server"] || h["x-powered-by"];
     if (banner) {
-      push("PI-BANNER", "Server banner discloses framework/version", "info",
+      push(
+        "PI-BANNER",
+        "Server banner discloses framework/version",
+        "info",
         `Server=${h["server"] ?? "—"}; X-Powered-By=${h["x-powered-by"] ?? "—"}`,
-        "Strip Server / X-Powered-By headers to reduce fingerprinting.", "CWE-200");
+        "Strip Server / X-Powered-By headers to reduce fingerprinting.",
+        "CWE-200",
+      );
     }
     if (r.http.scheme === "http") {
-      push("PI-NOHTTPS", "Site serves plaintext HTTP", "high",
+      push(
+        "PI-NOHTTPS",
+        "Site serves plaintext HTTP",
+        "high",
         `http://${r.target}/ returned ${r.http.status} without upgrading to TLS`,
-        "Redirect HTTP → HTTPS and enforce HSTS.", "CWE-319");
+        "Redirect HTTP → HTTPS and enforce HSTS.",
+        "CWE-319",
+      );
     }
   }
 
@@ -198,15 +254,25 @@ function deriveFindings(r: PassiveIntelReport): VulnFinding[] {
   if (r.whois?.created) {
     const ageDays = (Date.now() - new Date(r.whois.created).getTime()) / 86_400_000;
     if (ageDays < 90 && ageDays >= 0) {
-      push("PI-YOUNG", `Domain registered ${Math.round(ageDays)} days ago`, "medium",
+      push(
+        "PI-YOUNG",
+        `Domain registered ${Math.round(ageDays)} days ago`,
+        "medium",
         `Created ${r.whois.created} via ${r.whois.registrar ?? "unknown registrar"}`,
-        "Newly registered domains correlate with phishing/C2. Manually verify legitimacy.", "CWE-1188");
+        "Newly registered domains correlate with phishing/C2. Manually verify legitimacy.",
+        "CWE-1188",
+      );
     }
     if (r.whois.expires) {
       const daysToExpiry = (new Date(r.whois.expires).getTime() - Date.now()) / 86_400_000;
       if (daysToExpiry > 0 && daysToExpiry < 30) {
-        push("PI-EXPIRE", `Domain expires in ${Math.round(daysToExpiry)} days`, "low",
-          `Expiration ${r.whois.expires}`, "Renew registration to avoid loss / hostile pickup.");
+        push(
+          "PI-EXPIRE",
+          `Domain expires in ${Math.round(daysToExpiry)} days`,
+          "low",
+          `Expiration ${r.whois.expires}`,
+          "Renew registration to avoid loss / hostile pickup.",
+        );
       }
     }
   }
@@ -215,8 +281,14 @@ function deriveFindings(r: PassiveIntelReport): VulnFinding[] {
   if (r.dns?.TXT) {
     const txt = r.dns.TXT.join(" ");
     if (!/v=spf1/i.test(txt)) {
-      push("PI-SPF", "No SPF record found", "low",
-        `TXT records for ${r.target} contain no v=spf1`, "Publish an SPF record to prevent spoofing.", "CWE-290");
+      push(
+        "PI-SPF",
+        "No SPF record found",
+        "low",
+        `TXT records for ${r.target} contain no v=spf1`,
+        "Publish an SPF record to prevent spoofing.",
+        "CWE-290",
+      );
     }
   }
   if (r.dns && !r.dns.MX && !r.dns.CNAME) {
@@ -226,22 +298,38 @@ function deriveFindings(r: PassiveIntelReport): VulnFinding[] {
   // Shodan
   if (r.shodan) {
     if ("ports" in r.shodan && Array.isArray(r.shodan.ports)) {
-      const risky = r.shodan.ports.filter((p: number) => [21, 23, 3389, 445, 139, 3306, 5432, 6379, 27017, 9200, 11211].includes(p));
+      const risky = r.shodan.ports.filter((p: number) =>
+        [21, 23, 3389, 445, 139, 3306, 5432, 6379, 27017, 9200, 11211].includes(p),
+      );
       if (risky.length) {
-        push("PI-EXPOSED", `Sensitive services exposed on ${risky.length} port(s)`, "high",
+        push(
+          "PI-EXPOSED",
+          `Sensitive services exposed on ${risky.length} port(s)`,
+          "high",
           `Ports open per Shodan: ${risky.join(", ")}`,
-          "Firewall these services or place behind VPN / bastion.", "CWE-284");
+          "Firewall these services or place behind VPN / bastion.",
+          "CWE-284",
+        );
       }
       if (r.shodan.ports.length > 10) {
-        push("PI-SURFACE", `Broad attack surface: ${r.shodan.ports.length} open ports`, "medium",
+        push(
+          "PI-SURFACE",
+          `Broad attack surface: ${r.shodan.ports.length} open ports`,
+          "medium",
           `Open: ${r.shodan.ports.slice(0, 20).join(", ")}${r.shodan.ports.length > 20 ? "…" : ""}`,
-          "Audit exposed services; close what isn't required.");
+          "Audit exposed services; close what isn't required.",
+        );
       }
     }
     if (Array.isArray(r.shodan.vulns) && r.shodan.vulns.length) {
-      push("PI-CVE", `Shodan-tagged CVEs: ${r.shodan.vulns.length}`, "critical",
+      push(
+        "PI-CVE",
+        `Shodan-tagged CVEs: ${r.shodan.vulns.length}`,
+        "critical",
         `CVEs: ${r.shodan.vulns.slice(0, 10).join(", ")}${r.shodan.vulns.length > 10 ? "…" : ""}`,
-        "Patch affected services immediately.", "CWE-1035");
+        "Patch affected services immediately.",
+        "CWE-1035",
+      );
     }
   }
 
@@ -249,25 +337,43 @@ function deriveFindings(r: PassiveIntelReport): VulnFinding[] {
   if (r.virustotal) {
     const vt = r.virustotal;
     if (vt.malicious >= 5) {
-      push("PI-VT-MAL", `${vt.malicious} vendors flag target as malicious`, "critical",
+      push(
+        "PI-VT-MAL",
+        `${vt.malicious} vendors flag target as malicious`,
+        "critical",
         `VT stats: malicious=${vt.malicious} suspicious=${vt.suspicious} harmless=${vt.harmless}`,
-        "Consider blacklisting; escalate to threat intel.");
+        "Consider blacklisting; escalate to threat intel.",
+      );
     } else if (vt.malicious >= 1 || vt.suspicious >= 3) {
-      push("PI-VT-SUS", `Reputation flags on VirusTotal`, "high",
+      push(
+        "PI-VT-SUS",
+        `Reputation flags on VirusTotal`,
+        "high",
         `malicious=${vt.malicious} suspicious=${vt.suspicious}`,
-        "Investigate flags; correlate with other IOC sources.");
+        "Investigate flags; correlate with other IOC sources.",
+      );
     }
     if (typeof vt.reputation === "number" && vt.reputation < -20) {
-      push("PI-VT-REP", `Negative community reputation (${vt.reputation})`, "medium",
-        `VirusTotal community reputation score`, "Manual review recommended.");
+      push(
+        "PI-VT-REP",
+        `Negative community reputation (${vt.reputation})`,
+        "medium",
+        `VirusTotal community reputation score`,
+        "Manual review recommended.",
+      );
     }
   }
 
   // Subdomain sprawl
   if (r.subdomains && r.subdomains.count > 200) {
-    push("PI-SPRAWL", `Large subdomain footprint (${r.subdomains.count})`, "low",
+    push(
+      "PI-SPRAWL",
+      `Large subdomain footprint (${r.subdomains.count})`,
+      "low",
       `Certificate Transparency reveals ${r.subdomains.count} names`,
-      "Audit for stale/forgotten hosts; risk of subdomain takeover.", "CWE-1104");
+      "Audit for stale/forgotten hosts; risk of subdomain takeover.",
+      "CWE-1104",
+    );
   }
 
   return out;
@@ -296,11 +402,11 @@ export const runPassiveIntel = createServerFn({ method: "POST" })
 
     const sources = {
       dns: dns ? "ok" : "skipped",
-      whois: whois ? "ok" : (isIp ? "skipped" : "failed"),
+      whois: whois ? "ok" : isIp ? "skipped" : "failed",
       http: http ? "ok" : "failed",
-      crtsh: subs ? "ok" : (isIp ? "skipped" : "failed"),
-      shodan: shodan ? "ok" : (process.env.SHODAN_API_KEY ? "no-data" : "no-key"),
-      virustotal: vt ? "ok" : (process.env.VIRUSTOTAL_API_KEY ? "no-data" : "no-key"),
+      crtsh: subs ? "ok" : isIp ? "skipped" : "failed",
+      shodan: shodan ? "ok" : process.env.SHODAN_API_KEY ? "no-data" : "no-key",
+      virustotal: vt ? "ok" : process.env.VIRUSTOTAL_API_KEY ? "no-data" : "no-key",
     } as const;
 
     const report: PassiveIntelReport = {

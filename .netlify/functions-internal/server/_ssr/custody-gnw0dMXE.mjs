@@ -60,41 +60,141 @@ import "../_libs/radix-ui__react-dialog.mjs";
 import "../_libs/radix-ui__react-presence.mjs";
 function CustodyView() {
   const { custody } = useAppState();
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-3 rounded-md border border-tactical/40 bg-tactical/5 p-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(FingerprintPattern, { className: "mt-0.5 h-4 w-4 text-tactical" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xs text-muted-foreground", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-mono uppercase tracking-wider text-tactical", children: "Chain-of-Custody Ledger" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1", children: "Append-only record of who accessed what, when, and why. Each entry is hashed; tampering breaks the chain and invalidates downstream entries. Required for investigative integrity and legal proceedings." })
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "overflow-x-auto rounded-lg border border-border", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", { className: "w-full text-sm", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("thead", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("tr", { className: "border-b border-border bg-surface", children: ["Timestamp", "Actor", "Role", "Action", "Target", "Reason", "IP", "Hash"].map((h) => /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground", children: h }, h)) }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("tbody", { children: [
-        custody.map((c) => /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { className: "border-b border-border hover:bg-accent", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap", children: new Date(c.timestamp).toLocaleString() }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 font-mono text-xs text-tactical", children: c.actor }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Badge, { variant: "outline", className: "font-mono text-[10px] uppercase", children: c.role }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: cn(
-            "rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider",
-            c.action === "DELETE" || c.action === "LOCKDOWN" ? "bg-status-black text-status-black-foreground" : c.action === "EDIT" || c.action === "STATUS_CHANGE" ? "bg-status-grey text-status-grey-foreground" : c.action === "SCAN" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
-          ), children: c.action }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 font-mono text-xs", children: c.entityId }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 text-xs text-foreground max-w-[280px] truncate", title: c.reason, children: c.reason }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 font-mono text-xs text-muted-foreground", children: c.ip }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("td", { className: "px-4 py-3 font-mono text-[10px] text-muted-foreground", children: [
-            c.hash.slice(0, 10),
-            "…"
-          ] })
-        ] }, c.id)),
-        custody.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("tr", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("td", { colSpan: 8, className: "px-4 py-12 text-center text-sm text-muted-foreground", children: "Chain is empty." }) })
-      ] })
-    ] }) })
-  ] });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+    className: "space-y-4",
+    children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+        className: "flex items-start gap-3 rounded-md border border-tactical/40 bg-tactical/5 p-4",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(FingerprintPattern, {
+            className: "mt-0.5 h-4 w-4 text-tactical",
+          }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", {
+            className: "text-xs text-muted-foreground",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                className: "font-mono uppercase tracking-wider text-tactical",
+                children: "Chain-of-Custody Ledger",
+              }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", {
+                className: "mt-1",
+                children:
+                  "Append-only record of who accessed what, when, and why. Each entry is hashed; tampering breaks the chain and invalidates downstream entries. Required for investigative integrity and legal proceedings.",
+              }),
+            ],
+          }),
+        ],
+      }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", {
+        className: "overflow-x-auto rounded-lg border border-border",
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", {
+          className: "w-full text-sm",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("thead", {
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx("tr", {
+                className: "border-b border-border bg-surface",
+                children: [
+                  "Timestamp",
+                  "Actor",
+                  "Role",
+                  "Action",
+                  "Target",
+                  "Reason",
+                  "IP",
+                  "Hash",
+                ].map((h) =>
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "th",
+                    {
+                      className:
+                        "px-4 py-3 text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground",
+                      children: h,
+                    },
+                    h,
+                  ),
+                ),
+              }),
+            }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("tbody", {
+              children: [
+                custody.map((c) =>
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "tr",
+                    {
+                      className: "border-b border-border hover:bg-accent",
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                          className:
+                            "px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap",
+                          children: new Date(c.timestamp).toLocaleString(),
+                        }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                          className: "px-4 py-3 font-mono text-xs text-tactical",
+                          children: c.actor,
+                        }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                          className: "px-4 py-3",
+                          children: /* @__PURE__ */ jsxRuntimeExports.jsx(Badge, {
+                            variant: "outline",
+                            className: "font-mono text-[10px] uppercase",
+                            children: c.role,
+                          }),
+                        }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                          className: "px-4 py-3",
+                          children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", {
+                            className: cn(
+                              "rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider",
+                              c.action === "DELETE" || c.action === "LOCKDOWN"
+                                ? "bg-status-black text-status-black-foreground"
+                                : c.action === "EDIT" || c.action === "STATUS_CHANGE"
+                                  ? "bg-status-grey text-status-grey-foreground"
+                                  : c.action === "SCAN"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-accent text-accent-foreground",
+                            ),
+                            children: c.action,
+                          }),
+                        }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                          className: "px-4 py-3 font-mono text-xs",
+                          children: c.entityId,
+                        }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                          className: "px-4 py-3 text-xs text-foreground max-w-[280px] truncate",
+                          title: c.reason,
+                          children: c.reason,
+                        }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                          className: "px-4 py-3 font-mono text-xs text-muted-foreground",
+                          children: c.ip,
+                        }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs("td", {
+                          className: "px-4 py-3 font-mono text-[10px] text-muted-foreground",
+                          children: [c.hash.slice(0, 10), "…"],
+                        }),
+                      ],
+                    },
+                    c.id,
+                  ),
+                ),
+                custody.length === 0 &&
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("tr", {
+                    children: /* @__PURE__ */ jsxRuntimeExports.jsx("td", {
+                      colSpan: 8,
+                      className: "px-4 py-12 text-center text-sm text-muted-foreground",
+                      children: "Chain is empty.",
+                    }),
+                  }),
+              ],
+            }),
+          ],
+        }),
+      }),
+    ],
+  });
 }
 function CustodyPage() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(CustodyView, {});
 }
-export {
-  CustodyPage as component
-};
+export { CustodyPage as component };

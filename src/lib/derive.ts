@@ -7,7 +7,9 @@ export function deriveIocsFromScans(scans: Scan[]): ThreatIoc[] {
   const push = (ioc: ThreatIoc) => {
     if (seen.has(ioc.value + ioc.type)) {
       const existing = out.find((o) => o.value === ioc.value && o.type === ioc.type)!;
-      ioc.matchedEntityIds.forEach((id) => { if (!existing.matchedEntityIds.includes(id)) existing.matchedEntityIds.push(id); });
+      ioc.matchedEntityIds.forEach((id) => {
+        if (!existing.matchedEntityIds.includes(id)) existing.matchedEntityIds.push(id);
+      });
       return;
     }
     seen.add(ioc.value + ioc.type);
@@ -31,7 +33,11 @@ export function deriveIocsFromScans(scans: Scan[]): ThreatIoc[] {
       });
     }
     const vulns: unknown = s.intel.shodan?.vulns;
-    const cves = Array.isArray(vulns) ? (vulns as string[]) : vulns && typeof vulns === "object" ? Object.keys(vulns as object) : [];
+    const cves = Array.isArray(vulns)
+      ? (vulns as string[])
+      : vulns && typeof vulns === "object"
+        ? Object.keys(vulns as object)
+        : [];
     cves.slice(0, 25).forEach((cve) => {
       push({
         id: `TI-SH-${cve}`,
@@ -46,7 +52,9 @@ export function deriveIocsFromScans(scans: Scan[]): ThreatIoc[] {
     });
     const ports: unknown = s.intel.shodan?.ports;
     if (Array.isArray(ports)) {
-      const risky = (ports as number[]).filter((p) => [21, 23, 445, 3389, 5900, 27017, 6379, 9200].includes(p));
+      const risky = (ports as number[]).filter((p) =>
+        [21, 23, 445, 3389, 5900, 27017, 6379, 9200].includes(p),
+      );
       if (risky.length) {
         push({
           id: `TI-PORT-${s.id}`,
@@ -73,7 +81,9 @@ export function deriveSessions(custody: CustodyEntry[]): SessionEntry[] {
   for (const c of chrono) {
     if (c.action === "LOGIN") {
       const prev = open.get(c.actor);
-      if (prev) { prev.active = false; }
+      if (prev) {
+        prev.active = false;
+      }
       const hour = new Date(c.timestamp).getHours();
       const anomalies: AnomalyKind[] = [];
       if (hour < 6 || hour >= 22) anomalies.push("off_hours");
@@ -97,19 +107,51 @@ export function deriveSessions(custody: CustodyEntry[]): SessionEntry[] {
     const s = open.get(c.actor);
     if (!s) continue;
     s.lastActivity = c.timestamp;
-    if (c.action === "LOGOUT") { s.active = false; open.delete(c.actor); continue; }
-    if (c.action === "EXPORT") {
-      const exportsInSession = chrono.filter((x) => x.actor === c.actor && x.action === "EXPORT" && x.timestamp >= s.startedAt && x.timestamp <= c.timestamp).length;
-      if (exportsInSession >= 3 && !s.anomalies.includes("burst_export")) { s.anomalies.push("burst_export"); s.riskScore += 30; }
+    if (c.action === "LOGOUT") {
+      s.active = false;
+      open.delete(c.actor);
+      continue;
     }
-    if (c.action === "LOCKDOWN" || c.action === "DELETE") s.riskScore = Math.min(100, s.riskScore + 5);
+    if (c.action === "EXPORT") {
+      const exportsInSession = chrono.filter(
+        (x) =>
+          x.actor === c.actor &&
+          x.action === "EXPORT" &&
+          x.timestamp >= s.startedAt &&
+          x.timestamp <= c.timestamp,
+      ).length;
+      if (exportsInSession >= 3 && !s.anomalies.includes("burst_export")) {
+        s.anomalies.push("burst_export");
+        s.riskScore += 30;
+      }
+    }
+    if (c.action === "LOCKDOWN" || c.action === "DELETE")
+      s.riskScore = Math.min(100, s.riskScore + 5);
   }
   return sessions.reverse();
 }
 
 function summarizeUa(ua: string) {
-  const browser = /Edg\//.test(ua) ? "Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "Browser";
-  const os = /Windows/.test(ua) ? "Windows" : /Mac OS/.test(ua) ? "macOS" : /Android/.test(ua) ? "Android" : /Linux/.test(ua) ? "Linux" : /iPhone|iPad/.test(ua) ? "iOS" : "Unknown OS";
+  const browser = /Edg\//.test(ua)
+    ? "Edge"
+    : /Chrome\//.test(ua)
+      ? "Chrome"
+      : /Firefox\//.test(ua)
+        ? "Firefox"
+        : /Safari\//.test(ua)
+          ? "Safari"
+          : "Browser";
+  const os = /Windows/.test(ua)
+    ? "Windows"
+    : /Mac OS/.test(ua)
+      ? "macOS"
+      : /Android/.test(ua)
+        ? "Android"
+        : /Linux/.test(ua)
+          ? "Linux"
+          : /iPhone|iPad/.test(ua)
+            ? "iOS"
+            : "Unknown OS";
   return `${browser} / ${os}`;
 }
 
@@ -117,5 +159,7 @@ function summarizeUa(ua: string) {
 export async function sha256File(file: Blob): Promise<string> {
   const buf = await file.arrayBuffer();
   const digest = await crypto.subtle.digest("SHA-256", buf);
-  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }

@@ -6,7 +6,11 @@ export const Route = createFileRoute("/system")({
   head: () => ({
     meta: [
       { title: "Command Dashboard — greyLock" },
-      { name: "description", content: "Live operations dashboard: metrics, risk distribution, case priority, and recent activity." },
+      {
+        name: "description",
+        content:
+          "Live operations dashboard: metrics, risk distribution, case priority, and recent activity.",
+      },
     ],
   }),
 });

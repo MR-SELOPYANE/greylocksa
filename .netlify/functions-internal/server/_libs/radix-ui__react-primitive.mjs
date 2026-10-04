@@ -18,7 +18,7 @@ var NODES$2 = [
   "select",
   "span",
   "svg",
-  "ul"
+  "ul",
 ];
 var Primitive$2 = NODES$2.reduce((primitive, node) => {
   const Slot = createSlot(`Primitive.${node}`);
@@ -53,7 +53,7 @@ var NODES$1 = [
   "select",
   "span",
   "svg",
-  "ul"
+  "ul",
 ];
 var Primitive$1 = NODES$1.reduce((primitive, node) => {
   const Slot = createSlot$1(`Primitive.${node}`);
@@ -85,7 +85,7 @@ var NODES = [
   "select",
   "span",
   "svg",
-  "ul"
+  "ul",
 ];
 var Primitive = NODES.reduce((primitive, node) => {
   const Slot = createSlot$1(`Primitive.${node}`);
@@ -100,9 +100,4 @@ var Primitive = NODES.reduce((primitive, node) => {
   Node.displayName = `Primitive.${node}`;
   return { ...primitive, [node]: Node };
 }, {});
-export {
-  Primitive$2 as P,
-  Primitive$1 as a,
-  Primitive as b,
-  dispatchDiscreteCustomEvent as d
-};
+export { Primitive$2 as P, Primitive$1 as a, Primitive as b, dispatchDiscreteCustomEvent as d };

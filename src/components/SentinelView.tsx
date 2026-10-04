@@ -4,6 +4,7 @@ import { askSentinel } from "@/lib/sentinel.functions";
 import { useAppState } from "@/lib/store";
 import { toast } from "sonner";
 import type { ChatMessage } from "@/lib/types";
+import { Timestamp } from "@/components/Timestamp";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -226,7 +227,9 @@ export function SentinelView() {
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="h-2 w-2 rounded-full bg-status-white animate-pulse-glow" />
-          <span className="font-mono text-sm font-bold tracking-wider text-card-foreground">SENTINEL</span>
+          <span className="font-mono text-sm font-bold tracking-wider text-card-foreground">
+            SENTINEL
+          </span>
           <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-wider">
             <Lock className="mr-1 h-2.5 w-2.5" />
             {clearance}
@@ -267,19 +270,27 @@ export function SentinelView() {
               </SheetHeader>
               <div className="mt-4 space-y-3">
                 {auditEntries.map((m) => (
-                  <div key={m.id} className="rounded-md border border-border bg-background p-3 text-xs">
+                  <div
+                    key={m.id}
+                    className="rounded-md border border-border bg-background p-3 text-xs"
+                  >
                     <div className="flex items-center justify-between">
                       <Badge variant="outline" className="font-mono text-[10px] uppercase">
                         {m.role}
                       </Badge>
                       <span className="font-mono text-[10px] text-muted-foreground">
-                        {new Date(m.timestamp).toLocaleTimeString()}
+                        <Timestamp iso={m.timestamp} format="clock" />
                       </span>
                     </div>
-                    <p className="mt-1.5 text-muted-foreground line-clamp-2">{m.content.slice(0, 100)}...</p>
+                    <p className="mt-1.5 text-muted-foreground line-clamp-2">
+                      {m.content.slice(0, 100)}...
+                    </p>
                     <div className="mt-1.5 flex gap-2">
                       {m.redactedTags?.map((t) => (
-                        <span key={t} className="rounded bg-status-grey/20 px-1.5 py-0.5 font-mono text-[9px] text-status-grey">
+                        <span
+                          key={t}
+                          className="rounded bg-status-grey/20 px-1.5 py-0.5 font-mono text-[9px] text-status-grey"
+                        >
                           {t}
                         </span>
                       ))}
@@ -314,7 +325,10 @@ export function SentinelView() {
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((msg) => (
-            <div key={msg.id} className={`group flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div
+              key={msg.id}
+              className={`group flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+            >
               <div
                 className={`max-w-[80%] rounded-lg px-4 py-3 text-sm ${
                   msg.role === "user"
@@ -324,7 +338,9 @@ export function SentinelView() {
                       : "bg-accent text-accent-foreground"
                 }`}
               >
-                <div className="whitespace-pre-wrap font-mono text-xs leading-relaxed">{renderMarkdown(msg.content)}</div>
+                <div className="whitespace-pre-wrap font-mono text-xs leading-relaxed">
+                  {renderMarkdown(msg.content)}
+                </div>
                 <div className="mt-1 flex items-center justify-end gap-2">
                   {msg.role === "assistant" && (
                     <button
@@ -335,7 +351,9 @@ export function SentinelView() {
                       <Copy className="h-3 w-3" />
                     </button>
                   )}
-                  <span className="font-mono text-[9px] opacity-50">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                  <span className="font-mono text-[9px] opacity-50">
+                    <Timestamp iso={msg.timestamp} format="clock" />
+                  </span>
                 </div>
               </div>
             </div>
@@ -366,9 +384,18 @@ export function SentinelView() {
             <div className="flex justify-start">
               <div className="rounded-lg bg-accent px-4 py-3">
                 <div className="flex gap-1">
-                  <div className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse-glow" style={{ animationDelay: "0ms" }} />
-                  <div className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse-glow" style={{ animationDelay: "200ms" }} />
-                  <div className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse-glow" style={{ animationDelay: "400ms" }} />
+                  <div
+                    className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse-glow"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <div
+                    className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse-glow"
+                    style={{ animationDelay: "200ms" }}
+                  />
+                  <div
+                    className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse-glow"
+                    style={{ animationDelay: "400ms" }}
+                  />
                 </div>
               </div>
             </div>
@@ -391,7 +418,12 @@ export function SentinelView() {
               overLimit ? "border-status-black focus-visible:ring-status-black" : ""
             }`}
           />
-          <Button onClick={() => submitQuery(input)} disabled={!input.trim() || isTyping || overLimit} size="icon" className="shrink-0">
+          <Button
+            onClick={() => submitQuery(input)}
+            disabled={!input.trim() || isTyping || overLimit}
+            size="icon"
+            className="shrink-0"
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>
@@ -399,7 +431,9 @@ export function SentinelView() {
           <p className="text-[10px] font-mono text-muted-foreground">
             Enter: send · Shift+Enter: newline · Esc: clear · All interactions logged
           </p>
-          <span className={`font-mono text-[10px] ${overLimit ? "text-status-black" : "text-muted-foreground"}`}>
+          <span
+            className={`font-mono text-[10px] ${overLimit ? "text-status-black" : "text-muted-foreground"}`}
+          >
             {input.length}/{MAX_INPUT}
           </span>
         </div>
@@ -414,8 +448,8 @@ export function SentinelView() {
               Access Denied
             </DialogTitle>
             <DialogDescription>
-              This query references classified material above your current clearance level. The request has been logged and cannot be
-              processed in this session.
+              This query references classified material above your current clearance level. The
+              request has been logged and cannot be processed in this session.
             </DialogDescription>
           </DialogHeader>
           <Button variant="outline" onClick={() => setShowDenial(false)} className="mt-2">

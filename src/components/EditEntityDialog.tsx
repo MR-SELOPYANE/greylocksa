@@ -71,7 +71,9 @@ export function EditEntityDialog({
       action: "EDIT",
       reason: reason.trim(),
     });
-    toast.success(`Entity ${entity.id} updated`, { description: "Change recorded in chain-of-custody." });
+    toast.success(`Entity ${entity.id} updated`, {
+      description: "Change recorded in chain-of-custody.",
+    });
 
     if (willResweep) {
       const updated = { ...entity, type, identifier: nextIdentifier, riskScore: risk[0], status };
@@ -103,9 +105,13 @@ export function EditEntityDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Type</label>
+            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Type
+            </label>
             <Select value={type} onValueChange={(v) => setType(v as EntityType)}>
-              <SelectTrigger className="bg-secondary"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="bg-secondary">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="web">Website</SelectItem>
                 <SelectItem value="app">Application</SelectItem>
@@ -119,7 +125,9 @@ export function EditEntityDialog({
           </div>
 
           <div className="space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Identifier</label>
+            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Identifier
+            </label>
             <Input
               required
               value={identifier}
@@ -137,9 +145,13 @@ export function EditEntityDialog({
           </div>
 
           <div className="space-y-1.5">
-            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Status</label>
+            <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              Status
+            </label>
             <Select value={status} onValueChange={(v) => setStatus(v as EntityStatus)}>
-              <SelectTrigger className="bg-secondary"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="bg-secondary">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="grey">Grey — under review</SelectItem>
                 <SelectItem value="black">Black — blocked</SelectItem>
@@ -162,7 +174,9 @@ export function EditEntityDialog({
           </div>
 
           <DialogFooter className="gap-2">
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
             <Button type="submit">{willResweep ? "Save, Sign & Re-sweep" : "Save & Sign"}</Button>
           </DialogFooter>
         </form>

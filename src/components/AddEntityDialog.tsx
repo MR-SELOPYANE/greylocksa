@@ -79,7 +79,13 @@ export function AddEntityDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) reset();
+        onOpenChange(v);
+      }}
+    >
       <DialogContent className="bg-card sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-mono">Add Entity</DialogTitle>
@@ -94,7 +100,9 @@ export function AddEntityDialog({
               Type
             </label>
             <Select value={type} onValueChange={(v) => setType(v as EntityType)}>
-              <SelectTrigger className="bg-secondary"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="bg-secondary">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="web">Website</SelectItem>
                 <SelectItem value="app">Application</SelectItem>
@@ -116,13 +124,19 @@ export function AddEntityDialog({
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder={
-                type === "person" ? "Full name" :
-                type === "org" ? "Legal entity name" :
-                type === "ip" ? "192.0.2.1" :
-                type === "web" ? "https://example.com" :
-                type === "app" ? "com.example.android.app" :
-                type === "platform" ? "AWS account / GCP project / SaaS tenant" :
-                "example.com"
+                type === "person"
+                  ? "Full name"
+                  : type === "org"
+                    ? "Legal entity name"
+                    : type === "ip"
+                      ? "192.0.2.1"
+                      : type === "web"
+                        ? "https://example.com"
+                        : type === "app"
+                          ? "com.example.android.app"
+                          : type === "platform"
+                            ? "AWS account / GCP project / SaaS tenant"
+                            : "example.com"
               }
               className="bg-secondary font-mono text-sm"
             />
@@ -141,7 +155,9 @@ export function AddEntityDialog({
               Initial Status
             </label>
             <Select value={status} onValueChange={(v) => setStatus(v as EntityStatus)}>
-              <SelectTrigger className="bg-secondary"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="bg-secondary">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="grey">Grey — under review</SelectItem>
                 <SelectItem value="black">Black — blocked</SelectItem>
@@ -153,7 +169,7 @@ export function AddEntityDialog({
           <label
             className={cn(
               "flex cursor-pointer items-start gap-2.5 rounded-md border border-border bg-secondary p-3",
-              !eligible && "cursor-not-allowed opacity-50"
+              !eligible && "cursor-not-allowed opacity-50",
             )}
           >
             <Checkbox

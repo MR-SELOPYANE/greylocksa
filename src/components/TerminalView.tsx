@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 type Line = { kind: "in" | "out" | "err" | "sys" | "sim" | "kali" | "ok"; text: string };
 
 const KALI_ART = [
-  "....::::::::::::...       greyLock OS 1.0 (rolling) \"watchtower\"",
+  '....::::::::::::...       greyLock OS 1.0 (rolling) "watchtower"',
   " ..:::::::::::::::::..    Kernel: 6.8.11-greylock-amd64",
   "    .::::::::::::::.      Mode:   passive-recon compliment to Kali",
   "       .::::::::.         Shell:  greylock-sh (kali-compatible verbs)",
@@ -60,10 +60,16 @@ tool index — kali-style verbs over greyLock data
     enum4linux <host>           smb enumeration
 `.trim();
 
-function ts() { return new Date().toISOString().slice(11, 19); }
+function ts() {
+  return new Date().toISOString().slice(11, 19);
+}
 
 function fakeNmap(args: string): string {
-  const host = args.split(/\s+/).filter((a) => !a.startsWith("-")).slice(-1)[0] ?? "target";
+  const host =
+    args
+      .split(/\s+/)
+      .filter((a) => !a.startsWith("-"))
+      .slice(-1)[0] ?? "target";
   const ports = [
     ["22/tcp", "open", "ssh", "OpenSSH 8.9p1 Ubuntu 3ubuntu0.4"],
     ["80/tcp", "open", "http", "nginx 1.24.0"],
@@ -129,7 +135,13 @@ function fakeWhatweb(args: string): string {
 }
 
 function fakeHarvester(args: string): string {
-  const domain = (args.split(/\s+/).find((a, i) => i > 0 && args.split(/\s+/)[i - 1] === "-d") ?? args.split(/\s+/).filter((a) => !a.startsWith("-")).slice(-1)[0]) ?? "target.tld";
+  const domain =
+    args.split(/\s+/).find((a, i) => i > 0 && args.split(/\s+/)[i - 1] === "-d") ??
+    args
+      .split(/\s+/)
+      .filter((a) => !a.startsWith("-"))
+      .slice(-1)[0] ??
+    "target.tld";
   return [
     `[*] Target: ${domain}`,
     ``,
@@ -168,7 +180,9 @@ function fakeSubfinder(domain: string): string {
   return [
     `[INF] Current subfinder version v2.6.6`,
     `[INF] Loading provider config from ~/.config/subfinder/provider-config.yaml`,
-    ...["www", "api", "dev", "staging", "mail", "vpn", "grafana", "jenkins"].map((s) => `${s}.${domain}`),
+    ...["www", "api", "dev", "staging", "mail", "vpn", "grafana", "jenkins"].map(
+      (s) => `${s}.${domain}`,
+    ),
     `[INF] Found 8 subdomains for ${domain} in 3 seconds`,
   ].join("\n");
 }
@@ -330,8 +344,19 @@ function fakeEnum4linux(host: string): string {
 }
 
 export function TerminalView() {
-  const { operator, role, clearance, entities, logCustody, runPassiveScan, isPassiveEligible, lockdown } = useAppState();
-  const [lines, setLines] = useState<Line[]>(() => BANNER(operator).map((t) => ({ kind: "sys" as const, text: t })));
+  const {
+    operator,
+    role,
+    clearance,
+    entities,
+    logCustody,
+    runPassiveScan,
+    isPassiveEligible,
+    lockdown,
+  } = useAppState();
+  const [lines, setLines] = useState<Line[]>(() =>
+    BANNER(operator).map((t) => ({ kind: "sys" as const, text: t })),
+  );
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
@@ -339,8 +364,12 @@ export function TerminalView() {
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [lines]);
-  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [lines]);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const promptTop = `┌──(${operator}㉿greylock)-[~]`;
   const promptBot = `└─$`;
@@ -355,7 +384,11 @@ export function TerminalView() {
       { kind: "in", text: `${promptBot} ${line}` },
     ]);
 
-  const runLive = async (label: string, host: string, pick: (r: Awaited<ReturnType<typeof runPassiveIntel>>) => string) => {
+  const runLive = async (
+    label: string,
+    host: string,
+    pick: (r: Awaited<ReturnType<typeof runPassiveIntel>>) => string,
+  ) => {
     push("out", `→ ${label} ${host}  (live)`);
     try {
       const r = await runPassiveIntel({ data: { target: host } });
@@ -382,15 +415,42 @@ export function TerminalView() {
     setBusy(true);
     try {
       switch (cmd.toLowerCase()) {
-        case "help": push("sys", HELP); break;
-        case "clear": setLines([]); break;
-        case "history": push("out", history.map((h, i) => `${String(i + 1).padStart(4)}  ${h}`).join("\n") || "(empty)"); break;
-        case "whoami": push("out", `${operator}   role=${role}   clearance=${clearance}   lockdown=${lockdown}`); break;
-        case "id": push("out", `uid=1000(${operator}) gid=1000(greylock) groups=1000(greylock),27(sudo),998(ops)`); break;
-        case "uname": push("out", "Linux greylock 6.8.11-greylock-amd64 #1 SMP PREEMPT_DYNAMIC greyLock OS 1.0 x86_64 GNU/Linux"); break;
-        case "pwd": push("out", "/home/" + operator); break;
-        case "hostname": push("out", "greylock"); break;
-        case "ls": push("out", "cases/  evidence/  intel/  sweeps/  targets.txt  decoys/  scanner-agent.md"); break;
+        case "help":
+          push("sys", HELP);
+          break;
+        case "clear":
+          setLines([]);
+          break;
+        case "history":
+          push(
+            "out",
+            history.map((h, i) => `${String(i + 1).padStart(4)}  ${h}`).join("\n") || "(empty)",
+          );
+          break;
+        case "whoami":
+          push("out", `${operator}   role=${role}   clearance=${clearance}   lockdown=${lockdown}`);
+          break;
+        case "id":
+          push(
+            "out",
+            `uid=1000(${operator}) gid=1000(greylock) groups=1000(greylock),27(sudo),998(ops)`,
+          );
+          break;
+        case "uname":
+          push(
+            "out",
+            "Linux greylock 6.8.11-greylock-amd64 #1 SMP PREEMPT_DYNAMIC greyLock OS 1.0 x86_64 GNU/Linux",
+          );
+          break;
+        case "pwd":
+          push("out", "/home/" + operator);
+          break;
+        case "hostname":
+          push("out", "greylock");
+          break;
+        case "ls":
+          push("out", "cases/  evidence/  intel/  sweeps/  targets.txt  decoys/  scanner-agent.md");
+          break;
         case "cat":
           if ((rest[0] ?? "").includes("targets")) {
             push("out", entities.map((e) => e.identifier).join("\n") || "(empty file)");
@@ -398,26 +458,56 @@ export function TerminalView() {
             push("err", `cat: ${rest[0] ?? ""}: No such file or directory`);
           }
           break;
-        case "sudo": push("err", `${operator} is not in the sudoers file. This incident will be reported to the watch commander.`); break;
-        case "exit": push("sys", "logout — session remains in the custody log."); break;
+        case "sudo":
+          push(
+            "err",
+            `${operator} is not in the sudoers file. This incident will be reported to the watch commander.`,
+          );
+          break;
+        case "exit":
+          push("sys", "logout — session remains in the custody log.");
+          break;
         case "targets":
-          push("out", entities.slice(0, 40).map((e) => `${e.id.padEnd(10)} ${e.status.padEnd(6)} ${e.type.padEnd(9)} ${e.identifier}`).join("\n") || "(no targets)");
+          push(
+            "out",
+            entities
+              .slice(0, 40)
+              .map(
+                (e) =>
+                  `${e.id.padEnd(10)} ${e.status.padEnd(6)} ${e.type.padEnd(9)} ${e.identifier}`,
+              )
+              .join("\n") || "(no targets)",
+          );
           break;
 
         case "whois":
-          if (!host) { push("err", "usage: whois <host>"); break; }
+          if (!host) {
+            push("err", "usage: whois <host>");
+            break;
+          }
           await runLive("whois", host, (r) => {
             const w = r.report.whois;
             if (!w) return "(no data)";
-            return [`registrar: ${w.registrar ?? "—"}`, `created:   ${w.created ?? "—"}`, `updated:   ${w.updated ?? "—"}`, `expires:   ${w.expires ?? "—"}`, `ns:        ${(w.nameservers ?? []).join(", ") || "—"}`, `status:    ${(w.status ?? []).join(", ") || "—"}`].join("\n");
+            return [
+              `registrar: ${w.registrar ?? "—"}`,
+              `created:   ${w.created ?? "—"}`,
+              `updated:   ${w.updated ?? "—"}`,
+              `expires:   ${w.expires ?? "—"}`,
+              `ns:        ${(w.nameservers ?? []).join(", ") || "—"}`,
+              `status:    ${(w.status ?? []).join(", ") || "—"}`,
+            ].join("\n");
           });
           break;
 
         case "dns":
         case "dig":
-          if (!host) { push("err", "usage: dns <host>"); break; }
+          if (!host) {
+            push("err", "usage: dns <host>");
+            break;
+          }
           await runLive("dns", host, (r) => {
-            const d = r.report.dns; if (!d) return "(no data)";
+            const d = r.report.dns;
+            if (!d) return "(no data)";
             const rows: string[] = [];
             (["A", "AAAA", "MX", "NS", "TXT", "CNAME"] as const).forEach((t) => {
               const v = (d as Record<string, string[] | undefined>)[t];
@@ -428,35 +518,60 @@ export function TerminalView() {
           break;
 
         case "headers":
-          if (!host) { push("err", "usage: headers <host>"); break; }
+          if (!host) {
+            push("err", "usage: headers <host>");
+            break;
+          }
           await runLive("headers", host, (r) => {
-            const h = r.report.http; if (!h) return "(unreachable)";
-            const hdrs = Object.entries(h.headers ?? {}).map(([k, v]) => `  ${k}: ${v}`).join("\n") || "  (no headers)";
+            const h = r.report.http;
+            if (!h) return "(unreachable)";
+            const hdrs =
+              Object.entries(h.headers ?? {})
+                .map(([k, v]) => `  ${k}: ${v}`)
+                .join("\n") || "  (no headers)";
             return `${h.scheme.toUpperCase()} ${h.status}\n${hdrs}`;
           });
           break;
 
         case "shodan":
-          if (!host) { push("err", "usage: shodan <host|ip>"); break; }
+          if (!host) {
+            push("err", "usage: shodan <host|ip>");
+            break;
+          }
           await runLive("shodan", host, (r) => {
-            const s = r.report.shodan; if (!s) return "(no shodan data — key missing or no record)";
+            const s = r.report.shodan;
+            if (!s) return "(no shodan data — key missing or no record)";
             const vulns = Array.isArray(s.vulns) ? s.vulns : Object.keys(s.vulns ?? {});
-            return [`ip:    ${s.ip_str ?? "—"}`, `org:   ${s.org ?? "—"}`, `os:    ${s.os ?? "—"}`, `ports: ${(s.ports ?? []).join(", ") || "—"}`, `vulns: ${vulns.join(", ") || "none"}`, `tags:  ${(s.tags ?? []).join(", ") || "—"}`].join("\n");
+            return [
+              `ip:    ${s.ip_str ?? "—"}`,
+              `org:   ${s.org ?? "—"}`,
+              `os:    ${s.os ?? "—"}`,
+              `ports: ${(s.ports ?? []).join(", ") || "—"}`,
+              `vulns: ${vulns.join(", ") || "none"}`,
+              `tags:  ${(s.tags ?? []).join(", ") || "—"}`,
+            ].join("\n");
           });
           break;
 
         case "vt":
         case "virustotal":
-          if (!host) { push("err", "usage: vt <host|ip>"); break; }
+          if (!host) {
+            push("err", "usage: vt <host|ip>");
+            break;
+          }
           await runLive("vt", host, (r) => {
-            const v = r.report.virustotal; if (!v) return "(no vt data — key missing or no record)";
+            const v = r.report.virustotal;
+            if (!v) return "(no vt data — key missing or no record)";
             return `malicious=${v.malicious}  suspicious=${v.suspicious}  harmless=${v.harmless}  undetected=${v.undetected}  reputation=${v.reputation}  asOwner=${v.asOwner ?? "—"}  country=${v.country ?? "—"}`;
           });
           break;
 
         case "crtsh":
         case "crt.sh":
-          if (!host) { push("err", "usage: crtsh <domain>"); break; }
+          if (!host) {
+            push("err", "usage: crtsh <domain>");
+            break;
+          }
           await runLive("crtsh", host, (r) => {
             const s = r.report.subdomains;
             if (!s || !s.count) return "(no certificates)";
@@ -465,45 +580,113 @@ export function TerminalView() {
           break;
 
         case "sweep": {
-          if (!host) { push("err", "usage: sweep <host>"); break; }
-          if (lockdown) { push("err", "× lockdown active — sweeps disabled"); break; }
+          if (!host) {
+            push("err", "usage: sweep <host>");
+            break;
+          }
+          if (lockdown) {
+            push("err", "× lockdown active — sweeps disabled");
+            break;
+          }
           const ent = entities.find((e) => e.identifier.toLowerCase().includes(host.toLowerCase()));
-          if (!ent) { push("err", `× no watchlist target matches "${host}". Add it under Targets first.`); break; }
-          if (!isPassiveEligible(ent)) { push("err", "× target is not passive-eligible"); break; }
+          if (!ent) {
+            push("err", `× no watchlist target matches "${host}". Add it under Targets first.`);
+            break;
+          }
+          if (!isPassiveEligible(ent)) {
+            push("err", "× target is not passive-eligible");
+            break;
+          }
           push("out", `→ passive sweep on ${ent.identifier} (${ent.id}) …`);
           const s = await runPassiveScan(ent.id, { entity: ent, silent: true });
-          if (!s) { push("err", "× sweep failed"); break; }
-          if (s.status === "failed") { push("err", `× ${s.error ?? "sweep failed"}`); break; }
-          push("ok", `✓ ${s.id} complete — findings: ${s.summary.critical}C ${s.summary.high}H ${s.summary.medium}M ${s.summary.low}L ${s.summary.info}I`);
-          s.findings.slice(0, 12).forEach((f) => push("out", `  [${f.severity.toUpperCase().padEnd(8)}] ${f.title}`));
+          if (!s) {
+            push("err", "× sweep failed");
+            break;
+          }
+          if (s.status === "failed") {
+            push("err", `× ${s.error ?? "sweep failed"}`);
+            break;
+          }
+          push(
+            "ok",
+            `✓ ${s.id} complete — findings: ${s.summary.critical}C ${s.summary.high}H ${s.summary.medium}M ${s.summary.low}L ${s.summary.info}I`,
+          );
+          s.findings
+            .slice(0, 12)
+            .forEach((f) => push("out", `  [${f.severity.toUpperCase().padEnd(8)}] ${f.title}`));
           break;
         }
 
         // ---- Kali toolbelt (simulated) ----
-        case "nmap": sim(fakeNmap(args), "active scan — routed through scanner-agent in production."); break;
-        case "nikto": sim(fakeNikto(args)); break;
-        case "gobuster": sim(fakeGobuster(args)); break;
-        case "whatweb": sim(fakeWhatweb(args)); break;
-        case "theharvester": sim(fakeHarvester(args)); break;
-        case "dnsenum": sim(fakeDnsenum(host || "target.tld")); break;
-        case "subfinder": sim(fakeSubfinder(host || "target.tld")); break;
-        case "msfconsole": sim(fakeMsf(), "metasploit requires the scanner-agent + written authorization."); break;
-        case "msf": sim(fakeMsf(), "metasploit requires the scanner-agent + written authorization."); break;
-        case "searchsploit": sim(fakeSearchsploit(args)); break;
-        case "hydra": sim(fakeHydra(args), "credential brute force requires written authorization."); break;
-        case "medusa": sim(fakeMedusa(host || "target"), "credential brute force requires written authorization."); break;
-        case "john": sim(fakeJohn(args)); break;
-        case "hashcat": sim(fakeHashcat(args)); break;
-        case "sqlmap": sim(fakeSqlmap(args)); break;
-        case "wpscan": sim(fakeWpscan(args)); break;
-        case "aircrack-ng": sim(fakeAircrack(args)); break;
-        case "aircrack": sim(fakeAircrack(args)); break;
-        case "enum4linux": sim(fakeEnum4linux(host)); break;
+        case "nmap":
+          sim(fakeNmap(args), "active scan — routed through scanner-agent in production.");
+          break;
+        case "nikto":
+          sim(fakeNikto(args));
+          break;
+        case "gobuster":
+          sim(fakeGobuster(args));
+          break;
+        case "whatweb":
+          sim(fakeWhatweb(args));
+          break;
+        case "theharvester":
+          sim(fakeHarvester(args));
+          break;
+        case "dnsenum":
+          sim(fakeDnsenum(host || "target.tld"));
+          break;
+        case "subfinder":
+          sim(fakeSubfinder(host || "target.tld"));
+          break;
+        case "msfconsole":
+          sim(fakeMsf(), "metasploit requires the scanner-agent + written authorization.");
+          break;
+        case "msf":
+          sim(fakeMsf(), "metasploit requires the scanner-agent + written authorization.");
+          break;
+        case "searchsploit":
+          sim(fakeSearchsploit(args));
+          break;
+        case "hydra":
+          sim(fakeHydra(args), "credential brute force requires written authorization.");
+          break;
+        case "medusa":
+          sim(
+            fakeMedusa(host || "target"),
+            "credential brute force requires written authorization.",
+          );
+          break;
+        case "john":
+          sim(fakeJohn(args));
+          break;
+        case "hashcat":
+          sim(fakeHashcat(args));
+          break;
+        case "sqlmap":
+          sim(fakeSqlmap(args));
+          break;
+        case "wpscan":
+          sim(fakeWpscan(args));
+          break;
+        case "aircrack-ng":
+          sim(fakeAircrack(args));
+          break;
+        case "aircrack":
+          sim(fakeAircrack(args));
+          break;
+        case "enum4linux":
+          sim(fakeEnum4linux(host));
+          break;
 
         default:
           push("err", `greylock-sh: ${cmd}: command not found    (try \`help\`)`);
       }
-      logCustody({ entityId: "TERMINAL", action: "VIEW", reason: `terminal: ${line.slice(0, 160)}` });
+      logCustody({
+        entityId: "TERMINAL",
+        action: "VIEW",
+        reason: `terminal: ${line.slice(0, 160)}`,
+      });
     } finally {
       setBusy(false);
       queueMicrotask(() => inputRef.current?.focus());
@@ -511,7 +694,11 @@ export function TerminalView() {
   };
 
   const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "l") { e.preventDefault(); setLines([]); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "l") {
+      e.preventDefault();
+      setLines([]);
+      return;
+    }
     if (e.key === "Enter") {
       e.preventDefault();
       const val = input;
@@ -523,14 +710,20 @@ export function TerminalView() {
       e.preventDefault();
       if (!history.length) return;
       const idx = histIdx === null ? history.length - 1 : Math.max(0, histIdx - 1);
-      setHistIdx(idx); setInput(history[idx]);
+      setHistIdx(idx);
+      setInput(history[idx]);
     }
     if (e.key === "ArrowDown") {
       e.preventDefault();
       if (histIdx === null) return;
       const idx = histIdx + 1;
-      if (idx >= history.length) { setHistIdx(null); setInput(""); }
-      else { setHistIdx(idx); setInput(history[idx]); }
+      if (idx >= history.length) {
+        setHistIdx(null);
+        setInput("");
+      } else {
+        setHistIdx(idx);
+        setInput(history[idx]);
+      }
     }
   };
 
@@ -539,7 +732,9 @@ export function TerminalView() {
       <div className="flex flex-wrap items-center gap-2">
         <TermIcon className="h-4 w-4 text-tactical" />
         <h1 className="font-mono text-sm font-bold text-foreground">greylock-sh</h1>
-        <span className="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[10px] uppercase text-muted-foreground">kali compliment · {operator} · {clearance}</span>
+        <span className="rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[10px] uppercase text-muted-foreground">
+          kali compliment · {operator} · {clearance}
+        </span>
         <button
           onClick={() => setLines([])}
           className="ml-auto inline-flex items-center gap-1.5 rounded border border-border bg-surface px-2 py-1 font-mono text-[10px] uppercase text-muted-foreground hover:text-foreground"
@@ -565,7 +760,9 @@ export function TerminalView() {
               l.kind === "sim" && "text-status-grey",
               l.kind === "ok" && "text-status-white",
             )}
-          >{l.text || "\u00a0"}</div>
+          >
+            {l.text || "\u00a0"}
+          </div>
         ))}
         <div className="mt-1">
           <div className="font-bold text-tactical">{promptTop}</div>

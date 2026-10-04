@@ -1,10 +1,31 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { H as H3Event, t as toResponse } from "../_libs/h3-v2.mjs";
-import { u as parseRedirect, v as mergeHeaders, l as isRedirect, q as resolveManifestAssetLink, j as rootRouteId, w as getNormalizedURL, x as getOrigin, y as attachRouterServerSsrUtils, z as defineHandlerCallback, A as createSerializationAdapter, C as createRawStreamRPCPlugin, i as invariant, g as isNotFound, D as isResolvedRedirect, E as executeRewriteInput, F as defaultSerovalPlugins, G as makeSerovalPlugin } from "../_libs/tanstack__router-core.mjs";
+import {
+  u as parseRedirect,
+  v as mergeHeaders,
+  l as isRedirect,
+  q as resolveManifestAssetLink,
+  j as rootRouteId,
+  w as getNormalizedURL,
+  x as getOrigin,
+  y as attachRouterServerSsrUtils,
+  z as defineHandlerCallback,
+  A as createSerializationAdapter,
+  C as createRawStreamRPCPlugin,
+  i as invariant,
+  g as isNotFound,
+  D as isResolvedRedirect,
+  E as executeRewriteInput,
+  F as defaultSerovalPlugins,
+  G as makeSerovalPlugin,
+} from "../_libs/tanstack__router-core.mjs";
 import { a as au, I as Iu, o as ou } from "../_libs/seroval.mjs";
 import { c as createMemoryHistory } from "../_libs/tanstack__history.mjs";
 import { j as jsxRuntimeExports } from "../_libs/react.mjs";
-import { r as renderRouterToStream, R as RouterProvider } from "../_libs/tanstack__react-router.mjs";
+import {
+  r as renderRouterToStream,
+  R as RouterProvider,
+} from "../_libs/tanstack__react-router.mjs";
 import "../_libs/rou3.mjs";
 import "../_libs/srvx.mjs";
 import "node:stream";
@@ -20,22 +41,26 @@ import "../_libs/isbot.mjs";
 function StartServer(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(RouterProvider, { router: props.router });
 }
-var defaultStreamHandler = defineHandlerCallback(({ request, router, responseHeaders }) => renderRouterToStream({
-  request,
-  router,
-  responseHeaders,
-  children: /* @__PURE__ */ jsxRuntimeExports.jsx(StartServer, { router })
-}));
+var defaultStreamHandler = defineHandlerCallback(({ request, router, responseHeaders }) =>
+  renderRouterToStream({
+    request,
+    router,
+    responseHeaders,
+    children: /* @__PURE__ */ jsxRuntimeExports.jsx(StartServer, { router }),
+  }),
+);
 var GLOBAL_EVENT_STORAGE_KEY = /* @__PURE__ */ Symbol.for("tanstack-start:event-storage");
 var globalObj$1 = globalThis;
-if (!globalObj$1[GLOBAL_EVENT_STORAGE_KEY]) globalObj$1[GLOBAL_EVENT_STORAGE_KEY] = new AsyncLocalStorage();
+if (!globalObj$1[GLOBAL_EVENT_STORAGE_KEY])
+  globalObj$1[GLOBAL_EVENT_STORAGE_KEY] = new AsyncLocalStorage();
 var eventStorage = globalObj$1[GLOBAL_EVENT_STORAGE_KEY];
 function isPromiseLike(value) {
   return typeof value.then === "function";
 }
 function getSetCookieValues(headers) {
   const headersWithSetCookie = headers;
-  if (typeof headersWithSetCookie.getSetCookie === "function") return headersWithSetCookie.getSetCookie();
+  if (typeof headersWithSetCookie.getSetCookie === "function")
+    return headersWithSetCookie.getSetCookie();
   const value = headers.get("set-cookie");
   return value ? [value] : [];
 }
@@ -49,10 +74,11 @@ function mergeEventResponseHeaders(response, event) {
   for (const cookie of eventSetCookies) response.headers.append("set-cookie", cookie);
 }
 function attachResponseHeaders(value, event) {
-  if (isPromiseLike(value)) return value.then((resolved) => {
-    if (resolved instanceof Response) mergeEventResponseHeaders(resolved, event);
-    return resolved;
-  });
+  if (isPromiseLike(value))
+    return value.then((resolved) => {
+      if (resolved instanceof Response) mergeEventResponseHeaders(resolved, event);
+      return resolved;
+    });
   if (value instanceof Response) mergeEventResponseHeaders(value, event);
   return value;
 }
@@ -62,18 +88,28 @@ function requestHandler(handler) {
     try {
       h3Event = new H3Event(request);
     } catch (error) {
-      if (error instanceof URIError) return new Response(null, {
-        status: 400,
-        statusText: "Bad Request"
-      });
+      if (error instanceof URIError)
+        return new Response(null, {
+          status: 400,
+          statusText: "Bad Request",
+        });
       throw error;
     }
-    return toResponse(attachResponseHeaders(eventStorage.run({ h3Event }, () => handler(request, requestOpts)), h3Event), h3Event);
+    return toResponse(
+      attachResponseHeaders(
+        eventStorage.run({ h3Event }, () => handler(request, requestOpts)),
+        h3Event,
+      ),
+      h3Event,
+    );
   };
 }
 function getH3Event() {
   const event = eventStorage.getStore();
-  if (!event) throw new Error(`No StartEvent found in AsyncLocalStorage. Make sure you are using the function within the server runtime.`);
+  if (!event)
+    throw new Error(
+      `No StartEvent found in AsyncLocalStorage. Make sure you are using the function within the server runtime.`,
+    );
   return event.h3Event;
 }
 function getResponse() {
@@ -83,40 +119,44 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 async function getStartManifest(matchedRoutes) {
   const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-DRAT_6pY.mjs");
   const startManifest = tsrStartManifest();
-  const rootRoute = startManifest.routes[rootRouteId] = startManifest.routes[rootRouteId] || {};
+  const rootRoute = (startManifest.routes[rootRouteId] = startManifest.routes[rootRouteId] || {});
   rootRoute.assets = rootRoute.assets || [];
   let injectedHeadScripts;
   return {
-    manifest: { routes: Object.fromEntries(Object.entries(startManifest.routes).flatMap(([k, v]) => {
-      const result = {};
-      let hasData = false;
-      if (v.preloads && v.preloads.length > 0) {
-        result["preloads"] = v.preloads;
-        hasData = true;
-      }
-      if (v.assets && v.assets.length > 0) {
-        result["assets"] = v.assets;
-        hasData = true;
-      }
-      if (!hasData) return [];
-      return [[k, result]];
-    })) },
+    manifest: {
+      routes: Object.fromEntries(
+        Object.entries(startManifest.routes).flatMap(([k, v]) => {
+          const result = {};
+          let hasData = false;
+          if (v.preloads && v.preloads.length > 0) {
+            result["preloads"] = v.preloads;
+            hasData = true;
+          }
+          if (v.assets && v.assets.length > 0) {
+            result["assets"] = v.assets;
+            hasData = true;
+          }
+          if (!hasData) return [];
+          return [[k, result]];
+        }),
+      ),
+    },
     clientEntry: startManifest.clientEntry,
-    injectedHeadScripts
+    injectedHeadScripts,
   };
 }
 const manifest = {
   "46976752a79ad20314a277635f85391ade236fe1dbd4dc85013e5e1867526df8": {
     functionName: "askSentinel_createServerFn_handler",
-    importer: () => import("./sentinel.functions-46ZXbhLm.mjs")
-  }
+    importer: () => import("./sentinel.functions-46ZXbhLm.mjs"),
+  },
 };
 async function getServerFnById(id, access) {
   const serverFnInfo = manifest[id];
   if (!serverFnInfo) {
     throw new Error("Server function info not found for " + id);
   }
-  const fnModule = serverFnInfo.module ?? await serverFnInfo.importer();
+  const fnModule = serverFnInfo.module ?? (await serverFnInfo.importer());
   if (!fnModule) {
     throw new Error("Server function module not resolved for " + id);
   }
@@ -136,7 +176,7 @@ var FrameType = {
   JSON: 0,
   CHUNK: 1,
   END: 2,
-  ERROR: 3
+  ERROR: 3,
 };
 var FRAME_HEADER_SIZE = 9;
 var TSS_CONTENT_TYPE_FRAMED_VERSIONED = `${TSS_CONTENT_TYPE_FRAMED}; v=1`;
@@ -168,7 +208,10 @@ async function runWithStartContext(context, fn) {
 }
 function getStartContext(opts) {
   const context = startStorage.getStore();
-  if (!context && opts?.throwIfNotFound !== false) throw new Error(`No Start context found in AsyncLocalStorage. Make sure you are using the function within the server runtime.`);
+  if (!context && opts?.throwIfNotFound !== false)
+    throw new Error(
+      `No Start context found in AsyncLocalStorage. Make sure you are using the function within the server runtime.`,
+    );
   return context;
 }
 var getStartOptions = () => getStartContext().startOptions;
@@ -179,7 +222,7 @@ var createServerFn = (options, __opts) => {
   const res = {
     options: resolvedOptions,
     middleware: (middleware) => {
-      const newMiddleware = [...resolvedOptions.middleware || []];
+      const newMiddleware = [...(resolvedOptions.middleware || [])];
       middleware.map((m) => {
         if (TSS_SERVER_FUNCTION_FACTORY in m) {
           if (m.options.middleware) newMiddleware.push(...m.options.middleware);
@@ -187,7 +230,7 @@ var createServerFn = (options, __opts) => {
       });
       const res2 = createServerFn(void 0, {
         ...resolvedOptions,
-        middleware: newMiddleware
+        middleware: newMiddleware,
       });
       res2[TSS_SERVER_FUNCTION_FACTORY] = true;
       return res2;
@@ -195,7 +238,7 @@ var createServerFn = (options, __opts) => {
     inputValidator: (inputValidator) => {
       return createServerFn(void 0, {
         ...resolvedOptions,
-        inputValidator
+        inputValidator,
       });
     },
     handler: (...args) => {
@@ -203,64 +246,81 @@ var createServerFn = (options, __opts) => {
       const newOptions = {
         ...resolvedOptions,
         extractedFn,
-        serverFn
+        serverFn,
       };
-      const resolvedMiddleware = [...newOptions.middleware || [], serverFnBaseToMiddleware(newOptions)];
+      const resolvedMiddleware = [
+        ...(newOptions.middleware || []),
+        serverFnBaseToMiddleware(newOptions),
+      ];
       extractedFn.method = resolvedOptions.method;
-      return Object.assign(async (opts) => {
-        const result = await executeMiddleware$1(resolvedMiddleware, "client", {
-          ...extractedFn,
-          ...newOptions,
-          data: opts?.data,
-          headers: opts?.headers,
-          signal: opts?.signal,
-          fetch: opts?.fetch,
-          context: createNullProtoObject()
-        });
-        const redirect = parseRedirect(result.error);
-        if (redirect) throw redirect;
-        if (result.error) throw result.error;
-        return result.result;
-      }, {
-        ...extractedFn,
-        method: resolvedOptions.method,
-        __executeServer: async (opts) => {
-          const startContext = getStartContextServerOnly();
-          const serverContextAfterGlobalMiddlewares = startContext.contextAfterGlobalMiddlewares;
-          return await executeMiddleware$1(resolvedMiddleware, "server", {
+      return Object.assign(
+        async (opts) => {
+          const result = await executeMiddleware$1(resolvedMiddleware, "client", {
             ...extractedFn,
-            ...opts,
-            serverFnMeta: extractedFn.serverFnMeta,
-            context: safeObjectMerge(opts.context, serverContextAfterGlobalMiddlewares),
-            request: startContext.request
-          }).then((d) => ({
-            result: d.result,
-            error: d.error,
-            context: d.sendContext
-          }));
-        }
-      });
-    }
+            ...newOptions,
+            data: opts?.data,
+            headers: opts?.headers,
+            signal: opts?.signal,
+            fetch: opts?.fetch,
+            context: createNullProtoObject(),
+          });
+          const redirect = parseRedirect(result.error);
+          if (redirect) throw redirect;
+          if (result.error) throw result.error;
+          return result.result;
+        },
+        {
+          ...extractedFn,
+          method: resolvedOptions.method,
+          __executeServer: async (opts) => {
+            const startContext = getStartContextServerOnly();
+            const serverContextAfterGlobalMiddlewares = startContext.contextAfterGlobalMiddlewares;
+            return await executeMiddleware$1(resolvedMiddleware, "server", {
+              ...extractedFn,
+              ...opts,
+              serverFnMeta: extractedFn.serverFnMeta,
+              context: safeObjectMerge(opts.context, serverContextAfterGlobalMiddlewares),
+              request: startContext.request,
+            }).then((d) => ({
+              result: d.result,
+              error: d.error,
+              context: d.sendContext,
+            }));
+          },
+        },
+      );
+    },
   };
   const fun = (options2) => {
     return createServerFn(void 0, {
       ...resolvedOptions,
-      ...options2
+      ...options2,
     });
   };
   return Object.assign(fun, res);
 };
 async function executeMiddleware$1(middlewares, env, opts) {
-  let flattenedMiddlewares = flattenMiddlewares([...getStartOptions()?.functionMiddleware || [], ...middlewares]);
+  let flattenedMiddlewares = flattenMiddlewares([
+    ...(getStartOptions()?.functionMiddleware || []),
+    ...middlewares,
+  ]);
   if (env === "server") {
     const startContext = getStartContextServerOnly({ throwIfNotFound: false });
-    if (startContext?.executedRequestMiddlewares) flattenedMiddlewares = flattenedMiddlewares.filter((m) => !startContext.executedRequestMiddlewares.has(m));
+    if (startContext?.executedRequestMiddlewares)
+      flattenedMiddlewares = flattenedMiddlewares.filter(
+        (m) => !startContext.executedRequestMiddlewares.has(m),
+      );
   }
   const callNextMiddleware = async (ctx) => {
     const nextMiddleware = flattenedMiddlewares.shift();
     if (!nextMiddleware) return ctx;
     try {
-      if ("inputValidator" in nextMiddleware.options && nextMiddleware.options.inputValidator && env === "server") ctx.data = await execValidator(nextMiddleware.options.inputValidator, ctx.data);
+      if (
+        "inputValidator" in nextMiddleware.options &&
+        nextMiddleware.options.inputValidator &&
+        env === "server"
+      )
+        ctx.data = await execValidator(nextMiddleware.options.inputValidator, ctx.data);
       let middlewareFn = void 0;
       if (env === "client") {
         if ("client" in nextMiddleware.options) middlewareFn = nextMiddleware.options.client;
@@ -275,32 +335,42 @@ async function executeMiddleware$1(middlewares, env, opts) {
             headers: mergeHeaders(ctx.headers, userCtx.headers),
             _callSiteFetch: ctx._callSiteFetch,
             fetch: ctx._callSiteFetch ?? userCtx.fetch ?? ctx.fetch,
-            result: userCtx.result !== void 0 ? userCtx.result : userCtx instanceof Response ? userCtx : ctx.result,
-            error: userCtx.error ?? ctx.error
+            result:
+              userCtx.result !== void 0
+                ? userCtx.result
+                : userCtx instanceof Response
+                  ? userCtx
+                  : ctx.result,
+            error: userCtx.error ?? ctx.error,
           });
           if (result2.error) throw result2.error;
           return result2;
         };
         const result = await middlewareFn({
           ...ctx,
-          next: userNext
+          next: userNext,
         });
-        if (isRedirect(result)) return {
-          ...ctx,
-          error: result
-        };
-        if (result instanceof Response) return {
-          ...ctx,
-          result
-        };
-        if (!result) throw new Error("User middleware returned undefined. You must call next() or return a result in your middlewares.");
+        if (isRedirect(result))
+          return {
+            ...ctx,
+            error: result,
+          };
+        if (result instanceof Response)
+          return {
+            ...ctx,
+            result,
+          };
+        if (!result)
+          throw new Error(
+            "User middleware returned undefined. You must call next() or return a result in your middlewares.",
+          );
         return result;
       }
       return callNextMiddleware(ctx);
     } catch (error) {
       return {
         ...ctx,
-        error
+        error,
       };
     }
   };
@@ -309,14 +379,17 @@ async function executeMiddleware$1(middlewares, env, opts) {
     headers: opts.headers || {},
     sendContext: opts.sendContext || {},
     context: opts.context || createNullProtoObject(),
-    _callSiteFetch: opts.fetch
+    _callSiteFetch: opts.fetch,
   });
 }
 function flattenMiddlewares(middlewares, maxDepth = 100) {
   const seen = /* @__PURE__ */ new Set();
   const flattened = [];
   const recurse = (middleware, depth) => {
-    if (depth > maxDepth) throw new Error(`Middleware nesting depth exceeded maximum of ${maxDepth}. Check for circular references.`);
+    if (depth > maxDepth)
+      throw new Error(
+        `Middleware nesting depth exceeded maximum of ${maxDepth}. Check for circular references.`,
+      );
     middleware.forEach((m) => {
       if (m.options.middleware) recurse(m.options.middleware, depth + 1);
       if (!seen.has(m)) {
@@ -348,7 +421,7 @@ function serverFnBaseToMiddleware(options) {
         const payload = {
           ...ctx,
           context: sendContext,
-          fetch: fetch2
+          fetch: fetch2,
         };
         return next(await options.extractedFn?.(payload));
       },
@@ -356,27 +429,30 @@ function serverFnBaseToMiddleware(options) {
         const result = await options.serverFn?.(ctx);
         return next({
           ...ctx,
-          result
+          result,
         });
-      }
-    }
+      },
+    },
   };
 }
 function getDefaultSerovalPlugins() {
-  return [...getStartOptions()?.serializationAdapters?.map(makeSerovalPlugin) ?? [], ...defaultSerovalPlugins];
+  return [
+    ...(getStartOptions()?.serializationAdapters?.map(makeSerovalPlugin) ?? []),
+    ...defaultSerovalPlugins,
+  ];
 }
 var textEncoder = new TextEncoder();
 var EMPTY_PAYLOAD = new Uint8Array(0);
 function encodeFrame(type, streamId, payload) {
   const frame = new Uint8Array(FRAME_HEADER_SIZE + payload.length);
   frame[0] = type;
-  frame[1] = streamId >>> 24 & 255;
-  frame[2] = streamId >>> 16 & 255;
-  frame[3] = streamId >>> 8 & 255;
+  frame[1] = (streamId >>> 24) & 255;
+  frame[2] = (streamId >>> 16) & 255;
+  frame[3] = (streamId >>> 8) & 255;
   frame[4] = streamId & 255;
-  frame[5] = payload.length >>> 24 & 255;
-  frame[6] = payload.length >>> 16 & 255;
-  frame[7] = payload.length >>> 8 & 255;
+  frame[5] = (payload.length >>> 24) & 255;
+  frame[6] = (payload.length >>> 16) & 255;
+  frame[7] = (payload.length >>> 8) & 255;
   frame[8] = payload.length & 255;
   frame.set(payload, FRAME_HEADER_SIZE);
   return frame;
@@ -412,10 +488,8 @@ function createMultiplexedStream(jsonStream, rawStreams, lateStreamSource) {
     cancelled = true;
     try {
       controller.error(error);
-    } catch {
-    }
-    for (const reader of readers) reader.cancel().catch(() => {
-    });
+    } catch {}
+    for (const reader of readers) reader.cancel().catch(() => {});
   };
   async function pumpRawStream(streamId, stream) {
     const reader = stream.getReader();
@@ -476,19 +550,17 @@ function createMultiplexedStream(jsonStream, rawStreams, lateStreamSource) {
       try {
         const latePumps = (await Promise.all(pumps)).find(Array.isArray);
         if (latePumps && latePumps.length > 0) await Promise.all(latePumps);
-        if (!cancelled) try {
-          controller.close();
-        } catch {
-        }
-      } catch {
-      }
+        if (!cancelled)
+          try {
+            controller.close();
+          } catch {}
+      } catch {}
     },
     cancel() {
       cancelled = true;
-      for (const reader of readers) reader.cancel().catch(() => {
-      });
+      for (const reader of readers) reader.cancel().catch(() => {});
       readers.length = 0;
-    }
+    },
   });
 }
 var serovalPlugins = void 0;
@@ -498,10 +570,11 @@ var handleServerAction = async ({ request, context, serverFnId }) => {
   const methodUpper = request.method.toUpperCase();
   const url = new URL(request.url);
   const action = await getServerFnById(serverFnId);
-  if (action.method && methodUpper !== action.method) return new Response(`expected ${action.method} method. Got ${methodUpper}`, {
-    status: 405,
-    headers: { Allow: action.method }
-  });
+  if (action.method && methodUpper !== action.method)
+    return new Response(`expected ${action.method} method. Got ${methodUpper}`, {
+      status: 405,
+      headers: { Allow: action.method },
+    });
   const isServerFn = request.headers.get("x-tsr-serverFn") === "true";
   if (!serovalPlugins) serovalPlugins = getDefaultSerovalPlugins();
   const contentType = request.headers.get("Content-Type");
@@ -510,7 +583,7 @@ var handleServerAction = async ({ request, context, serverFnId }) => {
   }
   return await (async () => {
     try {
-      let serializeResult = function(res2) {
+      let serializeResult = function (res2) {
         let nonStreamingBody = void 0;
         const alsResponse = getResponse();
         if (res2 !== void 0) {
@@ -519,24 +592,28 @@ var handleServerAction = async ({ request, context, serverFnId }) => {
           let lateStreamWriter;
           let lateStreamReadable = void 0;
           const pendingLateStreams = [];
-          const plugins = [createRawStreamRPCPlugin((id, stream) => {
-            if (initialPhase) {
-              rawStreams.set(id, stream);
-              return;
-            }
-            if (lateStreamWriter) {
-              lateStreamWriter.write({
+          const plugins = [
+            createRawStreamRPCPlugin((id, stream) => {
+              if (initialPhase) {
+                rawStreams.set(id, stream);
+                return;
+              }
+              if (lateStreamWriter) {
+                lateStreamWriter
+                  .write({
+                    id,
+                    stream,
+                  })
+                  .catch(() => {});
+                return;
+              }
+              pendingLateStreams.push({
                 id,
-                stream
-              }).catch(() => {
+                stream,
               });
-              return;
-            }
-            pendingLateStreams.push({
-              id,
-              stream
-            });
-          }), ...serovalPlugins || []];
+            }),
+            ...(serovalPlugins || []),
+          ];
           let done = false;
           const callbacks = {
             onParse: (value) => {
@@ -547,7 +624,7 @@ var handleServerAction = async ({ request, context, serverFnId }) => {
             },
             onError: (error) => {
               throw error;
-            }
+            },
           };
           au(res2, {
             refs: /* @__PURE__ */ new Map(),
@@ -560,72 +637,79 @@ var handleServerAction = async ({ request, context, serverFnId }) => {
             },
             onError: (error) => {
               callbacks.onError(error);
-            }
+            },
           });
           initialPhase = false;
-          if (done && rawStreams.size === 0) return new Response(nonStreamingBody ? JSON.stringify(nonStreamingBody) : void 0, {
-            status: alsResponse.status,
-            statusText: alsResponse.statusText,
-            headers: {
-              "Content-Type": "application/json",
-              [X_TSS_SERIALIZED]: "true"
-            }
-          });
+          if (done && rawStreams.size === 0)
+            return new Response(nonStreamingBody ? JSON.stringify(nonStreamingBody) : void 0, {
+              status: alsResponse.status,
+              statusText: alsResponse.statusText,
+              headers: {
+                "Content-Type": "application/json",
+                [X_TSS_SERIALIZED]: "true",
+              },
+            });
           const { readable, writable } = new TransformStream();
           lateStreamReadable = readable;
           lateStreamWriter = writable.getWriter();
-          for (const registration of pendingLateStreams) lateStreamWriter.write(registration).catch(() => {
-          });
+          for (const registration of pendingLateStreams)
+            lateStreamWriter.write(registration).catch(() => {});
           pendingLateStreams.length = 0;
-          const multiplexedStream = createMultiplexedStream(new ReadableStream({
-            start(controller) {
-              callbacks.onParse = (value) => {
-                controller.enqueue(JSON.stringify(value) + "\n");
-              };
-              callbacks.onDone = () => {
-                try {
-                  controller.close();
-                } catch {
-                }
-                lateStreamWriter?.close().catch(() => {
-                }).finally(() => {
-                  lateStreamWriter = void 0;
-                });
-              };
-              callbacks.onError = (error) => {
-                controller.error(error);
-                lateStreamWriter?.abort(error).catch(() => {
-                }).finally(() => {
-                  lateStreamWriter = void 0;
-                });
-              };
-              if (nonStreamingBody !== void 0) callbacks.onParse(nonStreamingBody);
-              if (done) callbacks.onDone();
-            },
-            cancel() {
-              lateStreamWriter?.abort().catch(() => {
-              });
-              lateStreamWriter = void 0;
-            }
-          }), rawStreams, lateStreamReadable);
+          const multiplexedStream = createMultiplexedStream(
+            new ReadableStream({
+              start(controller) {
+                callbacks.onParse = (value) => {
+                  controller.enqueue(JSON.stringify(value) + "\n");
+                };
+                callbacks.onDone = () => {
+                  try {
+                    controller.close();
+                  } catch {}
+                  lateStreamWriter
+                    ?.close()
+                    .catch(() => {})
+                    .finally(() => {
+                      lateStreamWriter = void 0;
+                    });
+                };
+                callbacks.onError = (error) => {
+                  controller.error(error);
+                  lateStreamWriter
+                    ?.abort(error)
+                    .catch(() => {})
+                    .finally(() => {
+                      lateStreamWriter = void 0;
+                    });
+                };
+                if (nonStreamingBody !== void 0) callbacks.onParse(nonStreamingBody);
+                if (done) callbacks.onDone();
+              },
+              cancel() {
+                lateStreamWriter?.abort().catch(() => {});
+                lateStreamWriter = void 0;
+              },
+            }),
+            rawStreams,
+            lateStreamReadable,
+          );
           return new Response(multiplexedStream, {
             status: alsResponse.status,
             statusText: alsResponse.statusText,
             headers: {
               "Content-Type": TSS_CONTENT_TYPE_FRAMED_VERSIONED,
-              [X_TSS_SERIALIZED]: "true"
-            }
+              [X_TSS_SERIALIZED]: "true",
+            },
           });
         }
         return new Response(void 0, {
           status: alsResponse.status,
-          statusText: alsResponse.statusText
+          statusText: alsResponse.statusText,
         });
       };
       let res = await (async () => {
         if (FORM_DATA_CONTENT_TYPES.some((type) => contentType && contentType.includes(type))) {
           if (methodUpper === "GET") {
-            if (false) ;
+            if (false);
             invariant();
           }
           const formData = await request.formData();
@@ -634,19 +718,24 @@ var handleServerAction = async ({ request, context, serverFnId }) => {
           const params = {
             context,
             data: formData,
-            method: methodUpper
+            method: methodUpper,
           };
-          if (typeof serializedContext === "string") try {
-            const deserializedContext = Iu(JSON.parse(serializedContext), { plugins: serovalPlugins });
-            if (typeof deserializedContext === "object" && deserializedContext) params.context = safeObjectMerge(deserializedContext, context);
-          } catch (e) {
-            if (false) ;
-          }
+          if (typeof serializedContext === "string")
+            try {
+              const deserializedContext = Iu(JSON.parse(serializedContext), {
+                plugins: serovalPlugins,
+              });
+              if (typeof deserializedContext === "object" && deserializedContext)
+                params.context = safeObjectMerge(deserializedContext, context);
+            } catch (e) {
+              if (false);
+            }
           return await action(params);
         }
         if (methodUpper === "GET") {
           const payloadParam = url.searchParams.get("payload");
-          if (payloadParam && payloadParam.length > MAX_PAYLOAD_SIZE) throw new Error("Payload too large");
+          if (payloadParam && payloadParam.length > MAX_PAYLOAD_SIZE)
+            throw new Error("Payload too large");
           const payload2 = payloadParam ? parsePayload(JSON.parse(payloadParam)) : {};
           payload2.context = safeObjectMerge(payload2.context, context);
           payload2.method = methodUpper;
@@ -676,18 +765,22 @@ var handleServerAction = async ({ request, context, serverFnId }) => {
       console.info();
       console.error(error);
       console.info();
-      const serializedError = JSON.stringify(await Promise.resolve(ou(error, {
-        refs: /* @__PURE__ */ new Map(),
-        plugins: serovalPlugins
-      })));
+      const serializedError = JSON.stringify(
+        await Promise.resolve(
+          ou(error, {
+            refs: /* @__PURE__ */ new Map(),
+            plugins: serovalPlugins,
+          }),
+        ),
+      );
       const response = getResponse();
       return new Response(serializedError, {
         status: response.status ?? 500,
         statusText: response.statusText,
         headers: {
           "Content-Type": "application/json",
-          [X_TSS_SERIALIZED]: "true"
-        }
+          [X_TSS_SERIALIZED]: "true",
+        },
       });
     }
   })();
@@ -698,8 +791,8 @@ function isNotFoundResponse(error) {
     status: 404,
     headers: {
       "Content-Type": "application/json",
-      ...headers || {}
-    }
+      ...(headers || {}),
+    },
   });
 }
 function normalizeTransformAssetResult(result) {
@@ -720,14 +813,15 @@ function resolveTransformAssetsConfig(transform) {
     return {
       type: "transform",
       transformFn: ({ url }) => ({ href: `${prefix}${url}` }),
-      cache: true
+      cache: true,
     };
   }
-  if (typeof transform === "function") return {
-    type: "transform",
-    transformFn: transform,
-    cache: true
-  };
+  if (typeof transform === "function")
+    return {
+      type: "transform",
+      transformFn: transform,
+      cache: true,
+    };
   if (isObjectShorthand(transform)) {
     const { prefix, crossOrigin } = transform;
     return {
@@ -736,43 +830,56 @@ function resolveTransformAssetsConfig(transform) {
         const href = `${prefix}${url}`;
         if (kind === "clientEntry") return { href };
         const co = resolveTransformAssetsCrossOrigin(crossOrigin, kind);
-        return co ? {
-          href,
-          crossOrigin: co
-        } : { href };
+        return co
+          ? {
+              href,
+              crossOrigin: co,
+            }
+          : { href };
       },
-      cache: true
+      cache: true,
     };
   }
-  if ("createTransform" in transform && transform.createTransform) return {
-    type: "createTransform",
-    createTransform: transform.createTransform,
-    cache: transform.cache !== false
-  };
+  if ("createTransform" in transform && transform.createTransform)
+    return {
+      type: "createTransform",
+      createTransform: transform.createTransform,
+      cache: transform.cache !== false,
+    };
   return {
     type: "transform",
-    transformFn: typeof transform.transform === "string" ? (({ url }) => ({ href: `${transform.transform}${url}` })) : transform.transform,
-    cache: transform.cache !== false
+    transformFn:
+      typeof transform.transform === "string"
+        ? ({ url }) => ({ href: `${transform.transform}${url}` })
+        : transform.transform,
+    cache: transform.cache !== false,
   };
 }
 function adaptTransformAssetUrlsToTransformAssets(transformFn) {
-  return async ({ url, kind }) => ({ href: await transformFn({
-    url,
-    type: kind
-  }) });
+  return async ({ url, kind }) => ({
+    href: await transformFn({
+      url,
+      type: kind,
+    }),
+  });
 }
 function adaptTransformAssetUrlsConfigToTransformAssets(transform) {
   if (typeof transform === "string") return transform;
   if (typeof transform === "function") return adaptTransformAssetUrlsToTransformAssets(transform);
-  if ("createTransform" in transform && transform.createTransform) return {
-    createTransform: async (ctx) => adaptTransformAssetUrlsToTransformAssets(await transform.createTransform(ctx)),
-    cache: transform.cache,
-    warmup: transform.warmup
-  };
+  if ("createTransform" in transform && transform.createTransform)
+    return {
+      createTransform: async (ctx) =>
+        adaptTransformAssetUrlsToTransformAssets(await transform.createTransform(ctx)),
+      cache: transform.cache,
+      warmup: transform.warmup,
+    };
   return {
-    transform: typeof transform.transform === "string" ? transform.transform : adaptTransformAssetUrlsToTransformAssets(transform.transform),
+    transform:
+      typeof transform.transform === "string"
+        ? transform.transform
+        : adaptTransformAssetUrlsToTransformAssets(transform.transform),
     cache: transform.cache,
-    warmup: transform.warmup
+    warmup: transform.warmup,
   };
 }
 function buildClientEntryScriptTag(clientEntry, injectedHeadScripts) {
@@ -782,9 +889,9 @@ function buildClientEntryScriptTag(clientEntry, injectedHeadScripts) {
     tag: "script",
     attrs: {
       type: "module",
-      async: true
+      async: true,
     },
-    children: script
+    children: script,
   };
 }
 function assignManifestAssetLink(link, next) {
@@ -794,49 +901,63 @@ function assignManifestAssetLink(link, next) {
 async function transformManifestAssets(source, transformFn, _opts) {
   const manifest2 = structuredClone(source.manifest);
   for (const route of Object.values(manifest2.routes)) {
-    if (route.preloads) route.preloads = await Promise.all(route.preloads.map(async (link) => {
-      const result = normalizeTransformAssetResult(await transformFn({
-        url: resolveManifestAssetLink(link).href,
-        kind: "modulepreload"
-      }));
-      return assignManifestAssetLink(link, {
-        href: result.href,
-        crossOrigin: result.crossOrigin
-      });
-    }));
+    if (route.preloads)
+      route.preloads = await Promise.all(
+        route.preloads.map(async (link) => {
+          const result = normalizeTransformAssetResult(
+            await transformFn({
+              url: resolveManifestAssetLink(link).href,
+              kind: "modulepreload",
+            }),
+          );
+          return assignManifestAssetLink(link, {
+            href: result.href,
+            crossOrigin: result.crossOrigin,
+          });
+        }),
+      );
     if (route.assets) {
-      for (const asset of route.assets) if (asset.tag === "link" && asset.attrs?.href) {
-        const rel = asset.attrs.rel;
-        if (!(typeof rel === "string" ? rel.split(/\s+/) : []).includes("stylesheet")) continue;
-        const result = normalizeTransformAssetResult(await transformFn({
-          url: asset.attrs.href,
-          kind: "stylesheet"
-        }));
-        asset.attrs.href = result.href;
-        if (result.crossOrigin) asset.attrs.crossOrigin = result.crossOrigin;
-        else delete asset.attrs.crossOrigin;
-      }
+      for (const asset of route.assets)
+        if (asset.tag === "link" && asset.attrs?.href) {
+          const rel = asset.attrs.rel;
+          if (!(typeof rel === "string" ? rel.split(/\s+/) : []).includes("stylesheet")) continue;
+          const result = normalizeTransformAssetResult(
+            await transformFn({
+              url: asset.attrs.href,
+              kind: "stylesheet",
+            }),
+          );
+          asset.attrs.href = result.href;
+          if (result.crossOrigin) asset.attrs.crossOrigin = result.crossOrigin;
+          else delete asset.attrs.crossOrigin;
+        }
     }
   }
-  const transformedClientEntry = normalizeTransformAssetResult(await transformFn({
-    url: source.clientEntry,
-    kind: "clientEntry"
-  }));
-  const rootRoute = manifest2.routes[rootRouteId] = manifest2.routes[rootRouteId] || {};
+  const transformedClientEntry = normalizeTransformAssetResult(
+    await transformFn({
+      url: source.clientEntry,
+      kind: "clientEntry",
+    }),
+  );
+  const rootRoute = (manifest2.routes[rootRouteId] = manifest2.routes[rootRouteId] || {});
   rootRoute.assets = rootRoute.assets || [];
-  rootRoute.assets.push(buildClientEntryScriptTag(transformedClientEntry.href, source.injectedHeadScripts));
+  rootRoute.assets.push(
+    buildClientEntryScriptTag(transformedClientEntry.href, source.injectedHeadScripts),
+  );
   return manifest2;
 }
 function buildManifestWithClientEntry(source) {
   const scriptTag = buildClientEntryScriptTag(source.clientEntry, source.injectedHeadScripts);
   const baseRootRoute = source.manifest.routes[rootRouteId];
-  return { routes: {
-    ...source.manifest.routes,
-    [rootRouteId]: {
-      ...baseRootRoute,
-      assets: [...baseRootRoute?.assets || [], scriptTag]
-    }
-  } };
+  return {
+    routes: {
+      ...source.manifest.routes,
+      [rootRouteId]: {
+        ...baseRootRoute,
+        assets: [...(baseRootRoute?.assets || []), scriptTag],
+      },
+    },
+  };
 }
 var ServerFunctionSerializationAdapter = createSerializationAdapter({
   key: "$TSS/serverfn",
@@ -851,12 +972,15 @@ var ServerFunctionSerializationAdapter = createSerializationAdapter({
       return (await (await getServerFnById(functionId))(opts ?? {}, signal)).result;
     };
     return fn;
-  }
+  },
 });
 function getStartResponseHeaders(opts) {
-  return mergeHeaders({ "Content-Type": "text/html; charset=utf-8" }, ...opts.router.stores.matches.get().map((match) => {
-    return match.headers;
-  }));
+  return mergeHeaders(
+    { "Content-Type": "text/html; charset=utf-8" },
+    ...opts.router.stores.matches.get().map((match) => {
+      return match.headers;
+    }),
+  );
 }
 var entriesPromise;
 var baseManifestPromise;
@@ -865,12 +989,12 @@ async function loadEntries() {
   const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
     import("./router-rFz3Bia9.mjs").then((n) => n.r),
     import("./start-HYkvq4Ni.mjs"),
-    import("../__23tanstack-start-plugin-adapters-Cwee5PKy.mjs")
+    import("../__23tanstack-start-plugin-adapters-Cwee5PKy.mjs"),
   ]);
   return {
     routerEntry,
     startEntry,
-    pluginAdapters
+    pluginAdapters,
   };
 }
 function getEntries() {
@@ -884,7 +1008,9 @@ function getBaseManifest(matchedRoutes) {
 async function resolveManifest(matchedRoutes, transformFn, cache) {
   const base = await getBaseManifest();
   const computeFinalManifest = async () => {
-    return transformFn ? await transformManifestAssets(base, transformFn) : buildManifestWithClientEntry(base);
+    return transformFn
+      ? await transformManifestAssets(base, transformFn)
+      : buildManifestWithClientEntry(base);
   };
   if (!transformFn || cache) {
     if (!cachedFinalManifestPromise) cachedFinalManifestPromise = computeFinalManifest();
@@ -925,7 +1051,7 @@ function executeMiddleware(middlewares, ctx) {
     try {
       result = await middleware({
         ...ctx,
-        next
+        next,
       });
     } catch (err) {
       if (isSpecialResponse(err)) {
@@ -948,7 +1074,7 @@ function handlerToMiddleware(handler, mayDefer = false) {
   return async (ctx) => {
     const response = await handler({
       ...ctx,
-      next: throwIfMayNotDefer
+      next: throwIfMayNotDefer,
     });
     if (!response) throwRouteHandlerError();
     return response;
@@ -956,10 +1082,26 @@ function handlerToMiddleware(handler, mayDefer = false) {
 }
 function createStartHandler(cbOrOptions) {
   const cb = typeof cbOrOptions === "function" ? cbOrOptions : cbOrOptions.handler;
-  const transformAssetsOption = typeof cbOrOptions === "function" ? void 0 : cbOrOptions.transformAssets;
-  const transformAssetUrlsOption = typeof cbOrOptions === "function" ? void 0 : cbOrOptions.transformAssetUrls;
-  const transformOption = transformAssetsOption !== void 0 ? resolveTransformAssetsConfig(transformAssetsOption) : transformAssetUrlsOption !== void 0 ? resolveTransformAssetsConfig(adaptTransformAssetUrlsConfigToTransformAssets(transformAssetUrlsOption)) : void 0;
-  const warmupTransformManifest = !!transformAssetsOption && typeof transformAssetsOption === "object" && "warmup" in transformAssetsOption && transformAssetsOption.warmup === true || !!transformAssetUrlsOption && typeof transformAssetUrlsOption === "object" && transformAssetUrlsOption.warmup === true;
+  const transformAssetsOption =
+    typeof cbOrOptions === "function" ? void 0 : cbOrOptions.transformAssets;
+  const transformAssetUrlsOption =
+    typeof cbOrOptions === "function" ? void 0 : cbOrOptions.transformAssetUrls;
+  const transformOption =
+    transformAssetsOption !== void 0
+      ? resolveTransformAssetsConfig(transformAssetsOption)
+      : transformAssetUrlsOption !== void 0
+        ? resolveTransformAssetsConfig(
+            adaptTransformAssetUrlsConfigToTransformAssets(transformAssetUrlsOption),
+          )
+        : void 0;
+  const warmupTransformManifest =
+    (!!transformAssetsOption &&
+      typeof transformAssetsOption === "object" &&
+      "warmup" in transformAssetsOption &&
+      transformAssetsOption.warmup === true) ||
+    (!!transformAssetUrlsOption &&
+      typeof transformAssetUrlsOption === "object" &&
+      transformAssetUrlsOption.warmup === true);
   const resolvedTransformConfig = transformOption;
   const cache = resolvedTransformConfig ? resolvedTransformConfig.cache : true;
   const shouldCacheCreateTransform = cache && true;
@@ -968,10 +1110,13 @@ function createStartHandler(cbOrOptions) {
     if (!resolvedTransformConfig) return void 0;
     if (resolvedTransformConfig.type === "createTransform") {
       if (shouldCacheCreateTransform) {
-        if (!cachedCreateTransformPromise) cachedCreateTransformPromise = Promise.resolve(resolvedTransformConfig.createTransform(opts)).catch((error) => {
-          cachedCreateTransformPromise = void 0;
-          throw error;
-        });
+        if (!cachedCreateTransformPromise)
+          cachedCreateTransformPromise = Promise.resolve(
+            resolvedTransformConfig.createTransform(opts),
+          ).catch((error) => {
+            cachedCreateTransformPromise = void 0;
+            throw error;
+          });
         return cachedCreateTransformPromise;
       }
       return resolvedTransformConfig.createTransform(opts);
@@ -982,7 +1127,9 @@ function createStartHandler(cbOrOptions) {
     const warmupPromise = (async () => {
       const base = await getBaseManifest();
       const transformFn = await getTransformFn({ warmup: true });
-      return transformFn ? await transformManifestAssets(base, transformFn) : buildManifestWithClientEntry(base);
+      return transformFn
+        ? await transformManifestAssets(base, transformFn)
+        : buildManifestWithClientEntry(base);
     })();
     cachedFinalManifestPromise = warmupPromise;
     warmupPromise.catch(() => {
@@ -999,24 +1146,27 @@ function createStartHandler(cbOrOptions) {
       const origin = getOrigin(request);
       if (handledProtocolRelativeURL) return Response.redirect(url, 308);
       const entries = await getEntries();
-      const startOptions = await entries.startEntry.startInstance?.getOptions() || {};
+      const startOptions = (await entries.startEntry.startInstance?.getOptions()) || {};
       const { hasPluginAdapters, pluginSerializationAdapters } = entries.pluginAdapters;
       const serializationAdapters = [
-        ...startOptions.serializationAdapters || [],
-        ...hasPluginAdapters ? pluginSerializationAdapters : [],
-        ServerFunctionSerializationAdapter
+        ...(startOptions.serializationAdapters || []),
+        ...(hasPluginAdapters ? pluginSerializationAdapters : []),
+        ServerFunctionSerializationAdapter,
       ];
       const requestStartOptions = {
         ...startOptions,
-        serializationAdapters
+        serializationAdapters,
       };
-      const flattenedRequestMiddlewares = startOptions.requestMiddleware ? flattenMiddlewares(startOptions.requestMiddleware) : [];
+      const flattenedRequestMiddlewares = startOptions.requestMiddleware
+        ? flattenMiddlewares(startOptions.requestMiddleware)
+        : [];
       const executedRequestMiddlewares = new Set(flattenedRequestMiddlewares);
       const getRouter = async () => {
         if (router) return router;
         router = await entries.routerEntry.getRouter();
         let isShell = IS_SHELL_ENV;
-        if (IS_PRERENDERING && !isShell) isShell = request.headers.get(HEADERS.TSS_SHELL) === "true";
+        if (IS_PRERENDERING && !isShell)
+          isShell = request.headers.get(HEADERS.TSS_SHELL) === "true";
         const history = createMemoryHistory({ initialEntries: [href] });
         router.update({
           history,
@@ -1024,8 +1174,11 @@ function createStartHandler(cbOrOptions) {
           isPrerendering: IS_PRERENDERING,
           origin: router.options.origin ?? origin,
           defaultSsr: requestStartOptions.defaultSsr,
-          serializationAdapters: [...requestStartOptions.serializationAdapters, ...router.options.serializationAdapters || []],
-          basepath: ROUTER_BASEPATH
+          serializationAdapters: [
+            ...requestStartOptions.serializationAdapters,
+            ...(router.options.serializationAdapters || []),
+          ],
+          basepath: ROUTER_BASEPATH,
         });
         return router;
       };
@@ -1033,38 +1186,60 @@ function createStartHandler(cbOrOptions) {
         const serverFnId = url.pathname.slice(SERVER_FN_BASE.length).split("/")[0];
         if (!serverFnId) throw new Error("Invalid server action param for serverFnId");
         const serverFnHandler = async ({ context }) => {
-          return runWithStartContext({
-            getRouter,
-            startOptions: requestStartOptions,
-            contextAfterGlobalMiddlewares: context,
-            request,
-            executedRequestMiddlewares,
-            handlerType: "serverFn"
-          }, () => handleServerAction({
-            request,
-            context: requestOpts?.context,
-            serverFnId
-          }));
+          return runWithStartContext(
+            {
+              getRouter,
+              startOptions: requestStartOptions,
+              contextAfterGlobalMiddlewares: context,
+              request,
+              executedRequestMiddlewares,
+              handlerType: "serverFn",
+            },
+            () =>
+              handleServerAction({
+                request,
+                context: requestOpts?.context,
+                serverFnId,
+              }),
+          );
         };
-        return handleRedirectResponse((await executeMiddleware([...flattenedRequestMiddlewares.map((d) => d.options.server), serverFnHandler], {
+        return handleRedirectResponse(
+          (
+            await executeMiddleware(
+              [...flattenedRequestMiddlewares.map((d) => d.options.server), serverFnHandler],
+              {
+                request,
+                pathname: url.pathname,
+                context: createNullProtoObject(requestOpts?.context),
+              },
+            )
+          ).response,
           request,
-          pathname: url.pathname,
-          context: createNullProtoObject(requestOpts?.context)
-        })).response, request, getRouter);
+          getRouter,
+        );
       }
       const executeRouter = async (serverContext, matchedRoutes) => {
         const acceptParts = (request.headers.get("Accept") || "*/*").split(",");
-        if (!["*/*", "text/html"].some((mimeType) => acceptParts.some((part) => part.trim().startsWith(mimeType)))) return Response.json({ error: "Only HTML requests are supported here" }, { status: 500 });
-        const manifest2 = await resolveManifest(matchedRoutes, await getTransformFn({
-          warmup: false,
-          request
-        }), cache);
+        if (
+          !["*/*", "text/html"].some((mimeType) =>
+            acceptParts.some((part) => part.trim().startsWith(mimeType)),
+          )
+        )
+          return Response.json({ error: "Only HTML requests are supported here" }, { status: 500 });
+        const manifest2 = await resolveManifest(
+          matchedRoutes,
+          await getTransformFn({
+            warmup: false,
+            request,
+          }),
+          cache,
+        );
         const routerInstance = await getRouter();
         attachRouterServerSsrUtils({
           router: routerInstance,
           manifest: manifest2,
           getRequestAssets: () => getStartContext({ throwIfNotFound: false })?.requestAssets,
-          includeUnmatchedRouteAssets: false
+          includeUnmatchedRouteAssets: false,
         });
         routerInstance.update({ additionalContext: { serverContext } });
         await routerInstance.load();
@@ -1076,38 +1251,50 @@ function createStartHandler(cbOrOptions) {
         return cb({
           request,
           router: routerInstance,
-          responseHeaders
+          responseHeaders,
         });
       };
       const requestHandlerMiddleware = async ({ context }) => {
-        return runWithStartContext({
-          getRouter,
-          startOptions: requestStartOptions,
-          contextAfterGlobalMiddlewares: context,
-          request,
-          executedRequestMiddlewares,
-          handlerType: "router"
-        }, async () => {
-          try {
-            return await handleServerRoutes({
-              getRouter,
-              request,
-              url,
-              executeRouter,
-              context,
-              executedRequestMiddlewares
-            });
-          } catch (err) {
-            if (err instanceof Response) return err;
-            throw err;
-          }
-        });
+        return runWithStartContext(
+          {
+            getRouter,
+            startOptions: requestStartOptions,
+            contextAfterGlobalMiddlewares: context,
+            request,
+            executedRequestMiddlewares,
+            handlerType: "router",
+          },
+          async () => {
+            try {
+              return await handleServerRoutes({
+                getRouter,
+                request,
+                url,
+                executeRouter,
+                context,
+                executedRequestMiddlewares,
+              });
+            } catch (err) {
+              if (err instanceof Response) return err;
+              throw err;
+            }
+          },
+        );
       };
-      return handleRedirectResponse((await executeMiddleware([...flattenedRequestMiddlewares.map((d) => d.options.server), requestHandlerMiddleware], {
+      return handleRedirectResponse(
+        (
+          await executeMiddleware(
+            [...flattenedRequestMiddlewares.map((d) => d.options.server), requestHandlerMiddleware],
+            {
+              request,
+              pathname: url.pathname,
+              context: createNullProtoObject(requestOpts?.context),
+            },
+          )
+        ).response,
         request,
-        pathname: url.pathname,
-        context: createNullProtoObject(requestOpts?.context)
-      })).response, request, getRouter);
+        getRouter,
+      );
     } finally {
       if (router && !cbWillCleanup) router.serverSsr?.cleanup();
       router = null;
@@ -1118,27 +1305,49 @@ function createStartHandler(cbOrOptions) {
 async function handleRedirectResponse(response, request, getRouter) {
   if (!isRedirect(response)) return response;
   if (isResolvedRedirect(response)) {
-    if (request.headers.get("x-tsr-serverFn") === "true") return Response.json({
-      ...response.options,
-      isSerializedRedirect: true
-    }, { headers: response.headers });
+    if (request.headers.get("x-tsr-serverFn") === "true")
+      return Response.json(
+        {
+          ...response.options,
+          isSerializedRedirect: true,
+        },
+        { headers: response.headers },
+      );
     return response;
   }
   const opts = response.options;
-  if (opts.to && typeof opts.to === "string" && !opts.to.startsWith("/")) throw new Error(`Server side redirects must use absolute paths via the 'href' or 'to' options. The redirect() method's "to" property accepts an internal path only. Use the "href" property to provide an external URL. Received: ${JSON.stringify(opts)}`);
-  if ([
-    "params",
-    "search",
-    "hash"
-  ].some((d) => typeof opts[d] === "function")) throw new Error(`Server side redirects must use static search, params, and hash values and do not support functional values. Received functional values for: ${Object.keys(opts).filter((d) => typeof opts[d] === "function").map((d) => `"${d}"`).join(", ")}`);
+  if (opts.to && typeof opts.to === "string" && !opts.to.startsWith("/"))
+    throw new Error(
+      `Server side redirects must use absolute paths via the 'href' or 'to' options. The redirect() method's "to" property accepts an internal path only. Use the "href" property to provide an external URL. Received: ${JSON.stringify(opts)}`,
+    );
+  if (["params", "search", "hash"].some((d) => typeof opts[d] === "function"))
+    throw new Error(
+      `Server side redirects must use static search, params, and hash values and do not support functional values. Received functional values for: ${Object.keys(
+        opts,
+      )
+        .filter((d) => typeof opts[d] === "function")
+        .map((d) => `"${d}"`)
+        .join(", ")}`,
+    );
   const redirect = (await getRouter()).resolveRedirect(response);
-  if (request.headers.get("x-tsr-serverFn") === "true") return Response.json({
-    ...response.options,
-    isSerializedRedirect: true
-  }, { headers: response.headers });
+  if (request.headers.get("x-tsr-serverFn") === "true")
+    return Response.json(
+      {
+        ...response.options,
+        isSerializedRedirect: true,
+      },
+      { headers: response.headers },
+    );
   return redirect;
 }
-async function handleServerRoutes({ getRouter, request, url, executeRouter, context, executedRequestMiddlewares }) {
+async function handleServerRoutes({
+  getRouter,
+  request,
+  url,
+  executeRouter,
+  context,
+  executedRequestMiddlewares,
+}) {
   const router = await getRouter();
   const pathname = executeRewriteInput(router.rewrite, url).pathname;
   const { matchedRoutes, foundRoute, routeParams } = router.getMatchedRoutes(pathname);
@@ -1148,16 +1357,21 @@ async function handleServerRoutes({ getRouter, request, url, executeRouter, cont
     const serverMiddleware = route.options.server?.middleware;
     if (serverMiddleware) {
       const flattened = flattenMiddlewares(serverMiddleware);
-      for (const m of flattened) if (!executedRequestMiddlewares.has(m)) routeMiddlewares.push(m.options.server);
+      for (const m of flattened)
+        if (!executedRequestMiddlewares.has(m)) routeMiddlewares.push(m.options.server);
     }
   }
   const server2 = foundRoute?.options.server;
   if (server2?.handlers && isExactMatch) {
-    const handlers = typeof server2.handlers === "function" ? server2.handlers({ createHandlers: (d) => d }) : server2.handlers;
+    const handlers =
+      typeof server2.handlers === "function"
+        ? server2.handlers({ createHandlers: (d) => d })
+        : server2.handlers;
     const handler = handlers[request.method.toUpperCase()] ?? handlers["ANY"];
     if (handler) {
       const mayDefer = !!foundRoute.options.component;
-      if (typeof handler === "function") routeMiddlewares.push(handlerToMiddleware(handler, mayDefer));
+      if (typeof handler === "function")
+        routeMiddlewares.push(handlerToMiddleware(handler, mayDefer));
       else {
         if (handler.middleware?.length) {
           const handlerMiddlewares = flattenMiddlewares(handler.middleware);
@@ -1168,19 +1382,21 @@ async function handleServerRoutes({ getRouter, request, url, executeRouter, cont
     }
   }
   routeMiddlewares.push((ctx) => executeRouter(ctx.context, matchedRoutes));
-  return (await executeMiddleware(routeMiddlewares, {
-    request,
-    context,
-    params: routeParams,
-    pathname
-  })).response;
+  return (
+    await executeMiddleware(routeMiddlewares, {
+      request,
+      context,
+      params: routeParams,
+      pathname,
+    })
+  ).response;
 }
 const fetch = createStartHandler(defaultStreamHandler);
 function createServerEntry(entry) {
   return {
     async fetch(...args) {
       return await entry.fetch(...args);
-    }
+    },
   };
 }
 const server = createServerEntry({ fetch });
@@ -1189,5 +1405,5 @@ export {
   createServerFn as c,
   createServerEntry,
   server as default,
-  getServerFnById as g
+  getServerFnById as g,
 };

@@ -1,13 +1,20 @@
-import { T as TypeValidationError, I as InvalidArgumentError, J as JSONParseError, A as AISDKError, a as APICallError, E as EmptyResponseBodyError } from "./ai-sdk__provider.mjs";
+import {
+  T as TypeValidationError,
+  I as InvalidArgumentError,
+  J as JSONParseError,
+  A as AISDKError,
+  a as APICallError,
+  E as EmptyResponseBodyError,
+} from "./ai-sdk__provider.mjs";
 import { E as EventSourceParserStream } from "./eventsource-parser.mjs";
 import { s as safeParseAsync, t as toJSONSchema, Z as ZodFirstPartyTypeKind } from "./zod.mjs";
 function combineHeaders(...headers) {
   return headers.reduce(
     (combinedHeaders, currentHeaders) => ({
       ...combinedHeaders,
-      ...currentHeaders != null ? currentHeaders : {}
+      ...(currentHeaders != null ? currentHeaders : {}),
     }),
-    {}
+    {},
   );
 }
 async function delay(delayInMs, options) {
@@ -83,20 +90,21 @@ async function cancelResponseBody(response) {
   var _a2;
   try {
     await ((_a2 = response.body) == null ? void 0 : _a2.cancel());
-  } catch (e) {
-  }
+  } catch (e) {}
 }
 var name = "AI_DownloadError";
 var marker = `vercel.ai.error.${name}`;
 var symbol = Symbol.for(marker);
 var _a, _b;
-var DownloadError = class extends (_b = AISDKError, _a = symbol, _b) {
+var DownloadError = class extends ((_b = AISDKError), (_a = symbol), _b) {
   constructor({
     url,
     statusCode,
     statusText,
     cause,
-    message = cause == null ? `Failed to download ${url}: ${statusCode} ${statusText}` : `Failed to download ${url}: ${cause}`
+    message = cause == null
+      ? `Failed to download ${url}: ${statusCode} ${statusText}`
+      : `Failed to download ${url}: ${cause}`,
   }) {
     super({ name, message, cause });
     this[_a] = true;
@@ -118,7 +126,7 @@ function validateDownloadUrl(url) {
   } catch (e) {
     throw new DownloadError({
       url,
-      message: `Invalid URL: ${url}`
+      message: `Invalid URL: ${url}`,
     });
   }
   if (parsed.protocol === "data:") {
@@ -127,20 +135,20 @@ function validateDownloadUrl(url) {
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
     throw new DownloadError({
       url,
-      message: `URL scheme must be http, https, or data, got ${parsed.protocol}`
+      message: `URL scheme must be http, https, or data, got ${parsed.protocol}`,
     });
   }
   const hostname = parsed.hostname.toLowerCase().replace(/\.+$/, "");
   if (!hostname) {
     throw new DownloadError({
       url,
-      message: `URL must have a hostname`
+      message: `URL must have a hostname`,
     });
   }
   if (hostname === "localhost" || hostname.endsWith(".local") || hostname.endsWith(".localhost")) {
     throw new DownloadError({
       url,
-      message: `URL with hostname ${hostname} is not allowed`
+      message: `URL with hostname ${hostname} is not allowed`,
     });
   }
   if (hostname.startsWith("[") && hostname.endsWith("]")) {
@@ -148,7 +156,7 @@ function validateDownloadUrl(url) {
     if (isPrivateIPv6(ipv6)) {
       throw new DownloadError({
         url,
-        message: `URL with IPv6 address ${hostname} is not allowed`
+        message: `URL with IPv6 address ${hostname} is not allowed`,
       });
     }
     return;
@@ -157,7 +165,7 @@ function validateDownloadUrl(url) {
     if (isPrivateIPv4(hostname)) {
       throw new DownloadError({
         url,
-        message: `URL with IP address ${hostname} is not allowed`
+        message: `URL with IP address ${hostname} is not allowed`,
       });
     }
     return;
@@ -203,7 +211,7 @@ function parseIPv6(ip) {
       if (part.includes(".")) {
         if (i !== parts.length - 1 || !isIPv4(part)) return null;
         const [a, b, c, d] = part.split(".").map(Number);
-        groups.push(a << 8 | b, c << 8 | d);
+        groups.push((a << 8) | b, (c << 8) | d);
         continue;
       }
       if (!/^[0-9a-f]{1,4}$/.test(part)) return null;
@@ -231,18 +239,22 @@ function isPrivateIPv6(ip) {
   if ((groups[0] & 65472) === 65152) return true;
   if ((groups[0] & 65472) === 65216) return true;
   if ((groups[0] & 65280) === 65280) return true;
-  const embedsIPv4 = (
+  const embedsIPv4 =
     // ::/96 — IPv4-compatible (deprecated)
     topZero(6) || // ::ffff:0:0/96 — IPv4-mapped (ffff in group 5)
-    topZero(5) && groups[5] === 65535 || // ::ffff:0:0/96 — IPv4-translated form (ffff in group 4, group 5 zero)
-    topZero(4) && groups[4] === 65535 && groups[5] === 0 || // 64:ff9b::/96 — NAT64 well-known prefix
-    groups[0] === 100 && groups[1] === 65435 && groups[2] === 0 && groups[3] === 0 && groups[4] === 0 && groups[5] === 0 || // 64:ff9b:1::/48 — NAT64 local-use prefix
-    groups[0] === 100 && groups[1] === 65435 && groups[2] === 1
-  );
+    (topZero(5) && groups[5] === 65535) || // ::ffff:0:0/96 — IPv4-translated form (ffff in group 4, group 5 zero)
+    (topZero(4) && groups[4] === 65535 && groups[5] === 0) || // 64:ff9b::/96 — NAT64 well-known prefix
+    (groups[0] === 100 &&
+      groups[1] === 65435 &&
+      groups[2] === 0 &&
+      groups[3] === 0 &&
+      groups[4] === 0 &&
+      groups[5] === 0) || // 64:ff9b:1::/48 — NAT64 local-use prefix
+    (groups[0] === 100 && groups[1] === 65435 && groups[2] === 1);
   if (embedsIPv4) {
-    const a = groups[6] >> 8 & 255;
+    const a = (groups[6] >> 8) & 255;
     const b = groups[6] & 255;
-    const c = groups[7] >> 8 & 255;
+    const c = (groups[7] >> 8) & 255;
     const d = groups[7] & 255;
     return isPrivateIPv4(`${a}.${b}.${c}.${d}`);
   }
@@ -253,7 +265,7 @@ async function fetchWithValidatedRedirects({
   url,
   headers,
   abortSignal,
-  maxRedirects = MAX_DOWNLOAD_REDIRECTS
+  maxRedirects = MAX_DOWNLOAD_REDIRECTS,
 }) {
   const baseInit = { signal: abortSignal };
   if (headers !== void 0) {
@@ -264,13 +276,13 @@ async function fetchWithValidatedRedirects({
     validateDownloadUrl(currentUrl);
     const response = await fetch(currentUrl, {
       ...baseInit,
-      redirect: "manual"
+      redirect: "manual",
     });
     if (response.type === "opaqueredirect") {
       if (!isBrowserRuntime()) {
         throw new DownloadError({
           url,
-          message: `Redirect from ${currentUrl} could not be validated and was blocked`
+          message: `Redirect from ${currentUrl} could not be validated and was blocked`,
         });
       }
       return await fetch(currentUrl, { ...baseInit, redirect: "follow" });
@@ -285,15 +297,11 @@ async function fetchWithValidatedRedirects({
   }
   throw new DownloadError({
     url,
-    message: `Too many redirects (max ${maxRedirects})`
+    message: `Too many redirects (max ${maxRedirects})`,
   });
 }
 var DEFAULT_MAX_DOWNLOAD_SIZE = 2 * 1024 * 1024 * 1024;
-async function readResponseWithSizeLimit({
-  response,
-  url,
-  maxBytes = DEFAULT_MAX_DOWNLOAD_SIZE
-}) {
+async function readResponseWithSizeLimit({ response, url, maxBytes = DEFAULT_MAX_DOWNLOAD_SIZE }) {
   const contentLength = response.headers.get("content-length");
   if (contentLength != null) {
     const length = parseInt(contentLength, 10);
@@ -301,7 +309,7 @@ async function readResponseWithSizeLimit({
       await cancelResponseBody(response);
       throw new DownloadError({
         url,
-        message: `Download of ${url} exceeded maximum size of ${maxBytes} bytes (Content-Length: ${length}).`
+        message: `Download of ${url} exceeded maximum size of ${maxBytes} bytes (Content-Length: ${length}).`,
       });
     }
   }
@@ -322,7 +330,7 @@ async function readResponseWithSizeLimit({
       if (totalBytes > maxBytes) {
         throw new DownloadError({
           url,
-          message: `Download of ${url} exceeded maximum size of ${maxBytes} bytes.`
+          message: `Download of ${url} exceeded maximum size of ${maxBytes} bytes.`,
         });
       }
       chunks.push(value);
@@ -347,20 +355,23 @@ async function downloadBlob(url, options) {
   try {
     const response = await fetchWithValidatedRedirects({
       url,
-      abortSignal: options == null ? void 0 : options.abortSignal
+      abortSignal: options == null ? void 0 : options.abortSignal,
     });
     if (!response.ok) {
       await cancelResponseBody(response);
       throw new DownloadError({
         url,
         statusCode: response.status,
-        statusText: response.statusText
+        statusText: response.statusText,
       });
     }
     const data = await readResponseWithSizeLimit({
       response,
       url,
-      maxBytes: (_a2 = options == null ? void 0 : options.maxBytes) != null ? _a2 : DEFAULT_MAX_DOWNLOAD_SIZE
+      maxBytes:
+        (_a2 = options == null ? void 0 : options.maxBytes) != null
+          ? _a2
+          : DEFAULT_MAX_DOWNLOAD_SIZE,
     });
     const contentType = (_b2 = response.headers.get("content-type")) != null ? _b2 : void 0;
     return new Blob([data], contentType ? { type: contentType } : void 0);
@@ -375,13 +386,13 @@ var createIdGenerator = ({
   prefix,
   size = 16,
   alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-  separator = "-"
+  separator = "-",
 } = {}) => {
   const generator = () => {
     const alphabetLength = alphabet.length;
     const chars = new Array(size);
     for (let i = 0; i < size; i++) {
-      chars[i] = alphabet[Math.random() * alphabetLength | 0];
+      chars[i] = alphabet[(Math.random() * alphabetLength) | 0];
     }
     return chars.join("");
   };
@@ -391,7 +402,7 @@ var createIdGenerator = ({
   if (alphabet.includes(separator)) {
     throw new InvalidArgumentError({
       argument: "separator",
-      message: `The separator "${separator}" must not be part of the alphabet "${alphabet}".`
+      message: `The separator "${separator}" must not be part of the alphabet "${alphabet}".`,
     });
   }
   return () => `${prefix}${separator}${generator()}`;
@@ -410,8 +421,12 @@ function getErrorMessage(error) {
   return JSON.stringify(error);
 }
 function isAbortError(error) {
-  return (error instanceof Error || error instanceof DOMException) && (error.name === "AbortError" || error.name === "ResponseAborted" || // Next.js
-  error.name === "TimeoutError");
+  return (
+    (error instanceof Error || error instanceof DOMException) &&
+    (error.name === "AbortError" ||
+      error.name === "ResponseAborted" || // Next.js
+      error.name === "TimeoutError")
+  );
 }
 var FETCH_FAILED_ERROR_MESSAGES = ["fetch failed", "failed to fetch"];
 var BUN_ERROR_CODES = [
@@ -421,7 +436,7 @@ var BUN_ERROR_CODES = [
   "ECONNRESET",
   "ECONNREFUSED",
   "ETIMEDOUT",
-  "EPIPE"
+  "EPIPE",
 ];
 function isBunNetworkError(error) {
   if (!(error instanceof Error)) {
@@ -433,15 +448,14 @@ function isBunNetworkError(error) {
   }
   return false;
 }
-function handleFetchError({
-  error,
-  url,
-  requestBodyValues
-}) {
+function handleFetchError({ error, url, requestBodyValues }) {
   if (isAbortError(error)) {
     return error;
   }
-  if (error instanceof TypeError && FETCH_FAILED_ERROR_MESSAGES.includes(error.message.toLowerCase())) {
+  if (
+    error instanceof TypeError &&
+    FETCH_FAILED_ERROR_MESSAGES.includes(error.message.toLowerCase())
+  ) {
     const cause = error.cause;
     if (cause != null) {
       return new APICallError({
@@ -449,7 +463,7 @@ function handleFetchError({
         cause,
         url,
         requestBodyValues,
-        isRetryable: true
+        isRetryable: true,
         // retry when network error
       });
     }
@@ -460,7 +474,7 @@ function handleFetchError({
       cause: error,
       url,
       requestBodyValues,
-      isRetryable: true
+      isRetryable: true,
     });
   }
   return error;
@@ -473,7 +487,9 @@ function getRuntimeEnvironmentUserAgent(globalThisAny = globalThis) {
   if ((_a2 = globalThisAny.navigator) == null ? void 0 : _a2.userAgent) {
     return `runtime/${globalThisAny.navigator.userAgent.toLowerCase()}`;
   }
-  if ((_c = (_b2 = globalThisAny.process) == null ? void 0 : _b2.versions) == null ? void 0 : _c.node) {
+  if (
+    (_c = (_b2 = globalThisAny.process) == null ? void 0 : _b2.versions) == null ? void 0 : _c.node
+  ) {
     return `runtime/node.js/${globalThisAny.process.version.substring(0)}`;
   }
   if (globalThisAny.EdgeRuntime) {
@@ -507,7 +523,7 @@ function withUserAgentSuffix(headers, ...userAgentSuffixParts) {
   const currentUserAgentHeader = normalizedHeaders.get("user-agent") || "";
   normalizedHeaders.set(
     "user-agent",
-    [currentUserAgentHeader, ...userAgentSuffixParts].filter(Boolean).join(" ")
+    [currentUserAgentHeader, ...userAgentSuffixParts].filter(Boolean).join(" "),
   );
   return Object.fromEntries(normalizedHeaders.entries());
 }
@@ -519,7 +535,7 @@ var getFromApi = async ({
   successfulResponseHandler,
   failedResponseHandler,
   abortSignal,
-  fetch: fetch2 = getOriginalFetch()
+  fetch: fetch2 = getOriginalFetch(),
 }) => {
   try {
     const response = await fetch2(url, {
@@ -527,9 +543,9 @@ var getFromApi = async ({
       headers: withUserAgentSuffix(
         headers,
         `ai-sdk/provider-utils/${VERSION}`,
-        getRuntimeEnvironmentUserAgent()
+        getRuntimeEnvironmentUserAgent(),
       ),
-      signal: abortSignal
+      signal: abortSignal,
     });
     const responseHeaders = extractResponseHeaders(response);
     if (!response.ok) {
@@ -538,7 +554,7 @@ var getFromApi = async ({
         errorInformation = await failedResponseHandler({
           response,
           url,
-          requestBodyValues: {}
+          requestBodyValues: {},
         });
       } catch (error) {
         if (isAbortError(error) || APICallError.isInstance(error)) {
@@ -550,7 +566,7 @@ var getFromApi = async ({
           statusCode: response.status,
           url,
           responseHeaders,
-          requestBodyValues: {}
+          requestBodyValues: {},
         });
       }
       throw errorInformation.value;
@@ -559,7 +575,7 @@ var getFromApi = async ({
       return await successfulResponseHandler({
         response,
         url,
-        requestBodyValues: {}
+        requestBodyValues: {},
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -573,29 +589,28 @@ var getFromApi = async ({
         statusCode: response.status,
         url,
         responseHeaders,
-        requestBodyValues: {}
+        requestBodyValues: {},
       });
     }
   } catch (error) {
     throw handleFetchError({ error, url, requestBodyValues: {} });
   }
 };
-function isUrlSupported({
-  mediaType,
-  url,
-  supportedUrls
-}) {
+function isUrlSupported({ mediaType, url, supportedUrls }) {
   url = url.toLowerCase();
   mediaType = mediaType.toLowerCase();
-  return Object.entries(supportedUrls).map(([key, value]) => {
-    const mediaType2 = key.toLowerCase();
-    return mediaType2 === "*" || mediaType2 === "*/*" ? { mediaTypePrefix: "", regexes: value } : { mediaTypePrefix: mediaType2.replace(/\*/, ""), regexes: value };
-  }).filter(({ mediaTypePrefix }) => mediaType.startsWith(mediaTypePrefix)).flatMap(({ regexes }) => regexes).some((pattern) => pattern.test(url));
+  return Object.entries(supportedUrls)
+    .map(([key, value]) => {
+      const mediaType2 = key.toLowerCase();
+      return mediaType2 === "*" || mediaType2 === "*/*"
+        ? { mediaTypePrefix: "", regexes: value }
+        : { mediaTypePrefix: mediaType2.replace(/\*/, ""), regexes: value };
+    })
+    .filter(({ mediaTypePrefix }) => mediaType.startsWith(mediaTypePrefix))
+    .flatMap(({ regexes }) => regexes)
+    .some((pattern) => pattern.test(url));
 }
-function loadOptionalSetting({
-  settingValue,
-  environmentVariableName
-}) {
+function loadOptionalSetting({ settingValue, environmentVariableName }) {
   if (typeof settingValue === "string") {
     return settingValue;
   }
@@ -608,8 +623,10 @@ function loadOptionalSetting({
   }
   return settingValue;
 }
-var suspectProtoRx = /"(?:_|\\u005[Ff])(?:_|\\u005[Ff])(?:p|\\u0070)(?:r|\\u0072)(?:o|\\u006[Ff])(?:t|\\u0074)(?:o|\\u006[Ff])(?:_|\\u005[Ff])(?:_|\\u005[Ff])"\s*:/;
-var suspectConstructorRx = /"(?:c|\\u0063)(?:o|\\u006[Ff])(?:n|\\u006[Ee])(?:s|\\u0073)(?:t|\\u0074)(?:r|\\u0072)(?:u|\\u0075)(?:c|\\u0063)(?:t|\\u0074)(?:o|\\u006[Ff])(?:r|\\u0072)"\s*:/;
+var suspectProtoRx =
+  /"(?:_|\\u005[Ff])(?:_|\\u005[Ff])(?:p|\\u0070)(?:r|\\u0072)(?:o|\\u006[Ff])(?:t|\\u0074)(?:o|\\u006[Ff])(?:_|\\u005[Ff])(?:_|\\u005[Ff])"\s*:/;
+var suspectConstructorRx =
+  /"(?:c|\\u0063)(?:o|\\u006[Ff])(?:n|\\u006[Ee])(?:s|\\u0073)(?:t|\\u0074)(?:r|\\u0072)(?:u|\\u0075)(?:c|\\u0063)(?:t|\\u0074)(?:o|\\u006[Ff])(?:r|\\u0072)"\s*:/;
 function _parse(text) {
   const obj = JSON.parse(text);
   if (obj === null || typeof obj !== "object") {
@@ -629,7 +646,12 @@ function filter(obj) {
       if (Object.prototype.hasOwnProperty.call(node, "__proto__")) {
         throw new SyntaxError("Object contains forbidden prototype property");
       }
-      if (Object.prototype.hasOwnProperty.call(node, "constructor") && node.constructor !== null && typeof node.constructor === "object" && Object.prototype.hasOwnProperty.call(node.constructor, "prototype")) {
+      if (
+        Object.prototype.hasOwnProperty.call(node, "constructor") &&
+        node.constructor !== null &&
+        typeof node.constructor === "object" &&
+        Object.prototype.hasOwnProperty.call(node.constructor, "prototype")
+      ) {
         throw new SyntaxError("Object contains forbidden prototype property");
       }
       for (const key in node) {
@@ -656,7 +678,10 @@ function secureJsonParse(text) {
   }
 }
 function addAdditionalPropertiesToJsonSchema(jsonSchema2) {
-  if (jsonSchema2.type === "object" || Array.isArray(jsonSchema2.type) && jsonSchema2.type.includes("object")) {
+  if (
+    jsonSchema2.type === "object" ||
+    (Array.isArray(jsonSchema2.type) && jsonSchema2.type.includes("object"))
+  ) {
     jsonSchema2.additionalProperties = false;
     const { properties } = jsonSchema2;
     if (properties != null) {
@@ -666,7 +691,9 @@ function addAdditionalPropertiesToJsonSchema(jsonSchema2) {
     }
   }
   if (jsonSchema2.items != null) {
-    jsonSchema2.items = Array.isArray(jsonSchema2.items) ? jsonSchema2.items.map(visit) : visit(jsonSchema2.items);
+    jsonSchema2.items = Array.isArray(jsonSchema2.items)
+      ? jsonSchema2.items.map(visit)
+      : visit(jsonSchema2.items);
   }
   if (jsonSchema2.anyOf != null) {
     jsonSchema2.anyOf = jsonSchema2.anyOf.map(visit);
@@ -689,9 +716,7 @@ function visit(def) {
   if (typeof def === "boolean") return def;
   return addAdditionalPropertiesToJsonSchema(def);
 }
-var ignoreOverride = /* @__PURE__ */ Symbol(
-  "Let zodToJsonSchema decide on which parser to use"
-);
+var ignoreOverride = /* @__PURE__ */ Symbol("Let zodToJsonSchema decide on which parser to use");
 var defaultOptions = {
   name: void 0,
   $refStrategy: "root",
@@ -711,27 +736,34 @@ var defaultOptions = {
   applyRegexFlags: false,
   emailStrategy: "format:email",
   base64Strategy: "contentEncoding:base64",
-  nameStrategy: "ref"
+  nameStrategy: "ref",
 };
-var getDefaultOptions = (options) => typeof options === "string" ? {
-  ...defaultOptions,
-  name: options
-} : {
-  ...defaultOptions,
-  ...options
-};
+var getDefaultOptions = (options) =>
+  typeof options === "string"
+    ? {
+        ...defaultOptions,
+        name: options,
+      }
+    : {
+        ...defaultOptions,
+        ...options,
+      };
 function parseAnyDef() {
   return {};
 }
 function parseArrayDef(def, refs) {
   var _a2, _b2, _c;
   const res = {
-    type: "array"
+    type: "array",
   };
-  if (((_a2 = def.type) == null ? void 0 : _a2._def) && ((_c = (_b2 = def.type) == null ? void 0 : _b2._def) == null ? void 0 : _c.typeName) !== ZodFirstPartyTypeKind.ZodAny) {
+  if (
+    ((_a2 = def.type) == null ? void 0 : _a2._def) &&
+    ((_c = (_b2 = def.type) == null ? void 0 : _b2._def) == null ? void 0 : _c.typeName) !==
+      ZodFirstPartyTypeKind.ZodAny
+  ) {
     res.items = parseDef(def.type._def, {
       ...refs,
-      currentPath: [...refs.currentPath, "items"]
+      currentPath: [...refs.currentPath, "items"],
     });
   }
   if (def.minLength) {
@@ -749,7 +781,7 @@ function parseArrayDef(def, refs) {
 function parseBigintDef(def) {
   const res = {
     type: "integer",
-    format: "int64"
+    format: "int64",
   };
   if (!def.checks) return res;
   for (const check of def.checks) {
@@ -788,7 +820,7 @@ function parseDateDef(def, refs, overrideDateStrategy) {
   const strategy = overrideDateStrategy != null ? overrideDateStrategy : refs.dateStrategy;
   if (Array.isArray(strategy)) {
     return {
-      anyOf: strategy.map((item, i) => parseDateDef(def, refs, item))
+      anyOf: strategy.map((item, i) => parseDateDef(def, refs, item)),
     };
   }
   switch (strategy) {
@@ -796,12 +828,12 @@ function parseDateDef(def, refs, overrideDateStrategy) {
     case "format:date-time":
       return {
         type: "string",
-        format: "date-time"
+        format: "date-time",
       };
     case "format:date":
       return {
         type: "string",
-        format: "date"
+        format: "date",
       };
     case "integer":
       return integerDateParser(def);
@@ -810,7 +842,7 @@ function parseDateDef(def, refs, overrideDateStrategy) {
 var integerDateParser = (def) => {
   const res = {
     type: "integer",
-    format: "unix-time"
+    format: "unix-time",
   };
   for (const check of def.checks) {
     switch (check.kind) {
@@ -827,7 +859,7 @@ var integerDateParser = (def) => {
 function parseDefaultDef(_def, refs) {
   return {
     ...parseDef(_def.innerType._def, refs),
-    default: _def.defaultValue()
+    default: _def.defaultValue(),
   };
 }
 function parseEffectsDef(_def, refs) {
@@ -836,7 +868,7 @@ function parseEffectsDef(_def, refs) {
 function parseEnumDef(def) {
   return {
     type: "string",
-    enum: Array.from(def.values)
+    enum: Array.from(def.values),
   };
 }
 var isJsonSchema7AllOfType = (type) => {
@@ -847,12 +879,12 @@ function parseIntersectionDef(def, refs) {
   const allOf = [
     parseDef(def.left._def, {
       ...refs,
-      currentPath: [...refs.currentPath, "allOf", "0"]
+      currentPath: [...refs.currentPath, "allOf", "0"],
     }),
     parseDef(def.right._def, {
       ...refs,
-      currentPath: [...refs.currentPath, "allOf", "1"]
-    })
+      currentPath: [...refs.currentPath, "allOf", "1"],
+    }),
   ].filter((x) => !!x);
   const mergedAllOf = [];
   allOf.forEach((schema) => {
@@ -871,14 +903,19 @@ function parseIntersectionDef(def, refs) {
 }
 function parseLiteralDef(def) {
   const parsedType = typeof def.value;
-  if (parsedType !== "bigint" && parsedType !== "number" && parsedType !== "boolean" && parsedType !== "string") {
+  if (
+    parsedType !== "bigint" &&
+    parsedType !== "number" &&
+    parsedType !== "boolean" &&
+    parsedType !== "string"
+  ) {
     return {
-      type: Array.isArray(def.value) ? "array" : "object"
+      type: Array.isArray(def.value) ? "array" : "object",
     };
   }
   return {
     type: parsedType === "bigint" ? "integer" : parsedType,
-    const: def.value
+    const: def.value,
   };
 }
 var emojiRegex = void 0;
@@ -892,7 +929,8 @@ var zodPatterns = {
   /**
    * `a-z` was added to replicate /i flag
    */
-  email: /^(?!\.)(?!.*\.\.)([a-zA-Z0-9_'+\-\.]*)[a-zA-Z0-9_+-]@([a-zA-Z0-9][a-zA-Z0-9\-]*\.)+[a-zA-Z]{2,}$/,
+  email:
+    /^(?!\.)(?!.*\.\.)([a-zA-Z0-9_'+\-\.]*)[a-zA-Z0-9_+-]@([a-zA-Z0-9][a-zA-Z0-9\-]*\.)+[a-zA-Z]{2,}$/,
   /**
    * Constructed a valid Unicode RegExp
    *
@@ -906,10 +944,7 @@ var zodPatterns = {
    */
   emoji: () => {
     if (emojiRegex === void 0) {
-      emojiRegex = RegExp(
-        "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$",
-        "u"
-      );
+      emojiRegex = RegExp("^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$", "u");
     }
     return emojiRegex;
   },
@@ -921,29 +956,33 @@ var zodPatterns = {
    * Unused
    */
   ipv4: /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/,
-  ipv4Cidr: /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/,
+  ipv4Cidr:
+    /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/,
   /**
    * Unused
    */
   ipv6: /^(([a-f0-9]{1,4}:){7}|::([a-f0-9]{1,4}:){0,6}|([a-f0-9]{1,4}:){1}:([a-f0-9]{1,4}:){0,5}|([a-f0-9]{1,4}:){2}:([a-f0-9]{1,4}:){0,4}|([a-f0-9]{1,4}:){3}:([a-f0-9]{1,4}:){0,3}|([a-f0-9]{1,4}:){4}:([a-f0-9]{1,4}:){0,2}|([a-f0-9]{1,4}:){5}:([a-f0-9]{1,4}:){0,1})([a-f0-9]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/,
-  ipv6Cidr: /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/,
+  ipv6Cidr:
+    /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/,
   base64: /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/,
   base64url: /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/,
   nanoid: /^[a-zA-Z0-9_-]{21}$/,
-  jwt: /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/
+  jwt: /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/,
 };
 function parseStringDef(def, refs) {
   const res = {
-    type: "string"
+    type: "string",
   };
   if (def.checks) {
     for (const check of def.checks) {
       switch (check.kind) {
         case "min":
-          res.minLength = typeof res.minLength === "number" ? Math.max(res.minLength, check.value) : check.value;
+          res.minLength =
+            typeof res.minLength === "number" ? Math.max(res.minLength, check.value) : check.value;
           break;
         case "max":
-          res.maxLength = typeof res.maxLength === "number" ? Math.min(res.maxLength, check.value) : check.value;
+          res.maxLength =
+            typeof res.maxLength === "number" ? Math.min(res.maxLength, check.value) : check.value;
           break;
         case "email":
           switch (refs.emailStrategy) {
@@ -978,7 +1017,7 @@ function parseStringDef(def, refs) {
             res,
             RegExp(`^${escapeLiteralCheckValue(check.value, refs)}`),
             check.message,
-            refs
+            refs,
           );
           break;
         case "endsWith":
@@ -986,7 +1025,7 @@ function parseStringDef(def, refs) {
             res,
             RegExp(`${escapeLiteralCheckValue(check.value, refs)}$`),
             check.message,
-            refs
+            refs,
           );
           break;
         case "datetime":
@@ -1002,16 +1041,13 @@ function parseStringDef(def, refs) {
           addFormat(res, "duration", check.message, refs);
           break;
         case "length":
-          res.minLength = typeof res.minLength === "number" ? Math.max(res.minLength, check.value) : check.value;
-          res.maxLength = typeof res.maxLength === "number" ? Math.min(res.maxLength, check.value) : check.value;
+          res.minLength =
+            typeof res.minLength === "number" ? Math.max(res.minLength, check.value) : check.value;
+          res.maxLength =
+            typeof res.maxLength === "number" ? Math.min(res.maxLength, check.value) : check.value;
           break;
         case "includes": {
-          addPattern(
-            res,
-            RegExp(escapeLiteralCheckValue(check.value, refs)),
-            check.message,
-            refs
-          );
+          addPattern(res, RegExp(escapeLiteralCheckValue(check.value, refs)), check.message, refs);
           break;
         }
         case "ip": {
@@ -1073,9 +1109,7 @@ function parseStringDef(def, refs) {
 function escapeLiteralCheckValue(literal, refs) {
   return refs.patternStrategy === "escape" ? escapeNonAlphaNumeric(literal) : literal;
 }
-var ALPHA_NUMERIC = new Set(
-  "ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvxyz0123456789"
-);
+var ALPHA_NUMERIC = new Set("ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvxyz0123456789");
 function escapeNonAlphaNumeric(source) {
   let result = "";
   for (let i = 0; i < source.length; i++) {
@@ -1094,13 +1128,13 @@ function addFormat(schema, value, message, refs) {
     }
     if (schema.format) {
       schema.anyOf.push({
-        format: schema.format
+        format: schema.format,
       });
       delete schema.format;
     }
     schema.anyOf.push({
       format: value,
-      ...message && refs.errorMessages && { errorMessage: { format: message } }
+      ...(message && refs.errorMessages && { errorMessage: { format: message } }),
     });
   } else {
     schema.format = value;
@@ -1114,13 +1148,13 @@ function addPattern(schema, regex, message, refs) {
     }
     if (schema.pattern) {
       schema.allOf.push({
-        pattern: schema.pattern
+        pattern: schema.pattern,
       });
       delete schema.pattern;
     }
     schema.allOf.push({
       pattern: stringifyRegExpWithFlags(regex, refs),
-      ...message && refs.errorMessages && { errorMessage: { pattern: message } }
+      ...(message && refs.errorMessages && { errorMessage: { pattern: message } }),
     });
   } else {
     schema.pattern = stringifyRegExpWithFlags(regex, refs);
@@ -1136,7 +1170,7 @@ function stringifyRegExpWithFlags(regex, refs) {
     // Case-insensitive
     m: regex.flags.includes("m"),
     // `^` and `$` matches adjacent to newline characters
-    s: regex.flags.includes("s")
+    s: regex.flags.includes("s"),
     // `.` matches newlines
   };
   const source = flags.i ? regex.source.toLowerCase() : regex.source;
@@ -1157,7 +1191,10 @@ function stringifyRegExpWithFlags(regex, refs) {
             pattern += source[i];
             pattern += `${source[i - 2]}-${source[i]}`.toUpperCase();
             inCharRange = false;
-          } else if (source[i + 1] === "-" && ((_a2 = source[i + 2]) == null ? void 0 : _a2.match(/[a-z]/))) {
+          } else if (
+            source[i + 1] === "-" &&
+            ((_a2 = source[i + 2]) == null ? void 0 : _a2.match(/[a-z]/))
+          ) {
             pattern += source[i];
             inCharRange = true;
           } else {
@@ -1182,8 +1219,10 @@ function stringifyRegExpWithFlags(regex, refs) {
       }
     }
     if (flags.s && source[i] === ".") {
-      pattern += inCharGroup ? `${source[i]}\r
-` : `[${source[i]}\r
+      pattern += inCharGroup
+        ? `${source[i]}\r
+`
+        : `[${source[i]}\r
 ]`;
       continue;
     }
@@ -1201,8 +1240,8 @@ function stringifyRegExpWithFlags(regex, refs) {
   } catch (e) {
     console.warn(
       `Could not convert regex pattern at ${refs.currentPath.join(
-        "/"
-      )} to a flag-independent form! Falling back to the flag-ignorant source`
+        "/",
+      )} to a flag-independent form! Falling back to the flag-ignorant source`,
     );
     return regex.source;
   }
@@ -1212,32 +1251,42 @@ function parseRecordDef(def, refs) {
   var _a2, _b2, _c, _d, _e, _f;
   const schema = {
     type: "object",
-    additionalProperties: (_a2 = parseDef(def.valueType._def, {
-      ...refs,
-      currentPath: [...refs.currentPath, "additionalProperties"]
-    })) != null ? _a2 : refs.allowedAdditionalProperties
+    additionalProperties:
+      (_a2 = parseDef(def.valueType._def, {
+        ...refs,
+        currentPath: [...refs.currentPath, "additionalProperties"],
+      })) != null
+        ? _a2
+        : refs.allowedAdditionalProperties,
   };
-  if (((_b2 = def.keyType) == null ? void 0 : _b2._def.typeName) === ZodFirstPartyTypeKind.ZodString && ((_c = def.keyType._def.checks) == null ? void 0 : _c.length)) {
+  if (
+    ((_b2 = def.keyType) == null ? void 0 : _b2._def.typeName) ===
+      ZodFirstPartyTypeKind.ZodString &&
+    ((_c = def.keyType._def.checks) == null ? void 0 : _c.length)
+  ) {
     const { type, ...keyType } = parseStringDef(def.keyType._def, refs);
     return {
       ...schema,
-      propertyNames: keyType
+      propertyNames: keyType,
     };
-  } else if (((_d = def.keyType) == null ? void 0 : _d._def.typeName) === ZodFirstPartyTypeKind.ZodEnum) {
+  } else if (
+    ((_d = def.keyType) == null ? void 0 : _d._def.typeName) === ZodFirstPartyTypeKind.ZodEnum
+  ) {
     return {
       ...schema,
       propertyNames: {
-        enum: def.keyType._def.values
-      }
+        enum: def.keyType._def.values,
+      },
     };
-  } else if (((_e = def.keyType) == null ? void 0 : _e._def.typeName) === ZodFirstPartyTypeKind.ZodBranded && def.keyType._def.type._def.typeName === ZodFirstPartyTypeKind.ZodString && ((_f = def.keyType._def.type._def.checks) == null ? void 0 : _f.length)) {
-    const { type, ...keyType } = parseBrandedDef(
-      def.keyType._def,
-      refs
-    );
+  } else if (
+    ((_e = def.keyType) == null ? void 0 : _e._def.typeName) === ZodFirstPartyTypeKind.ZodBranded &&
+    def.keyType._def.type._def.typeName === ZodFirstPartyTypeKind.ZodString &&
+    ((_f = def.keyType._def.type._def.checks) == null ? void 0 : _f.length)
+  ) {
+    const { type, ...keyType } = parseBrandedDef(def.keyType._def, refs);
     return {
       ...schema,
-      propertyNames: keyType
+      propertyNames: keyType,
     };
   }
   return schema;
@@ -1246,14 +1295,16 @@ function parseMapDef(def, refs) {
   if (refs.mapStrategy === "record") {
     return parseRecordDef(def, refs);
   }
-  const keys = parseDef(def.keyType._def, {
-    ...refs,
-    currentPath: [...refs.currentPath, "items", "items", "0"]
-  }) || parseAnyDef();
-  const values = parseDef(def.valueType._def, {
-    ...refs,
-    currentPath: [...refs.currentPath, "items", "items", "1"]
-  }) || parseAnyDef();
+  const keys =
+    parseDef(def.keyType._def, {
+      ...refs,
+      currentPath: [...refs.currentPath, "items", "items", "0"],
+    }) || parseAnyDef();
+  const values =
+    parseDef(def.valueType._def, {
+      ...refs,
+      currentPath: [...refs.currentPath, "items", "items", "1"],
+    }) || parseAnyDef();
   return {
     type: "array",
     maxItems: 125,
@@ -1261,8 +1312,8 @@ function parseMapDef(def, refs) {
       type: "array",
       items: [keys, values],
       minItems: 2,
-      maxItems: 2
-    }
+      maxItems: 2,
+    },
   };
 }
 function parseNativeEnumDef(def) {
@@ -1271,12 +1322,15 @@ function parseNativeEnumDef(def) {
     return typeof object[object[key]] !== "number";
   });
   const actualValues = actualKeys.map((key) => object[key]);
-  const parsedTypes = Array.from(
-    new Set(actualValues.map((values) => typeof values))
-  );
+  const parsedTypes = Array.from(new Set(actualValues.map((values) => typeof values)));
   return {
-    type: parsedTypes.length === 1 ? parsedTypes[0] === "string" ? "string" : "number" : ["string", "number"],
-    enum: actualValues
+    type:
+      parsedTypes.length === 1
+        ? parsedTypes[0] === "string"
+          ? "string"
+          : "number"
+        : ["string", "number"],
+    enum: actualValues,
   };
 }
 function parseNeverDef() {
@@ -1284,7 +1338,7 @@ function parseNeverDef() {
 }
 function parseNullDef() {
   return {
-    type: "null"
+    type: "null",
   };
 }
 var primitiveMappings = {
@@ -1292,99 +1346,94 @@ var primitiveMappings = {
   ZodNumber: "number",
   ZodBigInt: "integer",
   ZodBoolean: "boolean",
-  ZodNull: "null"
+  ZodNull: "null",
 };
 function parseUnionDef(def, refs) {
   const options = def.options instanceof Map ? Array.from(def.options.values()) : def.options;
-  if (options.every(
-    (x) => x._def.typeName in primitiveMappings && (!x._def.checks || !x._def.checks.length)
-  )) {
+  if (
+    options.every(
+      (x) => x._def.typeName in primitiveMappings && (!x._def.checks || !x._def.checks.length),
+    )
+  ) {
     const types = options.reduce((types2, x) => {
       const type = primitiveMappings[x._def.typeName];
       return type && !types2.includes(type) ? [...types2, type] : types2;
     }, []);
     return {
-      type: types.length > 1 ? types : types[0]
+      type: types.length > 1 ? types : types[0],
     };
   } else if (options.every((x) => x._def.typeName === "ZodLiteral" && !x.description)) {
-    const types = options.reduce(
-      (acc, x) => {
-        const type = typeof x._def.value;
-        switch (type) {
-          case "string":
-          case "number":
-          case "boolean":
-            return [...acc, type];
-          case "bigint":
-            return [...acc, "integer"];
-          case "object":
-            if (x._def.value === null) return [...acc, "null"];
-          case "symbol":
-          case "undefined":
-          case "function":
-          default:
-            return acc;
-        }
-      },
-      []
-    );
+    const types = options.reduce((acc, x) => {
+      const type = typeof x._def.value;
+      switch (type) {
+        case "string":
+        case "number":
+        case "boolean":
+          return [...acc, type];
+        case "bigint":
+          return [...acc, "integer"];
+        case "object":
+          if (x._def.value === null) return [...acc, "null"];
+        case "symbol":
+        case "undefined":
+        case "function":
+        default:
+          return acc;
+      }
+    }, []);
     if (types.length === options.length) {
       const uniqueTypes = types.filter((x, i, a) => a.indexOf(x) === i);
       return {
         type: uniqueTypes.length > 1 ? uniqueTypes : uniqueTypes[0],
-        enum: options.reduce(
-          (acc, x) => {
-            return acc.includes(x._def.value) ? acc : [...acc, x._def.value];
-          },
-          []
-        )
+        enum: options.reduce((acc, x) => {
+          return acc.includes(x._def.value) ? acc : [...acc, x._def.value];
+        }, []),
       };
     }
   } else if (options.every((x) => x._def.typeName === "ZodEnum")) {
     return {
       type: "string",
       enum: options.reduce(
-        (acc, x) => [
-          ...acc,
-          ...x._def.values.filter((x2) => !acc.includes(x2))
-        ],
-        []
-      )
+        (acc, x) => [...acc, ...x._def.values.filter((x2) => !acc.includes(x2))],
+        [],
+      ),
     };
   }
   return asAnyOf(def, refs);
 }
 var asAnyOf = (def, refs) => {
-  const anyOf = (def.options instanceof Map ? Array.from(def.options.values()) : def.options).map(
-    (x, i) => parseDef(x._def, {
-      ...refs,
-      currentPath: [...refs.currentPath, "anyOf", `${i}`]
-    })
-  ).filter(
-    (x) => !!x && (!refs.strictUnions || typeof x === "object" && Object.keys(x).length > 0)
-  );
+  const anyOf = (def.options instanceof Map ? Array.from(def.options.values()) : def.options)
+    .map((x, i) =>
+      parseDef(x._def, {
+        ...refs,
+        currentPath: [...refs.currentPath, "anyOf", `${i}`],
+      }),
+    )
+    .filter(
+      (x) => !!x && (!refs.strictUnions || (typeof x === "object" && Object.keys(x).length > 0)),
+    );
   return anyOf.length ? { anyOf } : void 0;
 };
 function parseNullableDef(def, refs) {
-  if (["ZodString", "ZodNumber", "ZodBigInt", "ZodBoolean", "ZodNull"].includes(
-    def.innerType._def.typeName
-  ) && (!def.innerType._def.checks || !def.innerType._def.checks.length)) {
+  if (
+    ["ZodString", "ZodNumber", "ZodBigInt", "ZodBoolean", "ZodNull"].includes(
+      def.innerType._def.typeName,
+    ) &&
+    (!def.innerType._def.checks || !def.innerType._def.checks.length)
+  ) {
     return {
-      type: [
-        primitiveMappings[def.innerType._def.typeName],
-        "null"
-      ]
+      type: [primitiveMappings[def.innerType._def.typeName], "null"],
     };
   }
   const base = parseDef(def.innerType._def, {
     ...refs,
-    currentPath: [...refs.currentPath, "anyOf", "0"]
+    currentPath: [...refs.currentPath, "anyOf", "0"],
   });
   return base && { anyOf: [base, { type: "null" }] };
 }
 function parseNumberDef(def) {
   const res = {
-    type: "number"
+    type: "number",
   };
   if (!def.checks) return res;
   for (const check of def.checks) {
@@ -1416,7 +1465,7 @@ function parseNumberDef(def) {
 function parseObjectDef(def, refs) {
   const result = {
     type: "object",
-    properties: {}
+    properties: {},
   };
   const required = [];
   const shape = def.shape();
@@ -1429,7 +1478,7 @@ function parseObjectDef(def, refs) {
     const parsedDef = parseDef(propDef._def, {
       ...refs,
       currentPath: [...refs.currentPath, "properties", propName],
-      propertyPath: [...refs.currentPath, "properties", propName]
+      propertyPath: [...refs.currentPath, "properties", propName],
     });
     if (parsedDef === void 0) {
       continue;
@@ -1452,7 +1501,7 @@ function decideAdditionalProperties(def, refs) {
   if (def.catchall._def.typeName !== "ZodNever") {
     return parseDef(def.catchall._def, {
       ...refs,
-      currentPath: [...refs.currentPath, "additionalProperties"]
+      currentPath: [...refs.currentPath, "additionalProperties"],
     });
   }
   switch (def.unknownKeys) {
@@ -1461,7 +1510,9 @@ function decideAdditionalProperties(def, refs) {
     case "strict":
       return refs.rejectedAdditionalProperties;
     case "strip":
-      return refs.removeAdditionalStrategy === "strict" ? refs.allowedAdditionalProperties : refs.rejectedAdditionalProperties;
+      return refs.removeAdditionalStrategy === "strict"
+        ? refs.allowedAdditionalProperties
+        : refs.rejectedAdditionalProperties;
   }
 }
 function safeIsOptional(schema) {
@@ -1473,12 +1524,14 @@ function safeIsOptional(schema) {
 }
 var parseOptionalDef = (def, refs) => {
   var _a2;
-  if (refs.currentPath.toString() === ((_a2 = refs.propertyPath) == null ? void 0 : _a2.toString())) {
+  if (
+    refs.currentPath.toString() === ((_a2 = refs.propertyPath) == null ? void 0 : _a2.toString())
+  ) {
     return parseDef(def.innerType._def, refs);
   }
   const innerSchema = parseDef(def.innerType._def, {
     ...refs,
-    currentPath: [...refs.currentPath, "anyOf", "1"]
+    currentPath: [...refs.currentPath, "anyOf", "1"],
   });
   return innerSchema ? { anyOf: [{ not: parseAnyDef() }, innerSchema] } : parseAnyDef();
 };
@@ -1490,14 +1543,14 @@ var parsePipelineDef = (def, refs) => {
   }
   const a = parseDef(def.in._def, {
     ...refs,
-    currentPath: [...refs.currentPath, "allOf", "0"]
+    currentPath: [...refs.currentPath, "allOf", "0"],
   });
   const b = parseDef(def.out._def, {
     ...refs,
-    currentPath: [...refs.currentPath, "allOf", a ? "1" : "0"]
+    currentPath: [...refs.currentPath, "allOf", a ? "1" : "0"],
   });
   return {
-    allOf: [a, b].filter((x) => x !== void 0)
+    allOf: [a, b].filter((x) => x !== void 0),
   };
 };
 function parsePromiseDef(def, refs) {
@@ -1506,12 +1559,12 @@ function parsePromiseDef(def, refs) {
 function parseSetDef(def, refs) {
   const items = parseDef(def.valueType._def, {
     ...refs,
-    currentPath: [...refs.currentPath, "items"]
+    currentPath: [...refs.currentPath, "items"],
   });
   const schema = {
     type: "array",
     uniqueItems: true,
-    items
+    items,
   };
   if (def.minSize) {
     schema.minItems = def.minSize.value;
@@ -1526,40 +1579,38 @@ function parseTupleDef(def, refs) {
     return {
       type: "array",
       minItems: def.items.length,
-      items: def.items.map(
-        (x, i) => parseDef(x._def, {
-          ...refs,
-          currentPath: [...refs.currentPath, "items", `${i}`]
-        })
-      ).reduce(
-        (acc, x) => x === void 0 ? acc : [...acc, x],
-        []
-      ),
+      items: def.items
+        .map((x, i) =>
+          parseDef(x._def, {
+            ...refs,
+            currentPath: [...refs.currentPath, "items", `${i}`],
+          }),
+        )
+        .reduce((acc, x) => (x === void 0 ? acc : [...acc, x]), []),
       additionalItems: parseDef(def.rest._def, {
         ...refs,
-        currentPath: [...refs.currentPath, "additionalItems"]
-      })
+        currentPath: [...refs.currentPath, "additionalItems"],
+      }),
     };
   } else {
     return {
       type: "array",
       minItems: def.items.length,
       maxItems: def.items.length,
-      items: def.items.map(
-        (x, i) => parseDef(x._def, {
-          ...refs,
-          currentPath: [...refs.currentPath, "items", `${i}`]
-        })
-      ).reduce(
-        (acc, x) => x === void 0 ? acc : [...acc, x],
-        []
-      )
+      items: def.items
+        .map((x, i) =>
+          parseDef(x._def, {
+            ...refs,
+            currentPath: [...refs.currentPath, "items", `${i}`],
+          }),
+        )
+        .reduce((acc, x) => (x === void 0 ? acc : [...acc, x]), []),
     };
   }
 }
 function parseUndefinedDef() {
   return {
-    not: parseAnyDef()
+    not: parseAnyDef(),
   };
 }
 function parseUnknownDef() {
@@ -1653,13 +1704,8 @@ function parseDef(def, refs, forceResolution = false) {
   var _a2;
   const seenItem = refs.seen.get(def);
   if (refs.override) {
-    const overrideResult = (_a2 = refs.override) == null ? void 0 : _a2.call(
-      refs,
-      def,
-      refs,
-      seenItem,
-      forceResolution
-    );
+    const overrideResult =
+      (_a2 = refs.override) == null ? void 0 : _a2.call(refs, def, refs, seenItem, forceResolution);
     if (overrideResult !== ignoreOverride) {
       return overrideResult;
     }
@@ -1673,7 +1719,10 @@ function parseDef(def, refs, forceResolution = false) {
   const newItem = { def, path: refs.currentPath, jsonSchema: void 0 };
   refs.seen.set(def, newItem);
   const jsonSchemaOrGetter = selectParser(def, def.typeName, refs);
-  const jsonSchema2 = typeof jsonSchemaOrGetter === "function" ? parseDef(jsonSchemaOrGetter(), refs) : jsonSchemaOrGetter;
+  const jsonSchema2 =
+    typeof jsonSchemaOrGetter === "function"
+      ? parseDef(jsonSchemaOrGetter(), refs)
+      : jsonSchemaOrGetter;
   if (jsonSchema2) {
     addMeta(def, refs, jsonSchema2);
   }
@@ -1693,11 +1742,12 @@ var get$ref = (item, refs) => {
       return { $ref: getRelativePath(refs.currentPath, item.path) };
     case "none":
     case "seen": {
-      if (item.path.length < refs.currentPath.length && item.path.every((value, index) => refs.currentPath[index] === value)) {
+      if (
+        item.path.length < refs.currentPath.length &&
+        item.path.every((value, index) => refs.currentPath[index] === value)
+      ) {
         console.warn(
-          `Recursive reference detected at ${refs.currentPath.join(
-            "/"
-          )}! Defaulting to any`
+          `Recursive reference detected at ${refs.currentPath.join("/")}! Defaulting to any`,
         );
         return parseAnyDef();
       }
@@ -1713,7 +1763,10 @@ var addMeta = (def, refs, jsonSchema2) => {
 };
 var getRefs = (options) => {
   const _options = getDefaultOptions(options);
-  const currentPath = _options.name !== void 0 ? [..._options.basePath, _options.definitionPath, _options.name] : _options.basePath;
+  const currentPath =
+    _options.name !== void 0
+      ? [..._options.basePath, _options.definitionPath, _options.name]
+      : _options.basePath;
   return {
     ..._options,
     currentPath,
@@ -1725,59 +1778,82 @@ var getRefs = (options) => {
           def: def._def,
           path: [..._options.basePath, _options.definitionPath, name2],
           // Resolution of references will be forced even though seen, so it's ok that the schema is undefined here for now.
-          jsonSchema: void 0
-        }
-      ])
-    )
+          jsonSchema: void 0,
+        },
+      ]),
+    ),
   };
 };
 var zod3ToJsonSchema = (schema, options) => {
   var _a2;
   const refs = getRefs(options);
-  let definitions = typeof options === "object" && options.definitions ? Object.entries(options.definitions).reduce(
-    (acc, [name3, schema2]) => {
-      var _a3;
-      return {
-        ...acc,
-        [name3]: (_a3 = parseDef(
-          schema2._def,
-          {
+  let definitions =
+    typeof options === "object" && options.definitions
+      ? Object.entries(options.definitions).reduce((acc, [name3, schema2]) => {
+          var _a3;
+          return {
+            ...acc,
+            [name3]:
+              (_a3 = parseDef(
+                schema2._def,
+                {
+                  ...refs,
+                  currentPath: [...refs.basePath, refs.definitionPath, name3],
+                },
+                true,
+              )) != null
+                ? _a3
+                : parseAnyDef(),
+          };
+        }, {})
+      : void 0;
+  const name2 =
+    typeof options === "string"
+      ? options
+      : (options == null ? void 0 : options.nameStrategy) === "title"
+        ? void 0
+        : options == null
+          ? void 0
+          : options.name;
+  const main =
+    (_a2 = parseDef(
+      schema._def,
+      name2 === void 0
+        ? refs
+        : {
             ...refs,
-            currentPath: [...refs.basePath, refs.definitionPath, name3]
+            currentPath: [...refs.basePath, refs.definitionPath, name2],
           },
-          true
-        )) != null ? _a3 : parseAnyDef()
-      };
-    },
-    {}
-  ) : void 0;
-  const name2 = typeof options === "string" ? options : (options == null ? void 0 : options.nameStrategy) === "title" ? void 0 : options == null ? void 0 : options.name;
-  const main = (_a2 = parseDef(
-    schema._def,
-    name2 === void 0 ? refs : {
-      ...refs,
-      currentPath: [...refs.basePath, refs.definitionPath, name2]
-    },
-    false
-  )) != null ? _a2 : parseAnyDef();
-  const title = typeof options === "object" && options.name !== void 0 && options.nameStrategy === "title" ? options.name : void 0;
+      false,
+    )) != null
+      ? _a2
+      : parseAnyDef();
+  const title =
+    typeof options === "object" && options.name !== void 0 && options.nameStrategy === "title"
+      ? options.name
+      : void 0;
   if (title !== void 0) {
     main.title = title;
   }
-  const combined = name2 === void 0 ? definitions ? {
-    ...main,
-    [refs.definitionPath]: definitions
-  } : main : {
-    $ref: [
-      ...refs.$refStrategy === "relative" ? [] : refs.basePath,
-      refs.definitionPath,
-      name2
-    ].join("/"),
-    [refs.definitionPath]: {
-      ...definitions,
-      [name2]: main
-    }
-  };
+  const combined =
+    name2 === void 0
+      ? definitions
+        ? {
+            ...main,
+            [refs.definitionPath]: definitions,
+          }
+        : main
+      : {
+          $ref: [
+            ...(refs.$refStrategy === "relative" ? [] : refs.basePath),
+            refs.definitionPath,
+            name2,
+          ].join("/"),
+          [refs.definitionPath]: {
+            ...definitions,
+            [name2]: main,
+          },
+        };
   combined.$schema = "http://json-schema.org/draft-07/schema#";
   return combined;
 };
@@ -1791,9 +1867,7 @@ function lazySchema(createSchema) {
     return schema;
   };
 }
-function jsonSchema(jsonSchema2, {
-  validate
-} = {}) {
+function jsonSchema(jsonSchema2, { validate } = {}) {
   return {
     [schemaSymbol]: true,
     _type: void 0,
@@ -1804,38 +1878,56 @@ function jsonSchema(jsonSchema2, {
       }
       return jsonSchema2;
     },
-    validate
+    validate,
   };
 }
 function isSchema(value) {
-  return typeof value === "object" && value !== null && schemaSymbol in value && value[schemaSymbol] === true && "jsonSchema" in value && "validate" in value;
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    schemaSymbol in value &&
+    value[schemaSymbol] === true &&
+    "jsonSchema" in value &&
+    "validate" in value
+  );
 }
 function asSchema(schema) {
-  return schema == null ? jsonSchema({
-    type: "object",
-    properties: {},
-    additionalProperties: false
-  }) : isSchema(schema) ? schema : "~standard" in schema ? schema["~standard"].vendor === "zod" ? zodSchema(schema) : standardSchema(schema) : schema();
+  return schema == null
+    ? jsonSchema({
+        type: "object",
+        properties: {},
+        additionalProperties: false,
+      })
+    : isSchema(schema)
+      ? schema
+      : "~standard" in schema
+        ? schema["~standard"].vendor === "zod"
+          ? zodSchema(schema)
+          : standardSchema(schema)
+        : schema();
 }
 function standardSchema(standardSchema2) {
   return jsonSchema(
-    () => addAdditionalPropertiesToJsonSchema(
-      standardSchema2["~standard"].jsonSchema.input({
-        target: "draft-07"
-      })
-    ),
+    () =>
+      addAdditionalPropertiesToJsonSchema(
+        standardSchema2["~standard"].jsonSchema.input({
+          target: "draft-07",
+        }),
+      ),
     {
       validate: async (value) => {
         const result = await standardSchema2["~standard"].validate(value);
-        return "value" in result ? { success: true, value: result.value } : {
-          success: false,
-          error: new TypeValidationError({
-            value,
-            cause: result.issues
-          })
-        };
-      }
-    }
+        return "value" in result
+          ? { success: true, value: result.value }
+          : {
+              success: false,
+              error: new TypeValidationError({
+                value,
+                cause: result.issues,
+              }),
+            };
+      },
+    },
   );
 }
 function zod3Schema(zodSchema2, options) {
@@ -1843,15 +1935,18 @@ function zod3Schema(zodSchema2, options) {
   const useReferences = (_a2 = void 0) != null ? _a2 : false;
   return jsonSchema(
     // defer json schema creation to avoid unnecessary computation when only validation is needed
-    () => zod3ToJsonSchema(zodSchema2, {
-      $refStrategy: useReferences ? "root" : "none"
-    }),
+    () =>
+      zod3ToJsonSchema(zodSchema2, {
+        $refStrategy: useReferences ? "root" : "none",
+      }),
     {
       validate: async (value) => {
         const result = await zodSchema2.safeParseAsync(value);
-        return result.success ? { success: true, value: result.data } : { success: false, error: result.error };
-      }
-    }
+        return result.success
+          ? { success: true, value: result.data }
+          : { success: false, error: result.error };
+      },
+    },
   );
 }
 function zod4Schema(zodSchema2, options) {
@@ -1859,19 +1954,22 @@ function zod4Schema(zodSchema2, options) {
   const useReferences = (_a2 = void 0) != null ? _a2 : false;
   return jsonSchema(
     // defer json schema creation to avoid unnecessary computation when only validation is needed
-    () => addAdditionalPropertiesToJsonSchema(
-      toJSONSchema(zodSchema2, {
-        target: "draft-7",
-        io: "input",
-        reused: useReferences ? "ref" : "inline"
-      })
-    ),
+    () =>
+      addAdditionalPropertiesToJsonSchema(
+        toJSONSchema(zodSchema2, {
+          target: "draft-7",
+          io: "input",
+          reused: useReferences ? "ref" : "inline",
+        }),
+      ),
     {
       validate: async (value) => {
         const result = await safeParseAsync(zodSchema2, value);
-        return result.success ? { success: true, value: result.data } : { success: false, error: result.error };
-      }
-    }
+        return result.success
+          ? { success: true, value: result.data }
+          : { success: false, error: result.error };
+      },
+    },
   );
 }
 function isZod4Schema(zodSchema2) {
@@ -1884,22 +1982,14 @@ function zodSchema(zodSchema2, options) {
     return zod3Schema(zodSchema2);
   }
 }
-async function validateTypes({
-  value,
-  schema,
-  context
-}) {
+async function validateTypes({ value, schema, context }) {
   const result = await safeValidateTypes({ value, schema, context });
   if (!result.success) {
     throw TypeValidationError.wrap({ value, cause: result.error, context });
   }
   return result.value;
 }
-async function safeValidateTypes({
-  value,
-  schema,
-  context
-}) {
+async function safeValidateTypes({ value, schema, context }) {
   const actualSchema = asSchema(schema);
   try {
     if (actualSchema.validate == null) {
@@ -1912,20 +2002,17 @@ async function safeValidateTypes({
     return {
       success: false,
       error: TypeValidationError.wrap({ value, cause: result.error, context }),
-      rawValue: value
+      rawValue: value,
     };
   } catch (error) {
     return {
       success: false,
       error: TypeValidationError.wrap({ value, cause: error, context }),
-      rawValue: value
+      rawValue: value,
     };
   }
 }
-async function parseJSON({
-  text,
-  schema
-}) {
+async function parseJSON({ text, schema }) {
   try {
     const value = secureJsonParse(text);
     if (schema == null) {
@@ -1939,10 +2026,7 @@ async function parseJSON({
     throw new JSONParseError({ text, cause: error });
   }
 }
-async function safeParseJSON({
-  text,
-  schema
-}) {
+async function safeParseJSON({ text, schema }) {
   try {
     const value = secureJsonParse(text);
     if (schema == null) {
@@ -1953,42 +2037,38 @@ async function safeParseJSON({
     return {
       success: false,
       error: JSONParseError.isInstance(error) ? error : new JSONParseError({ text, cause: error }),
-      rawValue: void 0
+      rawValue: void 0,
     };
   }
 }
-function parseJsonEventStream({
-  stream,
-  schema
-}) {
-  return stream.pipeThrough(new TextDecoderStream()).pipeThrough(new EventSourceParserStream()).pipeThrough(
-    new TransformStream({
-      async transform({ data }, controller) {
-        if (data === "[DONE]") {
-          return;
-        }
-        controller.enqueue(await safeParseJSON({ text: data, schema }));
-      }
-    })
-  );
+function parseJsonEventStream({ stream, schema }) {
+  return stream
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new EventSourceParserStream())
+    .pipeThrough(
+      new TransformStream({
+        async transform({ data }, controller) {
+          if (data === "[DONE]") {
+            return;
+          }
+          controller.enqueue(await safeParseJSON({ text: data, schema }));
+        },
+      }),
+    );
 }
-async function parseProviderOptions({
-  provider,
-  providerOptions,
-  schema
-}) {
+async function parseProviderOptions({ provider, providerOptions, schema }) {
   if ((providerOptions == null ? void 0 : providerOptions[provider]) == null) {
     return void 0;
   }
   const parsedProviderOptions = await safeValidateTypes({
     value: providerOptions[provider],
-    schema
+    schema,
   });
   if (!parsedProviderOptions.success) {
     throw new InvalidArgumentError({
       argument: "providerOptions",
       message: `invalid ${provider} provider options`,
-      cause: parsedProviderOptions.error
+      cause: parsedProviderOptions.error,
     });
   }
   return parsedProviderOptions.value;
@@ -2001,22 +2081,23 @@ var postJsonToApi = async ({
   failedResponseHandler,
   successfulResponseHandler,
   abortSignal,
-  fetch: fetch2
-}) => postToApi({
-  url,
-  headers: {
-    "Content-Type": "application/json",
-    ...headers
-  },
-  body: {
-    content: JSON.stringify(body),
-    values: body
-  },
-  failedResponseHandler,
-  successfulResponseHandler,
-  abortSignal,
-  fetch: fetch2
-});
+  fetch: fetch2,
+}) =>
+  postToApi({
+    url,
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
+    body: {
+      content: JSON.stringify(body),
+      values: body,
+    },
+    failedResponseHandler,
+    successfulResponseHandler,
+    abortSignal,
+    fetch: fetch2,
+  });
 var postFormDataToApi = async ({
   url,
   headers,
@@ -2024,19 +2105,20 @@ var postFormDataToApi = async ({
   failedResponseHandler,
   successfulResponseHandler,
   abortSignal,
-  fetch: fetch2
-}) => postToApi({
-  url,
-  headers,
-  body: {
-    content: formData,
-    values: Object.fromEntries(formData.entries())
-  },
-  failedResponseHandler,
-  successfulResponseHandler,
-  abortSignal,
-  fetch: fetch2
-});
+  fetch: fetch2,
+}) =>
+  postToApi({
+    url,
+    headers,
+    body: {
+      content: formData,
+      values: Object.fromEntries(formData.entries()),
+    },
+    failedResponseHandler,
+    successfulResponseHandler,
+    abortSignal,
+    fetch: fetch2,
+  });
 var postToApi = async ({
   url,
   headers = {},
@@ -2044,7 +2126,7 @@ var postToApi = async ({
   successfulResponseHandler,
   failedResponseHandler,
   abortSignal,
-  fetch: fetch2 = getOriginalFetch2()
+  fetch: fetch2 = getOriginalFetch2(),
 }) => {
   try {
     const response = await fetch2(url, {
@@ -2052,10 +2134,10 @@ var postToApi = async ({
       headers: withUserAgentSuffix(
         headers,
         `ai-sdk/provider-utils/${VERSION}`,
-        getRuntimeEnvironmentUserAgent()
+        getRuntimeEnvironmentUserAgent(),
       ),
       body: body.content,
-      signal: abortSignal
+      signal: abortSignal,
     });
     const responseHeaders = extractResponseHeaders(response);
     if (!response.ok) {
@@ -2064,7 +2146,7 @@ var postToApi = async ({
         errorInformation = await failedResponseHandler({
           response,
           url,
-          requestBodyValues: body.values
+          requestBodyValues: body.values,
         });
       } catch (error) {
         if (isAbortError(error) || APICallError.isInstance(error)) {
@@ -2076,7 +2158,7 @@ var postToApi = async ({
           statusCode: response.status,
           url,
           responseHeaders,
-          requestBodyValues: body.values
+          requestBodyValues: body.values,
         });
       }
       throw errorInformation.value;
@@ -2085,7 +2167,7 @@ var postToApi = async ({
       return await successfulResponseHandler({
         response,
         url,
-        requestBodyValues: body.values
+        requestBodyValues: body.values,
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -2099,7 +2181,7 @@ var postToApi = async ({
         statusCode: response.status,
         url,
         responseHeaders,
-        requestBodyValues: body.values
+        requestBodyValues: body.values,
       });
     }
   } catch (error) {
@@ -2113,7 +2195,7 @@ function createProviderToolFactoryWithOutputSchema({
   id,
   inputSchema,
   outputSchema,
-  supportsDeferredResults
+  supportsDeferredResults,
 }) {
   return ({
     execute,
@@ -2123,20 +2205,21 @@ function createProviderToolFactoryWithOutputSchema({
     onInputDelta,
     onInputAvailable,
     ...args
-  }) => tool({
-    type: "provider",
-    id,
-    args,
-    inputSchema,
-    outputSchema,
-    execute,
-    needsApproval,
-    toModelOutput,
-    onInputStart,
-    onInputDelta,
-    onInputAvailable,
-    supportsDeferredResults
-  });
+  }) =>
+    tool({
+      type: "provider",
+      id,
+      args,
+      inputSchema,
+      outputSchema,
+      execute,
+      needsApproval,
+      toModelOutput,
+      onInputStart,
+      onInputDelta,
+      onInputAvailable,
+      supportsDeferredResults,
+    });
 }
 async function resolve(value) {
   if (typeof value === "function") {
@@ -2144,32 +2227,39 @@ async function resolve(value) {
   }
   return Promise.resolve(value);
 }
-var retryWithExponentialBackoff = ({
-  maxRetries = 2,
-  initialDelayInMs = 2e3,
-  backoffFactor = 2,
-  abortSignal,
-  shouldRetry,
-  getDelayInMs = ({ exponentialBackoffDelay }) => exponentialBackoffDelay,
-  createRetryError = ({ message }) => new Error(message)
-}) => async (f) => retryWithExponentialBackoffInternal(f, {
-  maxRetries,
-  delayInMs: initialDelayInMs,
-  backoffFactor,
-  abortSignal,
-  shouldRetry,
-  getDelayInMs,
-  createRetryError
-});
-async function retryWithExponentialBackoffInternal(f, {
-  maxRetries,
-  delayInMs,
-  backoffFactor,
-  abortSignal,
-  shouldRetry,
-  getDelayInMs,
-  createRetryError
-}, errors = []) {
+var retryWithExponentialBackoff =
+  ({
+    maxRetries = 2,
+    initialDelayInMs = 2e3,
+    backoffFactor = 2,
+    abortSignal,
+    shouldRetry,
+    getDelayInMs = ({ exponentialBackoffDelay }) => exponentialBackoffDelay,
+    createRetryError = ({ message }) => new Error(message),
+  }) =>
+  async (f) =>
+    retryWithExponentialBackoffInternal(f, {
+      maxRetries,
+      delayInMs: initialDelayInMs,
+      backoffFactor,
+      abortSignal,
+      shouldRetry,
+      getDelayInMs,
+      createRetryError,
+    });
+async function retryWithExponentialBackoffInternal(
+  f,
+  {
+    maxRetries,
+    delayInMs,
+    backoffFactor,
+    abortSignal,
+    shouldRetry,
+    getDelayInMs,
+    createRetryError,
+  },
+  errors = [],
+) {
   try {
     return await f();
   } catch (error) {
@@ -2186,16 +2276,16 @@ async function retryWithExponentialBackoffInternal(f, {
       throw createRetryError({
         message: `Failed after ${tryNumber} attempts. Last error: ${errorMessage}`,
         reason: "maxRetriesExceeded",
-        errors: newErrors
+        errors: newErrors,
       });
     }
-    if (await shouldRetry(error) && tryNumber <= maxRetries) {
+    if ((await shouldRetry(error)) && tryNumber <= maxRetries) {
       await delay(
         getDelayInMs({
           error,
-          exponentialBackoffDelay: delayInMs
+          exponentialBackoffDelay: delayInMs,
         }),
-        { abortSignal }
+        { abortSignal },
       );
       return retryWithExponentialBackoffInternal(
         f,
@@ -2206,9 +2296,9 @@ async function retryWithExponentialBackoffInternal(f, {
           abortSignal,
           shouldRetry,
           getDelayInMs,
-          createRetryError
+          createRetryError,
         },
-        newErrors
+        newErrors,
       );
     }
     if (tryNumber === 1) {
@@ -2217,124 +2307,119 @@ async function retryWithExponentialBackoffInternal(f, {
     throw createRetryError({
       message: `Failed after ${tryNumber} attempts with non-retryable error: '${errorMessage}'`,
       reason: "errorNotRetryable",
-      errors: newErrors
+      errors: newErrors,
     });
   }
 }
 var textDecoder = new TextDecoder();
-async function readResponseBodyAsText({
-  response,
-  url
-}) {
+async function readResponseBodyAsText({ response, url }) {
   return textDecoder.decode(
     await readResponseWithSizeLimit({
       response,
-      url
-    })
+      url,
+    }),
   );
 }
-var createJsonErrorResponseHandler = ({
-  errorSchema,
-  errorToMessage,
-  isRetryable
-}) => async ({ response, url, requestBodyValues }) => {
-  const responseBody = await readResponseBodyAsText({ response, url });
-  const responseHeaders = extractResponseHeaders(response);
-  if (responseBody.trim() === "") {
+var createJsonErrorResponseHandler =
+  ({ errorSchema, errorToMessage, isRetryable }) =>
+  async ({ response, url, requestBodyValues }) => {
+    const responseBody = await readResponseBodyAsText({ response, url });
+    const responseHeaders = extractResponseHeaders(response);
+    if (responseBody.trim() === "") {
+      return {
+        responseHeaders,
+        value: new APICallError({
+          message: response.statusText,
+          url,
+          requestBodyValues,
+          statusCode: response.status,
+          responseHeaders,
+          responseBody,
+          isRetryable: isRetryable == null ? void 0 : isRetryable(response),
+        }),
+      };
+    }
+    try {
+      const parsedError = await parseJSON({
+        text: responseBody,
+        schema: errorSchema,
+      });
+      return {
+        responseHeaders,
+        value: new APICallError({
+          message: errorToMessage(parsedError),
+          url,
+          requestBodyValues,
+          statusCode: response.status,
+          responseHeaders,
+          responseBody,
+          data: parsedError,
+          isRetryable: isRetryable == null ? void 0 : isRetryable(response, parsedError),
+        }),
+      };
+    } catch (parseError) {
+      return {
+        responseHeaders,
+        value: new APICallError({
+          message: response.statusText,
+          url,
+          requestBodyValues,
+          statusCode: response.status,
+          responseHeaders,
+          responseBody,
+          isRetryable: isRetryable == null ? void 0 : isRetryable(response),
+        }),
+      };
+    }
+  };
+var createEventSourceResponseHandler =
+  (chunkSchema) =>
+  async ({ response }) => {
+    const responseHeaders = extractResponseHeaders(response);
+    if (response.body == null) {
+      throw new EmptyResponseBodyError({});
+    }
     return {
       responseHeaders,
-      value: new APICallError({
-        message: response.statusText,
-        url,
-        requestBodyValues,
-        statusCode: response.status,
-        responseHeaders,
-        responseBody,
-        isRetryable: isRetryable == null ? void 0 : isRetryable(response)
-      })
+      value: parseJsonEventStream({
+        stream: response.body,
+        schema: chunkSchema,
+      }),
     };
-  }
-  try {
-    const parsedError = await parseJSON({
+  };
+var createJsonResponseHandler =
+  (responseSchema) =>
+  async ({ response, url, requestBodyValues }) => {
+    const responseBody = await readResponseBodyAsText({ response, url });
+    const parsedResult = await safeParseJSON({
       text: responseBody,
-      schema: errorSchema
+      schema: responseSchema,
     });
-    return {
-      responseHeaders,
-      value: new APICallError({
-        message: errorToMessage(parsedError),
-        url,
-        requestBodyValues,
+    const responseHeaders = extractResponseHeaders(response);
+    if (!parsedResult.success) {
+      throw new APICallError({
+        message: "Invalid JSON response",
+        cause: parsedResult.error,
         statusCode: response.status,
         responseHeaders,
         responseBody,
-        data: parsedError,
-        isRetryable: isRetryable == null ? void 0 : isRetryable(response, parsedError)
-      })
-    };
-  } catch (parseError) {
-    return {
-      responseHeaders,
-      value: new APICallError({
-        message: response.statusText,
         url,
         requestBodyValues,
-        statusCode: response.status,
-        responseHeaders,
-        responseBody,
-        isRetryable: isRetryable == null ? void 0 : isRetryable(response)
-      })
-    };
-  }
-};
-var createEventSourceResponseHandler = (chunkSchema) => async ({ response }) => {
-  const responseHeaders = extractResponseHeaders(response);
-  if (response.body == null) {
-    throw new EmptyResponseBodyError({});
-  }
-  return {
-    responseHeaders,
-    value: parseJsonEventStream({
-      stream: response.body,
-      schema: chunkSchema
-    })
-  };
-};
-var createJsonResponseHandler = (responseSchema) => async ({ response, url, requestBodyValues }) => {
-  const responseBody = await readResponseBodyAsText({ response, url });
-  const parsedResult = await safeParseJSON({
-    text: responseBody,
-    schema: responseSchema
-  });
-  const responseHeaders = extractResponseHeaders(response);
-  if (!parsedResult.success) {
-    throw new APICallError({
-      message: "Invalid JSON response",
-      cause: parsedResult.error,
-      statusCode: response.status,
+      });
+    }
+    return {
       responseHeaders,
-      responseBody,
-      url,
-      requestBodyValues
-    });
-  }
-  return {
-    responseHeaders,
-    value: parsedResult.value,
-    rawValue: parsedResult.rawValue
+      value: parsedResult.value,
+      rawValue: parsedResult.rawValue,
+    };
   };
-};
 function withoutTrailingSlash(url) {
   return url == null ? void 0 : url.replace(/\/$/, "");
 }
 function isAsyncIterable(obj) {
   return obj != null && typeof obj[Symbol.asyncIterator] === "function";
 }
-async function* executeTool({
-  execute,
-  input,
-  options
-}) {
+async function* executeTool({ execute, input, options }) {
   const result = execute(input, options);
   if (isAsyncIterable(result)) {
     let lastOutput;
@@ -2384,5 +2469,5 @@ export {
   withoutTrailingSlash as w,
   getErrorMessage as x,
   asSchema as y,
-  zodSchema as z
+  zodSchema as z,
 };
