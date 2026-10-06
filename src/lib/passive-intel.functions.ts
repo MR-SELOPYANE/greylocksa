@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import type { PassiveIntelReport, VulnFinding, ScanSeverity } from "./types";
+import type { PassiveIntelReport, ShodanInfo, VulnFinding, ScanSeverity } from "./types";
 
 const inputSchema = z.object({
   target: z.string().trim().min(1).max(500),
@@ -33,11 +33,56 @@ async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   ]);
 }
 
+/**
+ * Third-party intel APIs return loosely-shaped JSON. Every field is read through
+ * one of the `as*` helpers below rather than being asserted as `any`, so a
+ * surprising response degrades to a null instead of a runtime crash.
+ */
+type JsonRecord = Record<string, unknown>;
+
+function asRecord(value: unknown): JsonRecord | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as JsonRecord)
+    : null;
+}
+
+function asRecords(value: unknown): JsonRecord[] {
+  return Array.isArray(value)
+    ? value.map(asRecord).filter((v): v is JsonRecord => v !== null)
+    : [];
+}
+
+function asString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function asStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+}
+
+function asNumberArray(value: unknown): number[] {
+  return Array.isArray(value) ? value.filter((v): v is number => typeof v === "number") : [];
+}
+
+function asNumber(value: unknown, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function asStringMap(value: unknown): Record<string, string> {
+  const rec = asRecord(value);
+  if (!rec) return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(rec)) {
+    if (typeof v === "string") out[k] = v;
+  }
+  return out;
+}
+
 async function safeFetchJson(
   url: string,
   init?: RequestInit,
   timeoutMs = 8000,
-): Promise<any | null> {
+): Promise<unknown> {
   try {
     const res = await withTimeout(fetch(url, init), timeoutMs);
     if (!res.ok) return null;
@@ -54,13 +99,17 @@ async function dnsLookup(host: string) {
   const results: Record<string, string[]> = {};
   await Promise.all(
     types.map(async (t) => {
-      const j = await safeFetchJson(
-        `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=${t}`,
-        { headers: { Accept: "application/dns-json" } },
-        5000,
+      const j = asRecord(
+        await safeFetchJson(
+          `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=${t}`,
+          { headers: { Accept: "application/dns-json" } },
+          5000,
+        ),
       );
-      const answers = (j?.Answer as Array<{ data: string; type: number }> | undefined) ?? [];
-      if (answers.length) results[t] = answers.map((a) => a.data);
+      const answers = asRecords(j?.Answer)
+        .map((a) => asString(a.data))
+        .filter((d): d is string => d !== null);
+      if (answers.length) results[t] = answers;
     }),
   );
   return results;
@@ -68,27 +117,32 @@ async function dnsLookup(host: string) {
 
 async function rdapLookup(host: string) {
   // rdap.org redirects to authoritative RDAP endpoint
-  const j = await safeFetchJson(
-    `https://rdap.org/domain/${encodeURIComponent(host)}`,
-    undefined,
-    8000,
+  const j = asRecord(
+    await safeFetchJson(`https://rdap.org/domain/${encodeURIComponent(host)}`, undefined, 8000),
   );
   if (!j) return null;
-  const events = (j.events ?? []) as Array<{ eventAction: string; eventDate: string }>;
-  const created = events.find((e) => e.eventAction === "registration")?.eventDate;
-  const expires = events.find((e) => e.eventAction === "expiration")?.eventDate;
-  const updated = events.find((e) => e.eventAction === "last changed")?.eventDate;
-  const registrar = (j.entities ?? [])
-    .find((e: any) => (e.roles ?? []).includes("registrar"))
-    ?.vcardArray?.[1]?.find((f: any[]) => f[0] === "fn")?.[3];
+  const events = asRecords(j.events);
+  const dateOf = (action: string) =>
+    asString(events.find((e) => asString(e.eventAction) === action)?.eventDate);
+  const registrarEntity = asRecords(j.entities).find((e) =>
+    asStringArray(e.roles).includes("registrar"),
+  );
+  // vcardArray is ["vcard", [["fn", {}, "text", "Example Inc."], ...]]
+  const vcardRaw = registrarEntity?.vcardArray;
+  const vcard = Array.isArray(vcardRaw) ? (vcardRaw as unknown[]) : [];
+  const fields = Array.isArray(vcard[1]) ? (vcard[1] as unknown[][]) : [];
+  const registrar = asString(fields.find((f) => Array.isArray(f) && f[0] === "fn")?.[3]);
+  const nameservers = asRecords(j.nameservers)
+    .map((n) => asString(n.ldhName))
+    .filter((n): n is string => n !== null);
   return {
-    handle: j.handle,
-    registrar: registrar ?? null,
-    status: j.status ?? [],
-    nameservers: (j.nameservers ?? []).map((n: any) => n.ldhName).filter(Boolean),
-    created: created ?? null,
-    updated: updated ?? null,
-    expires: expires ?? null,
+    handle: asString(j.handle) ?? undefined,
+    registrar,
+    status: asStringArray(j.status),
+    nameservers,
+    created: dateOf("registration"),
+    updated: dateOf("last changed"),
+    expires: dateOf("expiration"),
   };
 }
 
@@ -112,15 +166,15 @@ async function httpHeaders(host: string) {
 }
 
 async function crtShSubdomains(host: string) {
-  const j = await safeFetchJson(
+  const raw = await safeFetchJson(
     `https://crt.sh/?q=%25.${encodeURIComponent(host)}&output=json`,
     undefined,
     10000,
   );
-  if (!Array.isArray(j)) return null;
+  if (!Array.isArray(raw)) return null;
   const set = new Set<string>();
-  for (const row of j as Array<{ name_value?: string }>) {
-    (row.name_value ?? "").split(/\n/).forEach((s) => {
+  for (const row of asRecords(raw)) {
+    (asString(row.name_value) ?? "").split(/\n/).forEach((s) => {
       const n = s.trim().toLowerCase();
       if (n && !n.startsWith("*") && n.endsWith(host)) set.add(n);
     });
@@ -128,40 +182,57 @@ async function crtShSubdomains(host: string) {
   return { count: set.size, sample: Array.from(set).slice(0, 25).sort() };
 }
 
-async function shodanLookup(host: string, isIp: boolean) {
+async function shodanLookup(host: string, isIp: boolean): Promise<ShodanInfo | null> {
   const key = process.env.SHODAN_API_KEY;
   if (!key) return null;
   if (isIp) {
-    const j = await safeFetchJson(
-      `https://api.shodan.io/shodan/host/${encodeURIComponent(host)}?key=${key}&minify=true`,
-      undefined,
-      8000,
+    const j = asRecord(
+      await safeFetchJson(
+        `https://api.shodan.io/shodan/host/${encodeURIComponent(host)}?key=${key}&minify=true`,
+        undefined,
+        8000,
+      ),
     );
     if (!j || j.error) return null;
     return {
-      ip: j.ip_str,
-      org: j.org,
-      isp: j.isp,
-      country: j.country_name,
-      os: j.os,
-      ports: j.ports ?? [],
-      hostnames: j.hostnames ?? [],
-      vulns: j.vulns ?? [],
-      tags: j.tags ?? [],
-      last_update: j.last_update,
+      ip: asString(j.ip_str),
+      org: asString(j.org),
+      isp: asString(j.isp),
+      country: asString(j.country_name),
+      os: asString(j.os),
+      ports: asNumberArray(j.ports),
+      hostnames: asStringArray(j.hostnames),
+      vulns: asStringArray(j.vulns),
+      tags: asStringArray(j.tags),
+      last_update: asString(j.last_update),
+      domain: null,
+      subdomainCount: 0,
+      subdomains: [],
     };
   }
-  const j = await safeFetchJson(
-    `https://api.shodan.io/dns/domain/${encodeURIComponent(host)}?key=${key}`,
-    undefined,
-    8000,
+  const j = asRecord(
+    await safeFetchJson(
+      `https://api.shodan.io/dns/domain/${encodeURIComponent(host)}?key=${key}`,
+      undefined,
+      8000,
+    ),
   );
   if (!j || j.error) return null;
+  const subdomains = asStringArray(j.subdomains);
   return {
-    domain: j.domain,
-    subdomainCount: (j.subdomains ?? []).length,
-    subdomains: (j.subdomains ?? []).slice(0, 20),
-    tags: j.tags ?? [],
+    ip: null,
+    org: null,
+    isp: null,
+    country: null,
+    os: null,
+    ports: [],
+    hostnames: [],
+    vulns: [],
+    tags: asStringArray(j.tags),
+    last_update: null,
+    domain: asString(j.domain),
+    subdomainCount: subdomains.length,
+    subdomains: subdomains.slice(0, 20),
   };
 }
 
@@ -176,21 +247,27 @@ async function virusTotalLookup(host: string, isIp: boolean) {
     { headers: { "x-apikey": key } },
     8000,
   );
-  const attrs = j?.data?.attributes;
+  const j = asRecord(
+    await safeFetchJson(`https://www.virustotal.com/api/v3/${path}`, {
+      headers: { "x-apikey": key },
+    }, 8000),
+  );
+  const data = asRecord(j?.data);
+  const attrs = asRecord(data?.attributes) ?? asRecord(j?.attributes);
   if (!attrs) return null;
-  const stats = attrs.last_analysis_stats ?? {};
+  const stats = asRecord(attrs.last_analysis_stats) ?? {};
+  const lastSeen = attrs.last_analysis_date;
   return {
-    reputation: attrs.reputation ?? 0,
-    malicious: stats.malicious ?? 0,
-    suspicious: stats.suspicious ?? 0,
-    harmless: stats.harmless ?? 0,
-    undetected: stats.undetected ?? 0,
-    categories: attrs.categories ?? {},
-    lastAnalysisDate: attrs.last_analysis_date
-      ? new Date(attrs.last_analysis_date * 1000).toISOString()
-      : null,
-    asOwner: attrs.as_owner ?? null,
-    country: attrs.country ?? null,
+    reputation: asNumber(attrs.reputation),
+    malicious: asNumber(stats.malicious),
+    suspicious: asNumber(stats.suspicious),
+    harmless: asNumber(stats.harmless),
+    undetected: asNumber(stats.undetected),
+    categories: asStringMap(attrs.categories),
+    lastAnalysisDate:
+      typeof lastSeen === "number" ? new Date(lastSeen * 1000).toISOString() : null,
+    asOwner: asString(attrs.as_owner),
+    country: asString(attrs.country),
   };
 }
 
@@ -297,31 +374,30 @@ function deriveFindings(r: PassiveIntelReport): VulnFinding[] {
 
   // Shodan
   if (r.shodan) {
-    if ("ports" in r.shodan && Array.isArray(r.shodan.ports)) {
-      const risky = r.shodan.ports.filter((p: number) =>
-        [21, 23, 3389, 445, 139, 3306, 5432, 6379, 27017, 9200, 11211].includes(p),
+    const ports = r.shodan.ports;
+    const risky = ports.filter((p) =>
+      [21, 23, 3389, 445, 139, 3306, 5432, 6379, 27017, 9200, 11211].includes(p),
+    );
+    if (risky.length) {
+      push(
+        "PI-EXPOSED",
+        `Sensitive services exposed on ${risky.length} port(s)`,
+        "high",
+        `Ports open per Shodan: ${risky.join(", ")}`,
+        "Firewall these services or place behind VPN / bastion.",
+        "CWE-284",
       );
-      if (risky.length) {
-        push(
-          "PI-EXPOSED",
-          `Sensitive services exposed on ${risky.length} port(s)`,
-          "high",
-          `Ports open per Shodan: ${risky.join(", ")}`,
-          "Firewall these services or place behind VPN / bastion.",
-          "CWE-284",
-        );
-      }
-      if (r.shodan.ports.length > 10) {
-        push(
-          "PI-SURFACE",
-          `Broad attack surface: ${r.shodan.ports.length} open ports`,
-          "medium",
-          `Open: ${r.shodan.ports.slice(0, 20).join(", ")}${r.shodan.ports.length > 20 ? "…" : ""}`,
-          "Audit exposed services; close what isn't required.",
-        );
-      }
     }
-    if (Array.isArray(r.shodan.vulns) && r.shodan.vulns.length) {
+    if (ports.length > 10) {
+      push(
+        "PI-SURFACE",
+        `Broad attack surface: ${ports.length} open ports`,
+        "medium",
+        `Open: ${ports.slice(0, 20).join(", ")}${ports.length > 20 ? "…" : ""}`,
+        "Audit exposed services; close what isn't required.",
+      );
+    }
+    if (r.shodan.vulns.length) {
       push(
         "PI-CVE",
         `Shodan-tagged CVEs: ${r.shodan.vulns.length}`,

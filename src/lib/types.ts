@@ -96,6 +96,26 @@ export interface Scan {
   error?: string;
 }
 
+/**
+ * Shodan answer for a passive sweep. An IP lookup fills the host fields and
+ * leaves the domain fields empty; a domain lookup does the reverse.
+ */
+export interface ShodanInfo {
+  ip: string | null;
+  org: string | null;
+  isp: string | null;
+  country: string | null;
+  os: string | null;
+  ports: number[];
+  hostnames: string[];
+  vulns: string[];
+  tags: string[];
+  last_update: string | null;
+  domain: string | null;
+  subdomainCount: number;
+  subdomains: string[];
+}
+
 export interface PassiveIntelReport {
   target: string;
   isIp: boolean;
@@ -117,7 +137,7 @@ export interface PassiveIntelReport {
   } | null;
   http: { scheme: "http" | "https"; status: number; headers: Record<string, string> } | null;
   subdomains: { count: number; sample: string[] } | null;
-  shodan: any | null;
+  shodan: ShodanInfo | null;
   virustotal: {
     reputation: number;
     malicious: number;

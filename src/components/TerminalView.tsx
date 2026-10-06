@@ -541,14 +541,13 @@ export function TerminalView() {
           await runLive("shodan", host, (r) => {
             const s = r.report.shodan;
             if (!s) return "(no shodan data — key missing or no record)";
-            const vulns = Array.isArray(s.vulns) ? s.vulns : Object.keys(s.vulns ?? {});
             return [
-              `ip:    ${s.ip_str ?? "—"}`,
+              `ip:    ${s.ip ?? "—"}`,
               `org:   ${s.org ?? "—"}`,
               `os:    ${s.os ?? "—"}`,
-              `ports: ${(s.ports ?? []).join(", ") || "—"}`,
-              `vulns: ${vulns.join(", ") || "none"}`,
-              `tags:  ${(s.tags ?? []).join(", ") || "—"}`,
+              `ports: ${s.ports.join(", ") || "—"}`,
+              `vulns: ${s.vulns.join(", ") || "none"}`,
+              `tags:  ${s.tags.join(", ") || "—"}`,
             ].join("\n");
           });
           break;
