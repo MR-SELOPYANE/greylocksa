@@ -242,11 +242,6 @@ async function virusTotalLookup(host: string, isIp: boolean) {
   const path = isIp
     ? `ip_addresses/${encodeURIComponent(host)}`
     : `domains/${encodeURIComponent(host)}`;
-  const j = await safeFetchJson(
-    `https://www.virustotal.com/api/v3/${path}`,
-    { headers: { "x-apikey": key } },
-    8000,
-  );
   const j = asRecord(
     await safeFetchJson(`https://www.virustotal.com/api/v3/${path}`, {
       headers: { "x-apikey": key },
