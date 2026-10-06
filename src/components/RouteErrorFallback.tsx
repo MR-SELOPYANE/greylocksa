@@ -11,10 +11,12 @@ export default function RouteErrorFallback({
   error,
   reset,
 }: {
-  error: Error;
+  error: unknown;
   reset: () => void;
 }) {
   const router = useRouter();
+  // The router hands us `unknown`, so narrow it before showing anything.
+  const message = error instanceof Error ? error.message : typeof error === "string" ? error : "";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -39,9 +41,9 @@ export default function RouteErrorFallback({
         <p className="mt-2 text-sm text-muted-foreground">
           An unexpected error occurred. Please try again.
         </p>
-        {import.meta.env.DEV && error.message && (
+        {import.meta.env.DEV && message && (
           <pre className="mt-4 max-h-40 overflow-auto rounded-md bg-muted p-3 text-left font-mono text-xs text-destructive">
-            {error.message}
+            {message}
           </pre>
         )}
         <div className="mt-6 flex items-center justify-center gap-3">
