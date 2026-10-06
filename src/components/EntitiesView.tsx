@@ -167,7 +167,7 @@ export function EntitiesView() {
     clearSelection();
   };
 
-  const formatDate = (d: string) => formatDateTimeImpl(d);
+
 
 
   const canMutate = role === "analyst" || role === "admin";
