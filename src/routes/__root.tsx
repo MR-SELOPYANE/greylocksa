@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { AppContext, useAppStateProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 import { CommandPalette } from "@/components/CommandPalette";
+import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { GlobalShortcuts } from "@/components/GlobalShortcuts";
 
 import appCss from "../styles.css?url";
@@ -85,16 +86,18 @@ function RootComponent() {
 
   return (
     <AppContext.Provider value={appState}>
-      {isPublic ? (
-        <Outlet />
-      ) : (
-        <AppLayout>
+      <ConfirmProvider>
+        {isPublic ? (
           <Outlet />
-        </AppLayout>
-      )}
-      {!isPublic && <CommandPalette />}
-      {!isPublic && <GlobalShortcuts />}
-      <Toaster />
+        ) : (
+          <AppLayout>
+            <Outlet />
+          </AppLayout>
+        )}
+        {!isPublic && <CommandPalette />}
+        {!isPublic && <GlobalShortcuts />}
+        <Toaster />
+      </ConfirmProvider>
     </AppContext.Provider>
   );
 }

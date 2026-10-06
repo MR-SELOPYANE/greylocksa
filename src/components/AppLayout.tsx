@@ -29,6 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/time";
 import { useAppState } from "@/lib/store";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { deriveIocsFromScans } from "@/lib/derive";
 import type { UserRole } from "@/lib/types";
 import {
@@ -128,11 +129,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("greylock:role-denied", onDenied);
   }, []);
 
-  const toggleLockdown = () => {
-    const reason = prompt(
-      lockdown ? "Reason for lifting lockdown:" : "Reason for emergency lockdown:",
-    );
-    if (reason === null) return;
+  const confirm = useConfirm();
+
+  const toggleLockdown = async () => {
+    const { confirmed, reason } = await confirm({
+      title: lockdown ? "Lift emergency lockdown" : "Engage emergency lockdown",
+      description: lockdown
+        ? "Mutations and scans resume for every operator."
+        : "All mutations and scans stop until an admin lifts it.",
+      reasonLabel: "Reason",
+      requireReason: true,
+      confirmLabel: lockdown ? "Lift lockdown" : "Engage lockdown",
+      destructive: !lockdown,
+    });
+    if (!confirmed) return;
     setLockdown(!lockdown, reason || undefined);
     toast.warning(
       lockdown ? "Lockdown lifted — operations resumed" : "EMERGENCY LOCKDOWN ENGAGED",

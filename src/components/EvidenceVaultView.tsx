@@ -4,6 +4,7 @@ import type { EvidenceItem, Honeytoken } from "@/lib/types";
 import { sha256File } from "@/lib/derive";
 import { formatDate, formatDateTime } from "@/lib/time";
 import { useAppState } from "@/lib/store";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -109,15 +110,28 @@ export function EvidenceVaultView() {
       });
   };
 
-  const reseal = (e: EvidenceItem) => {
+  const confirm = useConfirm();
+
+  const reseal = async (e: EvidenceItem) => {
     if (!canEditEvidence(e)) {
       toast.error("Permission denied", {
         description: "Only the uploader or an admin can break or re-seal this artifact.",
       });
       return;
     }
-    const reason = prompt(e.sealed ? "Reason for breaking seal:" : "Reason for re-sealing:");
-    if (!reason) return;
+    const { confirmed, reason } = await confirm({
+      title: e.sealed ? "Break seal" : "Re-seal artifact",
+      description: `${e.filename} — ${
+        e.sealed
+          ? "breaking the seal records an edit event against you"
+          : "re-sealing locks the artifact again"
+      }.`,
+      reasonLabel: "Reason",
+      requireReason: true,
+      confirmLabel: e.sealed ? "Break seal" : "Re-seal",
+      destructive: e.sealed,
+    });
+    if (!confirmed) return;
     updateEvidence(e.id, { sealed: !e.sealed }, reason);
     logCustody({
       entityId: e.linkedEntityId ?? "VAULT",
@@ -126,13 +140,20 @@ export function EvidenceVaultView() {
     });
   };
 
-  const remove = (e: EvidenceItem) => {
+  const remove = async (e: EvidenceItem) => {
     if (!canEditEvidence(e)) {
       toast.error("Permission denied");
       return;
     }
-    const reason = prompt(`Reason for deleting ${e.filename}:`);
-    if (!reason) return;
+    const { confirmed, reason } = await confirm({
+      title: "Delete artifact",
+      description: `${e.filename} will be removed from the vault. The deletion event stays in chain-of-custody.`,
+      reasonLabel: "Reason",
+      requireReason: true,
+      confirmLabel: "Delete",
+      destructive: true,
+    });
+    if (!confirmed) return;
     deleteEvidence(e.id, reason);
     logCustody({
       entityId: e.linkedEntityId ?? "VAULT",

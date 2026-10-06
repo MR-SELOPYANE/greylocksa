@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/time";
 import { useAppState } from "@/lib/store";
+import { useConfirm } from "@/components/ConfirmDialog";
 import type { CaseStatus } from "@/lib/types";
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
 import { NewCaseDialog } from "@/components/NewCaseDialog";
@@ -73,14 +74,20 @@ export function CasesView() {
     }
   };
 
-  const saveCurrentView = () => {
-    const name = prompt("Name this view (e.g. My critical open cases):");
-    if (!name?.trim()) return;
-    persistViews([
-      ...views,
-      { id: `view-${Date.now().toString(36)}`, name: name.trim(), filter, query },
-    ]);
-    toast.success(`Saved view "${name.trim()}"`);
+  const confirm = useConfirm();
+
+  const saveCurrentView = async () => {
+    const { confirmed, reason } = await confirm({
+      title: "Save current view",
+      description: "The current filter and search text will be stored under this name.",
+      reasonLabel: "View name",
+      defaultReason: "My critical open cases",
+      requireReason: true,
+      confirmLabel: "Save view",
+    });
+    if (!confirmed) return;
+    persistViews([...views, { id: `view-${Date.now().toString(36)}`, name: reason, filter, query }]);
+    toast.success(`Saved view "${reason}"`);
   };
 
   const applyView = (v: SavedView) => {
