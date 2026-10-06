@@ -10,6 +10,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { useAppState } from "@/lib/store";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { toast } from "sonner";
 import {
   Database,
@@ -45,6 +46,8 @@ export function CommandPalette() {
     lockdown,
     setLockdown,
   } = useAppState();
+
+  const confirm = useConfirm();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -142,11 +145,18 @@ export function CommandPalette() {
           {role === "admin" && (
             <CommandItem
               onSelect={() =>
-                run(() => {
-                  const reason = prompt(
-                    lockdown ? "Reason for lifting lockdown:" : "Reason for emergency lockdown:",
-                  );
-                  if (reason === null) return;
+                run(async () => {
+                  const { confirmed, reason } = await confirm({
+                    title: lockdown ? "Lift emergency lockdown" : "Engage emergency lockdown",
+                    description: lockdown
+                      ? "Mutations and scans resume for every operator."
+                      : "All mutations and scans stop until an admin lifts it.",
+                    reasonLabel: "Reason",
+                    requireReason: true,
+                    confirmLabel: lockdown ? "Lift lockdown" : "Engage lockdown",
+                    destructive: !lockdown,
+                  });
+                  if (!confirmed) return;
                   setLockdown(!lockdown, reason || undefined);
                   toast.warning(lockdown ? "Lockdown lifted" : "EMERGENCY LOCKDOWN ENGAGED");
                 })

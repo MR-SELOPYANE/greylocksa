@@ -28,6 +28,9 @@ import { Send, Trash2, FileText, Lock, Copy, RotateCcw, Download, Sparkles } fro
 
 const MAX_INPUT = 2000;
 
+/** Phrases that trip the clearance guard. Module scope so the hook deps stay stable. */
+const CLASSIFIED_KEYWORDS = ["launch", "nuke", "classified", "top secret", "ts/sci"];
+
 const SUGGESTED_PROMPTS = [
   "Give me a current threat assessment summary.",
   "Which scan profile should I run on a new web target?",
@@ -83,7 +86,6 @@ export function SentinelView() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const classifiedKeywords = ["launch", "nuke", "classified", "top secret", "ts/sci"];
   const isEmptyConversation = messages.filter((m) => m.role !== "system").length === 0;
   const overLimit = input.length > MAX_INPUT;
 
@@ -152,7 +154,7 @@ export function SentinelView() {
         toast.error(`Query too long. Keep it under ${MAX_INPUT} characters.`);
         return;
       }
-      if (classifiedKeywords.some((k) => trimmed.toLowerCase().includes(k))) {
+      if (CLASSIFIED_KEYWORDS.some((k) => trimmed.toLowerCase().includes(k))) {
         setShowDenial(true);
         return;
       }

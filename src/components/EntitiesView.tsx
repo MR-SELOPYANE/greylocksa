@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
+import { useConfirm } from "@/components/ConfirmDialog";
+import { formatDateTime as formatDate } from "@/lib/time";
 import type { Entity, EntityStatus } from "@/lib/types";
 import { StatusBadge, TypeBadge, RiskScore, CaseStatusBadge } from "@/components/StatusBadges";
 import { AddEntityDialog } from "@/components/AddEntityDialog";
@@ -166,11 +168,12 @@ export function EntitiesView() {
     clearSelection();
   };
 
-  const formatDate = (d: string) => formatDateTimeImpl(d);
+
 
 
   const canMutate = role === "analyst" || role === "admin";
   const canDelete = role === "admin";
+  const confirm = useConfirm();
 
   return (
     <div className="space-y-4">
@@ -464,14 +467,21 @@ export function EntitiesView() {
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 text-destructive"
-                          onClick={(ev) => {
+                          onClick={async (ev) => {
                             ev.stopPropagation();
                             if (lockdown) {
                               toast.error("System locked down");
                               return;
                             }
-                            const reason = prompt(`Reason for purging ${e.id}:`);
-                            if (!reason) return;
+                            const { confirmed, reason } = await confirm({
+                              title: "Purge target",
+                              description: `${e.id} will be removed from the watchlist. The event stays in chain-of-custody.`,
+                              reasonLabel: "Reason",
+                              requireReason: true,
+                              confirmLabel: "Purge target",
+                              destructive: true,
+                            });
+                            if (!confirmed) return;
                             deleteEntity(e.id);
                             logCustody({ entityId: e.id, action: "DELETE", reason });
                             toast.warning(`Purged ${e.id}`, {

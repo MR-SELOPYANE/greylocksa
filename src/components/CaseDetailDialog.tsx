@@ -74,7 +74,6 @@ export function CaseDetailDialog({
     [activeCase, custody],
   );
 
-  const formatDate = (d: string) => formatDateTimeImpl(d);
 
 
   if (!activeCase) return null;

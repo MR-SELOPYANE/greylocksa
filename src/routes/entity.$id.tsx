@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
+import { useConfirm } from "@/components/ConfirmDialog";
 import type { EntityStatus } from "@/lib/types";
 import { formatDateTime } from "@/lib/time";
 import { StatusBadge, TypeBadge, RiskScore, CaseStatusBadge } from "@/components/StatusBadges";
@@ -100,9 +101,18 @@ function EntityDetailPage() {
     setSweeping(false);
   };
 
-  const purge = () => {
-    const reason = prompt(`Reason for purging ${entity.identifier}:`);
-    if (!reason) return;
+  const confirm = useConfirm();
+
+  const purge = async () => {
+    const { confirmed, reason } = await confirm({
+      title: "Purge target",
+      description: `${entity.identifier} will be removed from the watchlist. The event stays in chain-of-custody.`,
+      reasonLabel: "Reason",
+      requireReason: true,
+      confirmLabel: "Purge target",
+      destructive: true,
+    });
+    if (!confirmed) return;
     logCustody({ entityId: entity.id, action: "DELETE", reason: `Purged target — ${reason}` });
     deleteEntity(entity.id);
     toast.warning("Target purged");
@@ -184,10 +194,18 @@ function EntityDetailPage() {
               size="sm"
               variant={entity.status === s ? "default" : "outline"}
               className="h-7 font-mono text-[10px] uppercase"
-              onClick={() => {
+              onClick={async () => {
                 if (entity.status === s) return;
-                const reason =
-                  prompt(`Reason for moving to ${s.toUpperCase()}:`) || "Manual status change";
+                const { confirmed, reason } = await confirm({
+                  title: `Move to ${s.toUpperCase()}`,
+                  description: `${entity.identifier} changes watchlist status and the change is attributed to you.`,
+                  reasonLabel: "Reason",
+                  defaultReason: "Manual status change",
+                  requireReason: true,
+                  confirmLabel: "Change status",
+                  destructive: s === "black",
+                });
+                if (!confirmed) return;
                 updateEntityStatus(entity.id, s, reason);
                 toast.success(`Status → ${s.toUpperCase()}`);
               }}
