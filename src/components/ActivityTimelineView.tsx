@@ -69,13 +69,6 @@ export function ActivityTimelineView() {
 
   const filtered = filter === "all" ? events : events.filter((e) => e.kind === filter);
 
-  const formatTime = (d: string) =>
-    new Date(d).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
   return (
     <div className="space-y-4">

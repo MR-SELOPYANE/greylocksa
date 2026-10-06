@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
+import { formatDateTime as formatDate } from "@/lib/time";
 import type { Entity, EntityStatus } from "@/lib/types";
 import { StatusBadge, TypeBadge, RiskScore, CaseStatusBadge } from "@/components/StatusBadges";
 import { AddEntityDialog } from "@/components/AddEntityDialog";

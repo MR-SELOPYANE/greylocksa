@@ -25,7 +25,6 @@ export function SystemStatusView() {
   const { entities, cases, scans, custody } = useAppState();
   const navigate = useNavigate();
 
-  const formatDate = (d: string) => formatDateTimeImpl(d);
 
 
   const stats = useMemo(() => {
