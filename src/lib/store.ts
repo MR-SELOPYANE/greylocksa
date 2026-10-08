@@ -264,21 +264,15 @@ export function useAppStateProvider(): AppState {
     [setSession],
   );
 
-  const [entities, setEntities, l1] = usePersistedState<Entity[]>(
-    "entities",
-    () => mockEntities,
-    { maxItems: 5000 },
-  );
-  const [scans, setScans, l2] = usePersistedState<Scan[]>(
-    "scans",
-    () => mockScans,
-    { maxItems: 500 },
-  );
-  const [cases, setCases, l3] = usePersistedState<Case[]>(
-    "cases",
-    () => mockCases,
-    { maxItems: 2000 },
-  );
+  const [entities, setEntities, l1] = usePersistedState<Entity[]>("entities", () => mockEntities, {
+    maxItems: 5000,
+  });
+  const [scans, setScans, l2] = usePersistedState<Scan[]>("scans", () => mockScans, {
+    maxItems: 500,
+  });
+  const [cases, setCases, l3] = usePersistedState<Case[]>("cases", () => mockCases, {
+    maxItems: 2000,
+  });
   const [custody, setCustody, l4] = usePersistedState<CustodyEntry[]>(
     "custody",
     () => mockCustody,
