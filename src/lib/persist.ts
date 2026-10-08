@@ -39,7 +39,16 @@ export function usePersistedState<T>(
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(fullKey);
-      if (raw) setValue(trim(JSON.parse(raw) as T, maxItems) as T);
+      if (raw) {
+        const parsed = JSON.parse(raw) as T;
+        const next = trim(parsed, maxItems) as T;
+        // Something was dropped: push the trimmed set straight back so storage
+        // shrinks now instead of only in memory.
+        if (Array.isArray(parsed) && Array.isArray(next) && next.length !== parsed.length) {
+          skipWrite.current = false;
+        }
+        setValue(next);
+      }
     } catch {
       /* corrupt entry — fall back to defaults */
     }
