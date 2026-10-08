@@ -15,7 +15,7 @@ export interface PersistOptions {
 }
 
 /** Drop the oldest entries once an array grows past its ceiling. */
-function trim(value: unknown, maxItems?: number): unknown {
+export function capArray(value: unknown, maxItems?: number): unknown {
   if (maxItems === undefined || !Array.isArray(value) || value.length <= maxItems) return value;
   return value.slice(-maxItems);
 }
@@ -41,7 +41,7 @@ export function usePersistedState<T>(
       const raw = window.localStorage.getItem(fullKey);
       if (raw) {
         const parsed = JSON.parse(raw) as T;
-        const next = trim(parsed, maxItems) as T;
+        const next = capArray(parsed, maxItems) as T;
         // Something was dropped: push the trimmed set straight back so storage
         // shrinks now instead of only in memory.
         if (Array.isArray(parsed) && Array.isArray(next) && next.length !== parsed.length) {
@@ -62,7 +62,7 @@ export function usePersistedState<T>(
       return;
     }
     try {
-      window.localStorage.setItem(fullKey, JSON.stringify(trim(value, maxItems)));
+      window.localStorage.setItem(fullKey, JSON.stringify(capArray(value, maxItems)));
     } catch {
       // A silent failure here means the operator believes their work is saved
       // when it isn't — say so once, loudly.
