@@ -264,21 +264,40 @@ export function useAppStateProvider(): AppState {
     [setSession],
   );
 
-  const [entities, setEntities, l1] = usePersistedState<Entity[]>("entities", () => mockEntities);
-  const [scans, setScans, l2] = usePersistedState<Scan[]>("scans", () => mockScans);
-  const [cases, setCases, l3] = usePersistedState<Case[]>("cases", () => mockCases);
-  const [custody, setCustody, l4] = usePersistedState<CustodyEntry[]>("custody", () => mockCustody);
+  const [entities, setEntities, l1] = usePersistedState<Entity[]>(
+    "entities",
+    () => mockEntities,
+    { maxItems: 5000 },
+  );
+  const [scans, setScans, l2] = usePersistedState<Scan[]>(
+    "scans",
+    () => mockScans,
+    { maxItems: 500 },
+  );
+  const [cases, setCases, l3] = usePersistedState<Case[]>(
+    "cases",
+    () => mockCases,
+    { maxItems: 2000 },
+  );
+  const [custody, setCustody, l4] = usePersistedState<CustodyEntry[]>(
+    "custody",
+    () => mockCustody,
+    { maxItems: 2000 },
+  );
   const [evidence, setEvidence, l5] = usePersistedState<EvidenceItem[]>(
     "evidence",
     () => mockEvidence,
+    { maxItems: 500 },
   );
   const [honeytokens, setHoneytokens, l6] = usePersistedState<Honeytoken[]>(
     "honeytokens",
     () => mockHoneytokens,
+    { maxItems: 200 },
   );
   const [notifications, setNotifications, l7] = usePersistedState<AppNotification[]>(
     "notifications",
     () => [],
+    { maxItems: 100 },
   );
   const [lockdown, setLockdownState] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);

@@ -27,6 +27,7 @@ import {
   Terminal as TerminalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { STORAGE_ERROR_EVENT } from "@/lib/persist";
 import { formatDateTime } from "@/lib/time";
 import { useAppState } from "@/lib/store";
 import { useConfirm } from "@/lib/confirm";
@@ -127,6 +128,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener("greylock:role-denied", onDenied);
     return () => window.removeEventListener("greylock:role-denied", onDenied);
+  }, []);
+
+  // A write that fails silently would leave the operator thinking their work is saved.
+  useEffect(() => {
+    const onStorageError = () => {
+      toast.error("Browser storage is full", {
+        description:
+          "New changes may not survive a refresh. Purge old targets, scans, or evidence to free space.",
+      });
+    };
+    window.addEventListener(STORAGE_ERROR_EVENT, onStorageError);
+    return () => window.removeEventListener(STORAGE_ERROR_EVENT, onStorageError);
   }, []);
 
   const confirm = useConfirm();
