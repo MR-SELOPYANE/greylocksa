@@ -431,30 +431,36 @@ export function useAppStateProvider(): AppState {
     window.location.reload();
   }, []);
 
-  const addEntity: AppState["addEntity"] = useCallback((input) => {
-    const id = `ENT-${String(Date.now()).slice(-6)}`;
-    const newEntity: Entity = {
-      id,
-      type: input.type,
-      identifier: input.identifier,
-      riskScore: input.riskScore,
-      status: input.status,
-      lastUpdated: new Date().toISOString(),
-      metadata: input.metadata ?? {},
-      evidenceRefs: [],
-      statusHistory: [],
-    };
-    setEntities((prev) => [newEntity, ...prev]);
-    return newEntity;
-  }, []);
+  const addEntity: AppState["addEntity"] = useCallback(
+    (input) => {
+      const id = `ENT-${String(Date.now()).slice(-6)}`;
+      const newEntity: Entity = {
+        id,
+        type: input.type,
+        identifier: input.identifier,
+        riskScore: input.riskScore,
+        status: input.status,
+        lastUpdated: new Date().toISOString(),
+        metadata: input.metadata ?? {},
+        evidenceRefs: [],
+        statusHistory: [],
+      };
+      setEntities((prev) => [newEntity, ...prev]);
+      return newEntity;
+    },
+    [setEntities],
+  );
 
-  const updateEntity: AppState["updateEntity"] = useCallback((id, patch) => {
-    setEntities((prev) =>
-      prev.map((e) =>
-        e.id === id ? { ...e, ...patch, lastUpdated: new Date().toISOString() } : e,
-      ),
-    );
-  }, []);
+  const updateEntity: AppState["updateEntity"] = useCallback(
+    (id, patch) => {
+      setEntities((prev) =>
+        prev.map((e) =>
+          e.id === id ? { ...e, ...patch, lastUpdated: new Date().toISOString() } : e,
+        ),
+      );
+    },
+    [setEntities],
+  );
 
   const updateEntityStatus: AppState["updateEntityStatus"] = useCallback(
     (id, status, reason = "Manual update") => {
@@ -480,12 +486,15 @@ export function useAppStateProvider(): AppState {
         ),
       );
     },
-    [],
+    [setEntities],
   );
 
-  const deleteEntity: AppState["deleteEntity"] = useCallback((id) => {
-    setEntities((prev) => prev.filter((e) => e.id !== id));
-  }, []);
+  const deleteEntity: AppState["deleteEntity"] = useCallback(
+    (id) => {
+      setEntities((prev) => prev.filter((e) => e.id !== id));
+    },
+    [setEntities],
+  );
 
   const startScan: AppState["startScan"] = useCallback(
     (entityId, profile) => {
@@ -527,7 +536,7 @@ export function useAppStateProvider(): AppState {
       );
       return queued;
     },
-    [entities],
+    [entities, setScans],
   );
 
   const isPassiveEligible: AppState["isPassiveEligible"] = useCallback((e) => {
@@ -661,7 +670,7 @@ export function useAppStateProvider(): AppState {
       ]);
       return newCase;
     },
-    [operator, role],
+    [operator, role, setCases, setCustody],
   );
 
   const updateCase: AppState["updateCase"] = useCallback(
@@ -686,7 +695,7 @@ export function useAppStateProvider(): AppState {
         ...prev,
       ]);
     },
-    [operator, role],
+    [operator, role, setCases, setCustody],
   );
 
   const updateCaseStatus: AppState["updateCaseStatus"] = useCallback(
@@ -724,39 +733,45 @@ export function useAppStateProvider(): AppState {
     [operator, role, setCases, setCustody, notify],
   );
 
-  const updateCaseProgress: AppState["updateCaseProgress"] = useCallback((id, progress) => {
-    const clamped = Math.max(0, Math.min(100, Math.round(progress)));
-    setCases((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              progress: clamped,
-              status: clamped === 100 ? "closed" : c.status,
-              updatedAt: new Date().toISOString(),
-            }
-          : c,
-      ),
-    );
-  }, []);
+  const updateCaseProgress: AppState["updateCaseProgress"] = useCallback(
+    (id, progress) => {
+      const clamped = Math.max(0, Math.min(100, Math.round(progress)));
+      setCases((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                progress: clamped,
+                status: clamped === 100 ? "closed" : c.status,
+                updatedAt: new Date().toISOString(),
+              }
+            : c,
+        ),
+      );
+    },
+    [setCases],
+  );
 
-  const setLockdown: AppState["setLockdown"] = useCallback((v, reason) => {
-    setLockdownState(v);
-    setCustody((prev) => [
-      {
-        id: `CUS-${Date.now().toString(36)}`,
-        actor: actorRef.current.operator,
-        role: actorRef.current.role,
-        entityId: "SYSTEM",
-        action: "LOCKDOWN",
-        reason: reason ?? (v ? "Emergency lockdown engaged" : "Lockdown lifted"),
-        timestamp: new Date().toISOString(),
-        ip: "10.0.1.10",
-        hash: genHash(),
-      },
-      ...prev,
-    ]);
-  }, []);
+  const setLockdown: AppState["setLockdown"] = useCallback(
+    (v, reason) => {
+      setLockdownState(v);
+      setCustody((prev) => [
+        {
+          id: `CUS-${Date.now().toString(36)}`,
+          actor: actorRef.current.operator,
+          role: actorRef.current.role,
+          entityId: "SYSTEM",
+          action: "LOCKDOWN",
+          reason: reason ?? (v ? "Emergency lockdown engaged" : "Lockdown lifted"),
+          timestamp: new Date().toISOString(),
+          ip: "10.0.1.10",
+          hash: genHash(),
+        },
+        ...prev,
+      ]);
+    },
+    [setCustody],
+  );
 
   const addEvidence: AppState["addEvidence"] = useCallback(
     (input) => {
@@ -807,12 +822,15 @@ export function useAppStateProvider(): AppState {
         }),
       );
     },
-    [operator],
+    [operator, setEvidence],
   );
 
-  const deleteEvidence: AppState["deleteEvidence"] = useCallback((id, _reason) => {
-    setEvidence((prev) => prev.filter((e) => e.id !== id));
-  }, []);
+  const deleteEvidence: AppState["deleteEvidence"] = useCallback(
+    (id, _reason) => {
+      setEvidence((prev) => prev.filter((e) => e.id !== id));
+    },
+    [setEvidence],
+  );
 
   const canEditEvidence: AppState["canEditEvidence"] = useCallback(
     (item) => {

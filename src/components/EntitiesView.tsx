@@ -168,9 +168,6 @@ export function EntitiesView() {
     clearSelection();
   };
 
-
-
-
   const canMutate = role === "analyst" || role === "admin";
   const canDelete = role === "admin";
   const confirm = useConfirm();

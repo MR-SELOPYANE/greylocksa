@@ -368,9 +368,7 @@ export function ThreatIntelView() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">First seen</span>
-                  <div className="text-foreground">
-                    {formatDate(selected.firstSeen)}
-                  </div>
+                  <div className="text-foreground">{formatDate(selected.firstSeen)}</div>
                 </div>
               </div>
 

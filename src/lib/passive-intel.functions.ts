@@ -41,15 +41,11 @@ async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 type JsonRecord = Record<string, unknown>;
 
 function asRecord(value: unknown): JsonRecord | null {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as JsonRecord)
-    : null;
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : null;
 }
 
 function asRecords(value: unknown): JsonRecord[] {
-  return Array.isArray(value)
-    ? value.map(asRecord).filter((v): v is JsonRecord => v !== null)
-    : [];
+  return Array.isArray(value) ? value.map(asRecord).filter((v): v is JsonRecord => v !== null) : [];
 }
 
 function asString(value: unknown): string | null {
@@ -78,11 +74,7 @@ function asStringMap(value: unknown): Record<string, string> {
   return out;
 }
 
-async function safeFetchJson(
-  url: string,
-  init?: RequestInit,
-  timeoutMs = 8000,
-): Promise<unknown> {
+async function safeFetchJson(url: string, init?: RequestInit, timeoutMs = 8000): Promise<unknown> {
   try {
     const res = await withTimeout(fetch(url, init), timeoutMs);
     if (!res.ok) return null;
@@ -243,9 +235,13 @@ async function virusTotalLookup(host: string, isIp: boolean) {
     ? `ip_addresses/${encodeURIComponent(host)}`
     : `domains/${encodeURIComponent(host)}`;
   const j = asRecord(
-    await safeFetchJson(`https://www.virustotal.com/api/v3/${path}`, {
-      headers: { "x-apikey": key },
-    }, 8000),
+    await safeFetchJson(
+      `https://www.virustotal.com/api/v3/${path}`,
+      {
+        headers: { "x-apikey": key },
+      },
+      8000,
+    ),
   );
   const data = asRecord(j?.data);
   const attrs = asRecord(data?.attributes) ?? asRecord(j?.attributes);
@@ -259,8 +255,7 @@ async function virusTotalLookup(host: string, isIp: boolean) {
     harmless: asNumber(stats.harmless),
     undetected: asNumber(stats.undetected),
     categories: asStringMap(attrs.categories),
-    lastAnalysisDate:
-      typeof lastSeen === "number" ? new Date(lastSeen * 1000).toISOString() : null,
+    lastAnalysisDate: typeof lastSeen === "number" ? new Date(lastSeen * 1000).toISOString() : null,
     asOwner: asString(attrs.as_owner),
     country: asString(attrs.country),
   };

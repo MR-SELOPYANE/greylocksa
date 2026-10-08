@@ -58,7 +58,6 @@ export const formatDateTime = (v: string | number | Date | null | undefined) =>
   formatStamp(v, "datetime");
 export const formatDateTimeSeconds = (v: string | number | Date | null | undefined) =>
   formatStamp(v, "datetimeSeconds");
-export const formatDate = (v: string | number | Date | null | undefined) =>
-  formatStamp(v, "date");
+export const formatDate = (v: string | number | Date | null | undefined) => formatStamp(v, "date");
 export const formatClock = (v: string | number | Date | null | undefined) =>
   formatStamp(v, "clock");

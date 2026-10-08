@@ -86,7 +86,10 @@ export function CasesView() {
       confirmLabel: "Save view",
     });
     if (!confirmed) return;
-    persistViews([...views, { id: `view-${Date.now().toString(36)}`, name: reason, filter, query }]);
+    persistViews([
+      ...views,
+      { id: `view-${Date.now().toString(36)}`, name: reason, filter, query },
+    ]);
     toast.success(`Saved view "${reason}"`);
   };
 
@@ -110,7 +113,6 @@ export function CasesView() {
       window.removeEventListener("greylock:open-case", onOpen as EventListener);
     };
   }, []);
-
 
   const counts = useMemo(() => {
     const acc: Record<string, number> = {

@@ -583,9 +583,7 @@ export function EvidenceVaultView() {
                     <li key={i} className="p-3 text-xs">
                       <div className="flex items-center justify-between font-mono">
                         <span className="text-tactical">{ed.by}</span>
-                        <span className="text-muted-foreground">
-                          {formatDateTime(ed.at)}
-                        </span>
+                        <span className="text-muted-foreground">{formatDateTime(ed.at)}</span>
                       </div>
                       <div className="mt-1 font-mono text-[11px]">
                         <span className="text-muted-foreground">{ed.field}:</span>{" "}

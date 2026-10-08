@@ -54,6 +54,7 @@ function EntityDetailPage() {
   } = useAppState();
   const [editOpen, setEditOpen] = useState(false);
   const [sweeping, setSweeping] = useState(false);
+  const confirm = useConfirm();
 
   const entity = entities.find((e) => e.id === id);
 
@@ -100,8 +101,6 @@ function EntityDetailPage() {
     await runPassiveScan(entity.id, { entity });
     setSweeping(false);
   };
-
-  const confirm = useConfirm();
 
   const purge = async () => {
     const { confirmed, reason } = await confirm({
