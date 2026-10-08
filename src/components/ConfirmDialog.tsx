@@ -1,12 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import { AlertOctagon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -20,45 +12,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { ConfirmContext, type ConfirmFn, type ConfirmResult } from "@/lib/confirm";
 
 /**
- * Themed replacement for the browser's native `prompt()` / `confirm()` boxes.
+ * Mounts the console's confirmation dialog once for the whole app.
  *
- * Native dialogs can't be styled, can't be validated, and can't be dismissed
- * with the console's own keyboard conventions. `useConfirm()` resolves to
- * `{ confirmed, reason }` so call sites read like the flow they replace.
+ * Callers get the dialog through `useConfirm()` from `@/lib/confirm`, which
+ * resolves to `{ confirmed, reason }` so call sites read like the flow they
+ * replace.
  */
-
-export interface ConfirmOptions {
-  /** Headline of the dialog, e.g. "Purge target". */
-  title: string;
-  /** Supporting line — say what will actually happen. */
-  description?: string;
-  /** Label above the reason field. Setting it makes the field appear. */
-  reasonLabel?: string;
-  /** Refuse to close until the reason field has text. */
-  requireReason?: boolean;
-  /** Suggested text pre-filled into the reason field. */
-  defaultReason?: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  /** Renders the confirm button in the destructive colour. */
-  destructive?: boolean;
-}
-
-export interface ConfirmResult {
-  confirmed: boolean;
-  reason: string;
-}
-
-type ConfirmFn = (options: ConfirmOptions) => Promise<ConfirmResult>;
 
 const declined: ConfirmResult = { confirmed: false, reason: "" };
 
-const ConfirmContext = createContext<ConfirmFn | null>(null);
-
 export function ConfirmProvider({ children }: { children: ReactNode }) {
-  const [options, setOptions] = useState<ConfirmOptions | null>(null);
+  const [options, setOptions] = useState<ConfirmOptionsState>(null);
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const resolver = useRef<((result: ConfirmResult) => void) | null>(null);
@@ -169,9 +136,4 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/** Returns a `confirm()` that shows the console's own dialog instead of the browser's. */
-export function useConfirm(): ConfirmFn {
-  const ctx = useContext(ConfirmContext);
-  if (!ctx) throw new Error("useConfirm must be used inside <ConfirmProvider>");
-  return ctx;
-}
+type ConfirmOptionsState = import("@/lib/confirm").ConfirmOptions | null;

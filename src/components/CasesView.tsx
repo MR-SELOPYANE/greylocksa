@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/time";
 import { useAppState } from "@/lib/store";
-import { useConfirm } from "@/components/ConfirmDialog";
+import { useConfirm } from "@/lib/confirm";
 import type { CaseStatus } from "@/lib/types";
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
 import { NewCaseDialog } from "@/components/NewCaseDialog";
@@ -86,7 +86,10 @@ export function CasesView() {
       confirmLabel: "Save view",
     });
     if (!confirmed) return;
-    persistViews([...views, { id: `view-${Date.now().toString(36)}`, name: reason, filter, query }]);
+    persistViews([
+      ...views,
+      { id: `view-${Date.now().toString(36)}`, name: reason, filter, query },
+    ]);
     toast.success(`Saved view "${reason}"`);
   };
 
@@ -110,7 +113,6 @@ export function CasesView() {
       window.removeEventListener("greylock:open-case", onOpen as EventListener);
     };
   }, []);
-
 
   const counts = useMemo(() => {
     const acc: Record<string, number> = {

@@ -4,7 +4,7 @@ import type { EvidenceItem, Honeytoken } from "@/lib/types";
 import { sha256File } from "@/lib/derive";
 import { formatDate, formatDateTime } from "@/lib/time";
 import { useAppState } from "@/lib/store";
-import { useConfirm } from "@/components/ConfirmDialog";
+import { useConfirm } from "@/lib/confirm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -583,9 +583,7 @@ export function EvidenceVaultView() {
                     <li key={i} className="p-3 text-xs">
                       <div className="flex items-center justify-between font-mono">
                         <span className="text-tactical">{ed.by}</span>
-                        <span className="text-muted-foreground">
-                          {formatDateTime(ed.at)}
-                        </span>
+                        <span className="text-muted-foreground">{formatDateTime(ed.at)}</span>
                       </div>
                       <div className="mt-1 font-mono text-[11px]">
                         <span className="text-muted-foreground">{ed.field}:</span>{" "}

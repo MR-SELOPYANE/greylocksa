@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
-import { useConfirm } from "@/components/ConfirmDialog";
+import { useConfirm } from "@/lib/confirm";
 import { formatDateTime as formatDate } from "@/lib/time";
 import type { Entity, EntityStatus } from "@/lib/types";
 import { StatusBadge, TypeBadge, RiskScore, CaseStatusBadge } from "@/components/StatusBadges";
@@ -167,9 +167,6 @@ export function EntitiesView() {
     toast.warning(`${ids.length} entities purged`, { description: "Audit events recorded." });
     clearSelection();
   };
-
-
-
 
   const canMutate = role === "analyst" || role === "admin";
   const canDelete = role === "admin";

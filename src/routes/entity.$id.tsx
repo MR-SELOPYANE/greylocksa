@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAppState } from "@/lib/store";
-import { useConfirm } from "@/components/ConfirmDialog";
+import { useConfirm } from "@/lib/confirm";
 import type { EntityStatus } from "@/lib/types";
 import { formatDateTime } from "@/lib/time";
 import { StatusBadge, TypeBadge, RiskScore, CaseStatusBadge } from "@/components/StatusBadges";
@@ -54,6 +54,7 @@ function EntityDetailPage() {
   } = useAppState();
   const [editOpen, setEditOpen] = useState(false);
   const [sweeping, setSweeping] = useState(false);
+  const confirm = useConfirm();
 
   const entity = entities.find((e) => e.id === id);
 
@@ -100,8 +101,6 @@ function EntityDetailPage() {
     await runPassiveScan(entity.id, { entity });
     setSweeping(false);
   };
-
-  const confirm = useConfirm();
 
   const purge = async () => {
     const { confirmed, reason } = await confirm({
@@ -221,8 +220,7 @@ function EntityDetailPage() {
               .slice(0, 6)
               .map((h, i) => (
                 <li key={i}>
-                  · {formatDateTime(h.timestamp)} — {h.from} → {h.to} by {h.changedBy} (
-                  {h.reason})
+                  · {formatDateTime(h.timestamp)} — {h.from} → {h.to} by {h.changedBy} ({h.reason})
                 </li>
               ))}
           </ul>
@@ -277,9 +275,7 @@ function EntityDetailPage() {
                 >
                   {s.status}
                 </span>
-                <span className="text-muted-foreground">
-                  {formatDateTime(s.startedAt)}
-                </span>
+                <span className="text-muted-foreground">{formatDateTime(s.startedAt)}</span>
                 {s.status === "complete" && (
                   <span className="ml-auto font-mono text-[10px] text-muted-foreground">
                     <span className="text-destructive">{s.summary.critical}C</span> ·{" "}

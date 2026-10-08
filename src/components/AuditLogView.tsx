@@ -2,7 +2,6 @@ import { mockAuditLog } from "@/lib/mock-data";
 import { formatDateTimeSeconds as formatDate } from "@/lib/time";
 
 export function AuditLogView() {
-
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
       <table className="w-full text-sm">

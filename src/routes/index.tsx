@@ -14,6 +14,10 @@ import {
   GitBranch,
   Brain,
 } from "lucide-react";
+import { useAppState } from "@/lib/store";
+
+/** Figures on this page are counted from this console, never typed in. */
+const count = (n: number) => n.toLocaleString("en-US");
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -36,6 +40,8 @@ export const Route = createFileRoute("/")({
 });
 
 function LandingPage() {
+  const { entities, cases, scans, custody } = useAppState();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Nav */}
@@ -69,7 +75,7 @@ function LandingPage() {
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1">
             <div className="h-1.5 w-1.5 rounded-full bg-status-white animate-pulse-glow" />
             <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              System Operational · v2.4.1
+              System Operational · Passive intel live
             </span>
           </div>
           <h1 className="max-w-3xl font-mono text-4xl font-bold tracking-tight sm:text-6xl">
@@ -78,8 +84,8 @@ function LandingPage() {
             <span className="text-tactical">engineered for operators.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            greyLock scans websites, applications, and platforms for vulnerabilities, signs every
-            action into chain-of-custody, and gives admins a single switch for emergency lockdown.
+            greyLock runs passive intelligence against your watchlist, records every action in a
+            custody log, and gives admins a single switch for emergency lockdown.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Link
@@ -101,10 +107,13 @@ function LandingPage() {
           {/* Status strip */}
           <div className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
-              { label: "Entities Tracked", value: "12,847" },
-              { label: "Active Cases", value: "143" },
-              { label: "Audit Events / 24h", value: "8.2K" },
-              { label: "Uptime", value: "99.98%" },
+              { label: "Targets on watchlist", value: count(entities.length) },
+              {
+                label: "Open cases",
+                value: count(cases.filter((c) => c.status !== "closed").length),
+              },
+              { label: "Scans run", value: count(scans.length) },
+              { label: "Custody events", value: count(custody.length) },
             ].map((s) => (
               <div key={s.label} className="rounded-md border border-border bg-card p-4">
                 <div className="font-mono text-2xl font-bold text-tactical">{s.value}</div>
@@ -138,7 +147,7 @@ function LandingPage() {
               {
                 icon: Radar,
                 title: "Vulnerability Scans",
-                desc: "Passive, active, deep, or fuzz profiles. CWE-mapped findings with remediation guidance.",
+                desc: "Live passive intel — WHOIS, DNS, TLS headers, certificate transparency, Shodan and VirusTotal. Active profiles are marked as simulations until a scanner agent is connected.",
               },
               {
                 icon: MessageSquare,
@@ -148,7 +157,7 @@ function LandingPage() {
               {
                 icon: Eye,
                 title: "Chain of Custody",
-                desc: "Every view, edit, scan, and export signed and hashed — court-grade attribution.",
+                desc: "Every view, edit, scan, and export recorded with operator, role, UTC timestamp and event ID.",
               },
               {
                 icon: Activity,
@@ -343,20 +352,20 @@ function LandingPage() {
                 // Security posture
               </span>
               <h2 className="mt-2 font-mono text-3xl font-bold tracking-tight">
-                Built like a SCIF.
+                Accountable by default.
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Defense-in-depth from the data layer up. Every action is attributable, every record
-                is immutable, every query is clearance-gated.
+                Every action is attributable to an operator, mutations are role-gated, and Sentinel
+                answers are clearance-gated.
               </p>
             </div>
             <ul className="space-y-3">
               {[
                 "Append-only audit trail with actor + IP attribution",
                 "Clearance-gated AI responses (UNCLASSIFIED → SECRET)",
-                "Row-level role enforcement on all mutations",
+                "Role-gated console — lockdown, sessions and audit are admin-only",
                 "Zero hardcoded secrets; env-only configuration",
-                "Rate-limited authentication endpoints",
+                "Local-first records — nothing leaves this browser except lookups you run",
               ].map((b) => (
                 <li
                   key={b}
@@ -386,23 +395,23 @@ function LandingPage() {
             {[
               {
                 q: "Where does data live?",
-                a: "All entity records, cases, and audit events persist in your own database. greyLock is single-tenant by design — no shared storage, no telemetry off-box.",
+                a: "Targets, cases, custody and audit records are saved in this browser's own storage, so your console survives a refresh. There is no greyLock server holding your data — the only outbound calls are the passive-intel lookups you run. A shared backend is the next step, not a current feature.",
               },
               {
                 q: "How is access controlled?",
-                a: "Three operator roles (Viewer, Analyst, Admin) layered with clearance levels (UNCLASSIFIED → SECRET). Mutations are role-gated; Sentinel responses are clearance-gated.",
+                a: "Two operator roles — Analyst and Admin — layered with clearance levels (UNCLASSIFIED → SECRET). Admin tooling is hidden from analysts, and an analyst cannot promote themselves; Sentinel responses are clearance-gated.",
               },
               {
                 q: "Is the audit trail tamper-evident?",
-                a: "Append-only with actor, source IP, and ISO timestamp captured on every POST, PATCH, and DELETE. Records cannot be edited or deleted through the application surface.",
+                a: "Entries are appended in order with the acting operator, their role, a UTC timestamp and an event ID, and nothing in the console edits or deletes them. The log lives in this browser, so treat it as accountability rather than a cryptographic chain of custody.",
               },
               {
                 q: "Can Sentinel see classified material?",
                 a: "Only at or below the requesting operator's clearance. Responses redact references the operator is not cleared to view.",
               },
               {
-                q: "What about rate limits and abuse?",
-                a: "Authentication endpoints are rate-limited at the edge. Bulk mutation endpoints enforce per-operator quotas with audit-event escalation on overage.",
+                q: "Can I run real nmap or Metasploit scans?",
+                a: "Not yet. The terminal runs live passive lookups (WHOIS, DNS, TLS headers, certificate transparency, Shodan, VirusTotal); active tools such as nmap, Nikto and Hydra print output clearly marked [sim]. Real active scanning has to run on a host you control through a signed scanner agent — the design is documented in docs/scanner-agent.md.",
               },
             ].map((f) => (
               <details

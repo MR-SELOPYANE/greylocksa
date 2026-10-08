@@ -74,8 +74,6 @@ export function CaseDetailDialog({
     [activeCase, custody],
   );
 
-
-
   if (!activeCase) return null;
 
   const dirty =

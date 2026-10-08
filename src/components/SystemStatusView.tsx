@@ -25,8 +25,6 @@ export function SystemStatusView() {
   const { entities, cases, scans, custody } = useAppState();
   const navigate = useNavigate();
 
-
-
   const stats = useMemo(() => {
     const byStatus = { black: 0, grey: 0, white: 0 };
     entities.forEach((e) => {
