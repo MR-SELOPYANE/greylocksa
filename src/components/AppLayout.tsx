@@ -29,7 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/time";
 import { useAppState } from "@/lib/store";
-import { useConfirm } from "@/components/ConfirmDialog";
+import { useConfirm } from "@/lib/confirm";
 import { deriveIocsFromScans } from "@/lib/derive";
 import type { UserRole } from "@/lib/types";
 import {

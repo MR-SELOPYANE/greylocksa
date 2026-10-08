@@ -4,7 +4,7 @@ import type { EvidenceItem, Honeytoken } from "@/lib/types";
 import { sha256File } from "@/lib/derive";
 import { formatDate, formatDateTime } from "@/lib/time";
 import { useAppState } from "@/lib/store";
-import { useConfirm } from "@/components/ConfirmDialog";
+import { useConfirm } from "@/lib/confirm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";

@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/time";
 import { useAppState } from "@/lib/store";
-import { useConfirm } from "@/components/ConfirmDialog";
+import { useConfirm } from "@/lib/confirm";
 import type { CaseStatus } from "@/lib/types";
 import { PriorityBadge, CaseStatusBadge } from "@/components/StatusBadges";
 import { NewCaseDialog } from "@/components/NewCaseDialog";
